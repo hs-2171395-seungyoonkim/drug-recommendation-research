@@ -10,7 +10,8 @@ def build_vocab(values) -> dict:
 
 def load_atc3_vocab(voc_path: str) -> dict:
     """기존 HI-DR voc_final2.pkl에서 med_voc.word2idx(ATC3 -> id)를 로드."""
-    voc = dill.load(open(voc_path, "rb"))
+    with open(voc_path, "rb") as f:
+        voc = dill.load(f)
     return dict(voc["med_voc"].word2idx)
 
 
