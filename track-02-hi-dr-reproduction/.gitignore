@@ -1,0 +1,26 @@
+# --- PhysioNet/MIMIC raw & derived data: never commit (Data Use Agreement) ---
+*.csv
+*.pkl
+*.pt
+*.model
+ndc_dir/
+
+# Model checkpoints / training artifacts (derived from patient data)
+HEIDR/saved/
+HEIDR/HEIDR/saved/
+Pretrain_embedding_codes/saved/
+Pretrain_embedding_codes/saved_embedding/
+Pretrain_embedding_codes/final_top_embedding/
+
+# service_personalization pipeline outputs
+HEIDR/service_personalization/*.pt
+HEIDR/service_personalization/visit_embeddings.pt
+HEIDR/service_personalization/assembled_dataset.pt
+HEIDR/service_personalization/order_head*.pt
+
+# logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
