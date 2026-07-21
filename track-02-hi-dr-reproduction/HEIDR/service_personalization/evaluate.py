@@ -1,11 +1,21 @@
+import random
 import sys
 
 import torch
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, random_split
 
 sys.path.insert(0, ".")
 from HEIDR.service_personalization.dataset import OrderPersonalizationDataset
 from HEIDR.service_personalization.order_head_model import ServicePersonalizationHead
+
+# Must match train_order_head.py's seeding exactly so random_split reproduces
+# the identical held-out partition the checkpoints were validated against
+# during training -- evaluating on the full dataset would score partly on
+# data the heads were trained on and overstate absolute accuracy (the
+# with/without-service *comparison* stays valid either way since both arms
+# share the same bias, but the standalone numbers would be optimistic).
+torch.manual_seed(1203)
+random.seed(1203)
 
 
 def top_k_accuracy(logits: torch.Tensor, targets: torch.Tensor, k: int) -> float:
@@ -46,7 +56,16 @@ def main():
     assembled = torch.load("HEIDR/service_personalization/assembled_dataset.pt")
     visit_embeddings = torch.load("HEIDR/service_personalization/visit_embeddings.pt")
     dataset = OrderPersonalizationDataset(assembled["records"], visit_embeddings)
-    loader = DataLoader(dataset, batch_size=256, shuffle=False)
+    print(f"orders after embedding join: {len(dataset)}")
+
+    # Reproduce train_order_head.py's train/val split exactly (same seed,
+    # same arithmetic) so we evaluate only on the held-out partition, not on
+    # data either checkpoint was trained on.
+    n_val = max(1, int(len(dataset) * 0.1))
+    n_train = len(dataset) - n_val
+    _, val_set = random_split(dataset, [n_train, n_val])
+    print(f"held-out eval set: {len(val_set)}")
+    loader = DataLoader(val_set, batch_size=256, shuffle=False)
 
     for label, ckpt_path in [
         ("with service", "HEIDR/service_personalization/order_head.pt"),
