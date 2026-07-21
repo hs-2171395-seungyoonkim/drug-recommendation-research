@@ -8,8 +8,6 @@ def match_service(orders: pd.DataFrame, services: pd.DataFrame) -> pd.DataFrame:
     매칭이 없으면 'UNKNOWN'.
     """
     orders = orders.reset_index(drop=True)
-    # Preserve original index before sorting
-    original_index = orders.index.copy()
     orders = orders.sort_values("order_time")
 
     services = services.dropna(subset=["transfertime"])
