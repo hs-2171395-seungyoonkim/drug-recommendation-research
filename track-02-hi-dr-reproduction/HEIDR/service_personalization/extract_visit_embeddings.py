@@ -76,7 +76,7 @@ import numpy as np
 
 sys.path.insert(0, "HEIDR")
 from HEIDR_model import HEIDR
-from data_loader_new_mimic_iv import mimic_data, pad_batch_v2_eval, pad_num_replace
+from data_loader_new_mimic_iv import pad_batch_v2_eval, pad_num_replace
 
 CHECKPOINT = (
     "HEIDR/saved/mimic_iv_HEIDR_top_3_att_5_gumbel_06/"
@@ -90,7 +90,8 @@ CHECKPOINT = (
 # exceed 39/32 in this dataset, so only medications need capping. Truncating medications
 # is safe for our purposes: encode()'s returned input_disease_embdding depends only on
 # diseases/procedures content + medications' *shape* (not its values) -- see module
-# docstring -- so this cannot be worked around by editing data_loader_new_mimic_iv.py.
+# docstring. data_loader_new_mimic_iv.py is existing HEIDR core code and must not be
+# modified, so truncation here is the only available fix for the 2 outlier visits.
 MAX_MED_PER_VISIT = 56
 
 
@@ -190,13 +191,17 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device:", device)
 
-    voc = dill.load(open("data/mimic-iv/voc_final2.pkl", "rb"))
+    with open("data/mimic-iv/voc_final2.pkl", "rb") as f:
+        voc = dill.load(f)
     diag_voc, pro_voc, med_voc = voc["diag_voc"], voc["pro_voc"], voc["med_voc"]
     voc_size = (len(diag_voc.idx2word), len(pro_voc.idx2word), len(med_voc.idx2word))
 
-    ddi_adj = dill.load(open("data/mimic-iv/ddi_A_final2.pkl", "rb"))
-    ddi_mask_H = dill.load(open("data/mimic-iv/ddi_mask_H2.pkl", "rb"))
-    weighted_ehr = dill.load(open("data/mimic-iv/mimic_iv_weighted_confidence_directed_ehr_graph.pkl", "rb"))
+    with open("data/mimic-iv/ddi_A_final2.pkl", "rb") as f:
+        ddi_adj = dill.load(f)
+    with open("data/mimic-iv/ddi_mask_H2.pkl", "rb") as f:
+        ddi_mask_H = dill.load(f)
+    with open("data/mimic-iv/mimic_iv_weighted_confidence_directed_ehr_graph.pkl", "rb") as f:
+        weighted_ehr = dill.load(f)
 
     edge_index = torch.tensor(np.argwhere(weighted_ehr != 0).T, dtype=torch.long).to(device)
     edge_weight = torch.tensor(
@@ -207,13 +212,15 @@ def main():
 
     model = HEIDR(voc_size, ehr_adj, ddi_adj, ddi_mask_H, topk=3, gumbel_tau=0.6, att_tau=5,
                   emb_dim=64, device=device)
-    model.load_state_dict(torch.load(open(CHECKPOINT, "rb"), map_location=device))
+    model.load_state_dict(torch.load(CHECKPOINT, map_location=device))
     model.to(device)
     model.eval()
     model.ehr_adj_cached = ehr_adj  # encode()에 그대로 넘기기 위해 보관
 
-    records = dill.load(open("data/mimic-iv/records_final2.pkl", "rb"))
-    hadm_ids = dill.load(open("data/mimic-iv/records_final2_hadm_ids.pkl", "rb"))
+    with open("data/mimic-iv/records_final2.pkl", "rb") as f:
+        records = dill.load(f)
+    with open("data/mimic-iv/records_final2_hadm_ids.pkl", "rb") as f:
+        hadm_ids = dill.load(f)
     assert len(records) == len(hadm_ids)
 
     embeddings = {}
