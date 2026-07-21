@@ -24,3 +24,6 @@ HEIDR/service_personalization/order_head*.pt
 # Python
 __pycache__/
 *.pyc
+
+# Local editor settings
+.vscode/
