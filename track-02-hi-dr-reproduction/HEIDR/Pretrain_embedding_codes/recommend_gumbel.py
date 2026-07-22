@@ -331,14 +331,14 @@ def test(model, test_dataloader, epoch_saved_patient_embedding_test, diag_voc, p
         all_label_list.append(labels)
         try:
             adm_ja, adm_prauc, adm_avg_p, adm_avg_r, adm_avg_f1 = \
-                    sequence_metric(np.array(y_gt), np.array(y_pred), np.array(y_pred_prob), np.array(y_pred_label))
+                    sequence_metric(np.array(y_gt), np.array(y_pred), np.array(y_pred_prob), np.array(y_pred_label, dtype=object))
             ja.append(adm_ja)
             prauc.append(adm_prauc)
             avg_p.append(adm_avg_p)
             avg_r.append(adm_avg_r)
             avg_f1.append(adm_avg_f1)
             llprint('\rtest step: {} / {}'.format(idx, len(test_dataloader)))
-        except IndexError:
+        except (IndexError, ValueError):
             pass
 
     print('\tvisit1\tvisit2\tvisit3\tvisit4\tvisit5')

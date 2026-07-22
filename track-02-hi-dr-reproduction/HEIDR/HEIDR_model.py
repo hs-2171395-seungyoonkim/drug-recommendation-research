@@ -57,8 +57,7 @@ class HEIDR(nn.Module):
         self.diagnoses_encoder = nn.TransformerEncoderLayer(emb_dim, self.nhead, batch_first=True, dropout=0.2)
 
         self.tensor_ddi_adj = torch.FloatTensor(ddi_adj).to(device)
-        # TwoLayerDirectedGCN
-        self.ehr_direct_gcn = TwoLayerDirectedGCN(in_channels=voc_size[2], hidden_channels=emb_dim, out_channels=emb_dim) # DirectedGCNConv(in_channels=voc_size[2], out_channels=emb_dim)# DirectedGCN(num_features=voc_size[2],hidden_channels=emb_dim) # num_features, hidden_channels):
+        self.ehr_direct_gcn = DirectedGCNConv(in_channels=voc_size[2], out_channels=emb_dim)
         self.gcn =  GCN(voc_size=voc_size[2], emb_dim=emb_dim, ddi_adj=ddi_adj, device=device)
         self.inter = nn.Parameter(torch.FloatTensor(1))
 
@@ -209,7 +208,7 @@ class HEIDR(nn.Module):
         # vocab_size, emb_size
         ddi_embedding = self.gcn()
         # using weighted directed ehr graph
-        ehr_embedding = self.ehr_direct_gcn(ehr_adj)
+        ehr_embedding = self.ehr_direct_gcn(ehr_adj.x, ehr_adj.edge_index, ehr_adj.edge_weight)
         drug_memory = ehr_embedding  - ddi_embedding * self.inter
         drug_memory_padding = torch.zeros((3, self.emb_dim), device=self.device).float()
         drug_memory = torch.cat([drug_memory, drug_memory_padding], dim=0)

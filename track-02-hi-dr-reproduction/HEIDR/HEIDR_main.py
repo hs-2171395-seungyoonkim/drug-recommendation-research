@@ -28,7 +28,7 @@ from recommend_heidr import eval, test
 
 torch.manual_seed(1203)
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 model_name = ''
 past_name = 'past'
