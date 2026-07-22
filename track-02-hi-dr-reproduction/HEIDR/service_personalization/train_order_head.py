@@ -61,13 +61,18 @@ def main():
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=args.batch_size, shuffle=False)
 
+    hparams = {
+        "visit_emb_dim": 64,
+        "service_emb_dim": 16,
+        "hidden_dim": 128,
+    }
     model = ServicePersonalizationHead(
-        visit_emb_dim=64,
+        visit_emb_dim=hparams["visit_emb_dim"],
         num_services=len(assembled["service_vocab"]),
-        service_emb_dim=16,
+        service_emb_dim=hparams["service_emb_dim"],
         num_atc3=len(assembled["atc3_vocab"]),
         num_manufacturers=len(assembled["manufacturer_vocab"]),
-        hidden_dim=128,
+        hidden_dim=hparams["hidden_dim"],
     ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
@@ -100,6 +105,7 @@ def main():
         "atc3_vocab": assembled["atc3_vocab"],
         "manufacturer_vocab": assembled["manufacturer_vocab"],
         "use_service": use_service,
+        "hparams": hparams,
     }, args.out)
 
 

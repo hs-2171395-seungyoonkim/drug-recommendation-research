@@ -47,6 +47,9 @@ def evaluate_model(model, loader, device, use_service=True) -> dict:
     return {
         "atc3_top1": atc3_top1 / n,
         "atc3_top3": atc3_top3 / n,
+        # Teacher-forced: computed with ground-truth atc3_id fed into the
+        # manufacturer head (see model forward()), not atc3_head's own
+        # prediction. Upper bound relative to true autoregressive inference.
         "manufacturer_top1": manu_top1 / n,
     }
 
@@ -67,21 +70,29 @@ def main():
     print(f"held-out eval set: {len(val_set)}")
     loader = DataLoader(val_set, batch_size=256, shuffle=False)
 
+    # Fallback matches the literals train_order_head.py used before it started
+    # saving "hparams" -- needed for checkpoints trained prior to that change.
+    default_hparams = {"visit_emb_dim": 64, "service_emb_dim": 16, "hidden_dim": 128}
+
     for label, ckpt_path in [
         ("with service", "HEIDR/service_personalization/order_head.pt"),
         ("without service (ablation)", "HEIDR/service_personalization/order_head_ablation.pt"),
     ]:
         ckpt = torch.load(ckpt_path)
+        hparams = ckpt.get("hparams", default_hparams)
         model = ServicePersonalizationHead(
-            visit_emb_dim=64,
+            visit_emb_dim=hparams["visit_emb_dim"],
             num_services=len(ckpt["service_vocab"]),
-            service_emb_dim=16,
+            service_emb_dim=hparams["service_emb_dim"],
             num_atc3=len(ckpt["atc3_vocab"]),
             num_manufacturers=len(ckpt["manufacturer_vocab"]),
-            hidden_dim=128,
+            hidden_dim=hparams["hidden_dim"],
         ).to(device)
         model.load_state_dict(ckpt["state_dict"])
         metrics = evaluate_model(model, loader, device, use_service=ckpt["use_service"])
+        # manufacturer_top1 is teacher-forced: the ground-truth atc3_id is fed
+        # into the manufacturer head, not atc3_head's own prediction. Treat it
+        # as an upper bound relative to true end-to-end autoregressive inference.
         print(f"[{label}] {metrics}")
 
 
