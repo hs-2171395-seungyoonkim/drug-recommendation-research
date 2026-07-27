@@ -77,8 +77,13 @@ def main():
             all_labels.append(1 if cid in gt_set else 0)
             all_scores.append(s)
 
-    threshold_info = select_threshold_f_beta(np.array(all_labels), np.array(all_scores), beta=0.5)
-    print(f"selected threshold (eval split, F0.5-max): {threshold_info}")
+    # beta=1.0 (F1): F0.5 over-weighted precision and picked a threshold that cost
+    # ~33% relative recall for a marginal F0.5 gain (the F0.5 curve was flat across
+    # thresholds 0.5-0.8). F1 lands on a threshold that improves precision/AVG_MED
+    # substantially while keeping recall loss modest, matching the project's actual
+    # goal (curb over-generation) better than the F0.5 pick did.
+    threshold_info = select_threshold_f_beta(np.array(all_labels), np.array(all_scores), beta=1.0)
+    print(f"selected threshold (eval split, F1-max): {threshold_info}")
 
     test_cache = torch.load("HEIDR/drug_filter/candidates_test.pt")
     test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], device)
