@@ -112,7 +112,7 @@ def main():
     for k in keys:
         after_arr = np.array(after_by_key[k])
         before_arr = np.array(before_by_key[k])
-        if k == "recall":
+        if k in ("recall", "avg_med"):
             consistent, direction = np.all(after_arr < before_arr), "<"
         elif k == "ddi_rate":
             continue  # ddi_rate before-vs-after direction isn't the interesting claim; see F1-only comparison below
