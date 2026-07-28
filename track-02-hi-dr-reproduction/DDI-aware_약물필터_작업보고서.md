@@ -172,6 +172,57 @@ margin이 0.02를 넘으면 achieved DDI rate 제약이 사실상 무력화된�
 
 **결론:** 애초 질문("두 필터의 이점을 뽑아올 수 없을까?")에 대한 답은 **"부분적으로 가능하다"**다 — margin이라는 단일 파라미터로 두 목표 사이를 연속적으로 이동할 수 있고, margin=0.01은 그 중간 지점에서 양쪽 다 절반 이상의 이득을 가져가는 절충안이다. 다만 완전히 "F1-only만큼 공격적으로 필터링하면서 DDI-aware만큼 낮은 DDI rate"를 동시에 만족하는 지점은 존재하지 않는다 — 진짜 Pareto frontier 상에서 한쪽을 얻으려면 다른 쪽을 어느 정도 내줘야 한다.
 
+### 7-3. 재학습 시드 분산 — "신뢰할 수 있는가?"
+
+`train_filter.py`가 random seed를 고정하지 않아 재학습마다 정확한 수치가 흔들린다는 게 §9의 한계였다. 이를 정량화하기 위해 `--seed` 인자를 추가하고(`torch.manual_seed()` 고정, 같은 seed로 재학습하면 loss curve가 완전히 동일함을 확인), seed 0~4로 5회 재학습·재평가했다(margin=0.01 고정, test split):
+
+| 지표 | 평균 | 표준편차 | 최소 | 최대 | 변동계수(CV) |
+|---|---|---|---|---|---|
+| Precision | 0.7004 | 0.0089 | 0.6882 | 0.7124 | 1.27% |
+| Recall | 0.5849 | 0.0088 | 0.5727 | 0.5962 | 1.51% |
+| Jaccard | 0.4599 | 0.0019 | 0.4575 | 0.4621 | 0.41% |
+| F1 | 0.6191 | 0.0017 | 0.6170 | 0.6212 | 0.28% |
+| DDI Rate | 0.0878 | 0.0007 | 0.0868 | 0.0885 | 0.80% |
+| AVG_MED | 16.77 | 0.45 | 16.16 | 17.36 | 2.66% |
+
+**방향성(정성적 결론) 일관성 — 5개 시드 전부 성립:**
+
+| 주장 | 5개 시드 전부 성립? |
+|---|---|
+| Precision > 필터 전(0.6322) | ✅ |
+| DDI rate < F1-only(0.0912) | ✅ (최댓값 0.0885도 여전히 아래) |
+| AVG_MED < 필터 전(20.07) | ✅ |
+| Jaccard > 필터 전(0.4550) | ✅ |
+| F1 > 필터 전(0.6137) | ✅ |
+| Recall < 필터 전(0.6325) | ✅ |
+
+변동계수(노이즈 크기)가 대부분 0.3~1.5%, 가장 큰 AVG_MED도 2.66%로 작다. 반면 보고하는 효과 크기(예: precision 개선폭, DDI rate가 F1-only보다 항상 낮게 유지되는 것)는 이 노이즈보다 훨씬 크다 — 재학습 시드에 따라 정확한 소수점은 흔들리지만, **정성적 결론은 5회 전부 재현됐다.**
+
+### 7-4. 통계적 유의성 검정
+
+7-3까지는 "재학습 노이즈가 결론보다 작다"는 것만 보였을 뿐, "필터 전/후 차이가 이 특정 test split(907명, 1255방문)에서 우연이 아닌가"는 별개 질문이다. 이를 확인하기 위해 `HEIDR/drug_filter/significance_test.py`를 구현해 두 종류의 검정을 수행했다:
+
+- **precision/recall/jaccard/f1** (방문별 macro 평균 지표): 방문 단위로 paired Wilcoxon signed-rank test + paired t-test
+- **DDI rate** (전체 방문을 합친 pooled 비율이라 방문별 값이 없음): 방문을 복원추출로 2000회 리샘플링하는 부트스트랩으로 신뢰구간과 유의성 추정
+
+**방법론 참고**: 공정 비교를 위해 "DDI-aware로 재학습된 현재 모델 위에, DDI를 무시하는 순수 F1-max threshold(0.4249)만 새로 고른" 버전을 "F1-only(같은 모델)"로 재구성해 함께 비교했다 — 모델 자체가 다르면(§7의 원래 F1-only 필터는 DDI 피처가 없는 이전 모델) 어떤 차이가 threshold 알고리즘 때문인지 모델 때문인지 뒤섞이기 때문이다.
+
+| 지표 | before vs DDI-aware | before vs F1-only(같은 모델) | F1-only vs DDI-aware |
+|---|---|---|---|
+| Precision | +5.6%p, p<0.001 | +9.8%p, p<0.001 | DDI-aware가 4.2%p 낮음, p<0.001 |
+| Recall | -3.6%p, p<0.001 | -7.7%p, p<0.001 | DDI-aware가 4.1%p 높음, p<0.001 |
+| Jaccard | +0.65%p, p<0.001 | +0.23%p, **p=0.82 (유의하지 않음)** | DDI-aware가 0.88%p 높음, p<0.001 |
+| F1 | +0.67%p, p<0.001 | +0.10%p, **p=0.78 (유의하지 않음)** | DDI-aware가 0.77%p 높음, p<0.001 |
+| DDI Rate (부트스트랩) | DDI-aware가 0.73%p 높음, p<0.001 | - | DDI-aware가 0.53%p 낮음, p<0.001 (2000/2000 표본에서 일관) |
+
+**핵심 발견 1 — DDI rate 억제는 통계적으로 유의미**: DDI-aware가 F1-only(같은 모델)보다 DDI rate를 낮춘다는 결과가 부트스트랩 2000회 전부에서 나왔다(95% CI [-0.0062, -0.0045], 0을 포함하지 않음). 우연이 아니라는 강한 근거다.
+
+**핵심 발견 2 — F1-only(같은 모델)는 필터 전 대비 Jaccard/F1 개선이 통계적으로 무의미함**: p=0.82(Jaccard), p=0.78(F1) — precision은 크게 올랐지만(+9.8%p) recall을 그만큼 깎아서 전체 지표로는 사실상 "본전"이었다. 반면 **DDI-aware 필터는 Jaccard/F1 둘 다 유의미하게 개선**했다(p<0.001) — DDI를 고려한 threshold 선택이 DDI 억제뿐 아니라 전반적 추천 품질 자체도 더 낫다는 근거다.
+
+**해석상 주의**: p-value가 극단적으로 작은 경우(예: p=2.4×10⁻¹⁴⁸)가 나온 건 n=1255로 표본이 커서 나타나는 자연스러운 현상이다. 이 정도 표본 크기에서는 p-value의 절대적 작음보다 **효과 크기(%p)와 방향이 얼마나 일관됐는가**가 실질적 근거로서 더 중요하다 — 이 관점에서도 위 표의 방향성은 5-seed 분산 분석(§7-3)과 정확히 일치해 결론이 견고함을 뒷받침한다.
+
+**남은 검증 공백**: 이번 검정은 전부 **하나의 고정된 test split(907명) 내부**에서의 방문 단위 재표집(bootstrap)·방문 단위 짝검정(paired test)이다. train/eval/test를 다르게 분할했을 때도(예: k-fold cross-validation) 같은 결론이 나오는지는 아직 확인하지 않았다 — 데이터 분할 자체의 우연성은 여전히 남은 리스크다.
+
 ---
 
 ## 8. 사용한 핵심 로직 요약
@@ -202,14 +253,15 @@ margin이 0.02를 넘으면 achieved DDI rate 제약이 사실상 무력화된�
 - **단일 패스 근사**: DDI 충돌 피처는 "다른 후보가 남을 확률"을 HI-DR 자체 확률로 근사한다. 필터가 실제로 충돌 상대를 제거하고 나면 남은 후보의 충돌 피처는 달라지지만, 재점수화(re-scoring) 루프는 없다 — 의도된 단일 패스 설계. 자연스러운 후속 작업은 greedy 반복 제거.
 - **eval→test 일반화의 경계 근접**: margin=0.005 시점 기준으로, eval split에서 achieved DDI rate가 margin 경계 안쪽이었으나 test split에서는 근소하게 넘는 경우가 있었음 — 통계적 변동 범위이나 threshold 일반화 리스크로 문서화되어 있음.
 - **하이퍼파라미터의 잔여 임의성**: `margin`은 §7-2의 sweep으로 실측 기반 근거를 갖게 됐지만(0.01이 두 목표를 절반 이상씩 만족), quantile 후보 수(`n_thresholds=50`)와 `min_recall_ratio=0.5`는 여전히 원칙적 도출이 아니라 합리적 기본값으로 설정됨.
-- **필터 재학습의 비재현성**: `train_filter.py`가 random seed를 고정하지 않아, 동일 코드로 재학습해도 매번 결과가 소폭 달라진다(§7-2 sweep 수행 시 재학습한 체크포인트의 margin=0.01 결과가 애초 §7 표의 값과 근소하게 다름 — 예: precision 0.6576→0.6992, threshold 0.186→0.330). 경향성(margin이 클수록 정밀도↑·recall↓·ddi_rate↑)은 재학습마다 안정적으로 재현됐지만, 정확한 수치는 seed 고정 없이는 완전히 재현되지 않는다. 향후 과제로 `torch.manual_seed()` 고정을 권장.
+- **필터 재학습의 잔여 비재현성**: `train_filter.py --seed`로 시드 고정은 가능해졌고(동일 seed → 완전히 동일한 loss curve 확인), 5-seed 재학습으로 정확한 수치가 소폭(변동계수 0.3~2.7%) 흔들린다는 것도 정량화했다(§7-3) — 다만 기본 seed(0) 없이 그냥 실행하면 여전히 매번 다른 결과가 나오므로, 재현하려면 반드시 `--seed`를 명시해야 한다는 점은 사용자가 인지해야 함.
+- **데이터 분할의 우연성 미검증**: 이번 통계 검정(§7-4)은 하나의 고정된 train/eval/test 분할 내부에서만 이뤄졌다 — k-fold cross-validation 등으로 분할 자체를 바꿔도 같은 결론이 나오는지는 확인하지 않았다.
 - HEIDR 코어(`HEIDR_model.py`, `beam.py`, `util.py` 등)는 이번 작업 전체에서 한 글자도 수정하지 않았다.
 
 ---
 
 ## 10. 관련 파일
 
-- 설계 문서: `docs/specs/2026-07-27-drug-recommendation-postfilter-design.md` (Section 6.1, 6.2, 9)
+- 설계 문서: `docs/specs/2026-07-27-drug-recommendation-postfilter-design.md` (Section 6.1, 6.2, 6.3, 9)
 - 구현 계획: `docs/plans/2026-07-28-ddi-aware-drug-filter.md`
-- 코드: `HEIDR/drug_filter/{ddi_features,filter_model,dataset,select_threshold,train_filter,evaluate_filter}.py`
-- 테스트: `HEIDR/drug_filter/tests/` (21개, 전부 통과)
+- 코드: `HEIDR/drug_filter/{ddi_features,filter_model,dataset,select_threshold,train_filter,evaluate_filter,significance_test}.py`
+- 테스트: `HEIDR/drug_filter/tests/` (24개, 전부 통과)
