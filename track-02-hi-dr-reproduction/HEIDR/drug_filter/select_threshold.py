@@ -54,11 +54,24 @@ def compute_achieved_ddi_rate(predicted_labels: list, ddi_A) -> float:
     return dd_cnt / all_cnt if all_cnt > 0 else 0.0
 
 
-def _precision_recall_f_beta_at_threshold(labels: np.ndarray, scores: np.ndarray, threshold: float, beta: float) -> tuple:
-    predicted = scores >= threshold
-    tp = int(np.sum(predicted & (labels == 1)))
-    fp = int(np.sum(predicted & (labels == 0)))
-    fn = int(np.sum((~predicted) & (labels == 1)))
+def _prf_from_predictions(scores_per_visit: list, predicted: list, labels: np.ndarray, beta: float) -> tuple:
+    """
+    predicted(방문별 실제로 남은 약물 id 리스트, apply_filter의 fallback 포함)를
+    scores_per_visit과 같은 순서로 평탄화해 labels와 정렬한 뒤, 실제로 적용된
+    예측 집합 기준으로 precision/recall/f_beta를 계산한다. (naive score>=threshold
+    컷오프로만 계산하면 fallback을 무시하게 되어, ddi_rate가 보는 예측 집합과
+    f_beta가 보는 예측 집합이 서로 달라진다 — 이 함수로 통일한다.)
+    """
+    kept_mask = []
+    for (cids, _), kept_ids in zip(scores_per_visit, predicted):
+        kept_set = set(kept_ids)
+        for cid in cids:
+            kept_mask.append(cid in kept_set)
+    kept_mask = np.array(kept_mask, dtype=bool)
+
+    tp = int(np.sum(kept_mask & (labels == 1)))
+    fp = int(np.sum(kept_mask & (labels == 0)))
+    fn = int(np.sum((~kept_mask) & (labels == 1)))
     precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
     recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
     if precision + recall == 0:
@@ -77,15 +90,22 @@ def select_ddi_aware_threshold(
     beta: float = 1.0,
     margin: float = 0.005,
     n_thresholds: int = 50,
+    min_recall_ratio: float = 0.5,
 ) -> dict:
     """
-    threshold 후보(scores의 분위수 n_thresholds개)마다 F-beta와, scores_per_visit에
-    apply_filter를 적용했을 때의 achieved DDI rate를 함께 계산한다. 그중
-    ddi_rate <= gt_ddi_rate + margin을 만족하는 후보(feasible)들 중 f_beta가 가장
-    높은 threshold를 직접 고른다 (constrained argmax) — "DDI rate=0"이 아니라
-    "정답 수준(gt_ddi_rate) 근처로 수렴"이 목표이므로, margin 안에서는 필터링
-    효과(precision/AVG_MED 개선)를 최대화하는 지점을 우선한다. feasible한 후보가
-    하나도 없으면 achieved ddi_rate가 가장 낮은 후보로 fallback한다.
+    threshold 후보(scores의 분위수 n_thresholds개)마다, scores_per_visit에
+    apply_filter_to_visits를 적용한 실제 예측 집합 기준으로 precision/recall/f_beta와
+    achieved DDI rate를 함께 계산한다(둘 다 같은 예측 집합에서 계산되므로 서로
+    어긋나지 않는다). 그 후보들 중,
+      1) recall이 후보군 전체 최대 recall의 min_recall_ratio 미만인
+         "퇴화(degenerate) threshold"(threshold가 너무 높아 거의 모든 방문이
+         1개 약물로 주저앉아 약물쌍 자체가 사라지고 ddi_rate가 우연히 0에
+         가까워지는 경우)를 먼저 제외하고,
+      2) 남은 후보 중 ddi_rate <= gt_ddi_rate + margin을 만족하는(feasible)
+         후보들 중 f_beta가 가장 높은 threshold를 고른다 (constrained argmax).
+    feasible한 비퇴화 후보가 없으면 비퇴화 후보 중 ddi_rate가 가장 낮은 것으로,
+    비퇴화 후보 자체가 없으면 전체 후보 중 ddi_rate가 가장 낮은 것으로 fallback한다.
+    "DDI rate=0"이 아니라 "정답 수준(gt_ddi_rate) 근처로 수렴"이 목표다.
     """
     labels = np.asarray(labels)
     scores = np.asarray(scores)
@@ -93,15 +113,20 @@ def select_ddi_aware_threshold(
 
     candidates = []
     for t in candidate_thresholds:
-        precision, recall, f_beta = _precision_recall_f_beta_at_threshold(labels, scores, float(t), beta)
         predicted = apply_filter_to_visits(scores_per_visit, float(t))
+        precision, recall, f_beta = _prf_from_predictions(scores_per_visit, predicted, labels, beta)
         ddi_rate = compute_achieved_ddi_rate(predicted, ddi_A)
         candidates.append({
             "threshold": float(t), "precision": precision, "recall": recall,
             "f_beta": f_beta, "ddi_rate": ddi_rate,
         })
 
-    feasible = [c for c in candidates if c["ddi_rate"] <= gt_ddi_rate + margin]
+    max_recall = max(c["recall"] for c in candidates)
+    non_degenerate = [c for c in candidates if c["recall"] >= min_recall_ratio * max_recall]
+
+    feasible = [c for c in non_degenerate if c["ddi_rate"] <= gt_ddi_rate + margin]
     if feasible:
         return max(feasible, key=lambda c: c["f_beta"])
+    if non_degenerate:
+        return min(non_degenerate, key=lambda c: c["ddi_rate"])
     return min(candidates, key=lambda c: c["ddi_rate"])

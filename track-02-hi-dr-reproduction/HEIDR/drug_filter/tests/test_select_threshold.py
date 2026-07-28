@@ -84,3 +84,21 @@ def test_select_ddi_aware_threshold_picks_best_f_beta_among_feasible_thresholds(
         labels, scores, scores_per_visit, ddi_A, gt_ddi_rate=0.0, margin=1.0,
     )
     assert loose["f_beta"] == 1.0
+
+
+def test_select_ddi_aware_threshold_excludes_degenerate_high_threshold_candidates():
+    # 방문 하나, 후보 4개(전부 정답), 600-601만 서로 DDI로 충돌.
+    # threshold를 극단적으로 높이면 방문당 600 하나만 남아(recall=0.25) 쌍
+    # 자체가 사라져 ddi_rate가 0이 되지만, 이런 퇴화 지점은 가드로 제외되고
+    # 대신 recall을 훨씬 덜 희생하는 낮은 threshold(recall=1.0)가 선택돼야 한다.
+    labels = np.array([1, 1, 1, 1])
+    scores = np.array([0.9, 0.8, 0.7, 0.6])
+    scores_per_visit = [([600, 601, 602, 603], [0.9, 0.8, 0.7, 0.6])]
+    ddi_A = np.zeros((700, 700))
+    ddi_A[600, 601] = 1
+
+    result = select_ddi_aware_threshold(
+        labels, scores, scores_per_visit, ddi_A, gt_ddi_rate=0.0, margin=0.0,
+    )
+
+    assert result["recall"] >= 0.5
