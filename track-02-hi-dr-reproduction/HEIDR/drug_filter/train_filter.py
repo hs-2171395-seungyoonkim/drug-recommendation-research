@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 sys.path.insert(0, ".")
@@ -13,9 +14,17 @@ EPOCHS = 10
 BATCH_SIZE = 256
 LR = 1e-3
 HPARAMS = {"visit_emb_dim": 64, "drug_emb_dim": 64, "hidden_dim": 128, "ddi_feature_dim": 2}
+DEFAULT_SEED = 0
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    parser.add_argument("--output", type=str, default="HEIDR/drug_filter/drug_filter.pt")
+    args = parser.parse_args()
+
+    torch.manual_seed(args.seed)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cache = torch.load("HEIDR/drug_filter/candidates_train.pt")
     ddi_A = dill.load(open("data/ddi_A_final.pkl", "rb"))
@@ -55,9 +64,9 @@ def main():
 
     torch.save(
         {"state_dict": model.state_dict(), "hparams": HPARAMS},
-        "HEIDR/drug_filter/drug_filter.pt",
+        args.output,
     )
-    print(f"saved filter trained on {len(dataset)} (visit, candidate) pairs")
+    print(f"saved filter (seed={args.seed}) trained on {len(dataset)} (visit, candidate) pairs to {args.output}")
 
 
 if __name__ == "__main__":
