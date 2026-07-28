@@ -88,7 +88,7 @@ def select_ddi_aware_threshold(
     ddi_A,
     gt_ddi_rate: float,
     beta: float = 1.0,
-    margin: float = 0.005,
+    margin: float = 0.01,
     n_thresholds: int = 50,
     min_recall_ratio: float = 0.5,
 ) -> dict:
@@ -106,6 +106,12 @@ def select_ddi_aware_threshold(
     feasible한 비퇴화 후보가 없으면 비퇴화 후보 중 ddi_rate가 가장 낮은 것으로,
     비퇴화 후보 자체가 없으면 전체 후보 중 ddi_rate가 가장 낮은 것으로 fallback한다.
     "DDI rate=0"이 아니라 "정답 수준(gt_ddi_rate) 근처로 수렴"이 목표다.
+
+    margin=0.01이 기본값인 이유: margin을 0.005에서 0.02까지 스윕해보면
+    0.005는 achieved DDI rate를 정답 수준에 가장 가깝게 만들지만 과다생성 억제
+    효과(AVG_MED 감소)가 미미하고, 0.02 이상은 순수 F1-최대화 지점과 사실상
+    동일해져 DDI 억제 효과가 거의 사라진다. 0.01은 그 사이에서 두 효과(DDI 억제,
+    과다생성 억제)를 함께 어느 정도 확보하는 절충점으로 실측 확인됐다.
     """
     labels = np.asarray(labels)
     scores = np.asarray(scores)
