@@ -60,7 +60,7 @@ def test_compute_achieved_ddi_rate_returns_zero_when_no_pairs():
     assert compute_achieved_ddi_rate([[0], [1]], np.zeros((4, 4))) == 0.0
 
 
-def test_select_ddi_aware_threshold_penalizes_ddi_when_lambda_large():
+def test_select_ddi_aware_threshold_picks_best_f_beta_among_feasible_thresholds():
     # 방문 하나: drug0(정답,0.9)+drug1(정답,0.8)이 서로 DDI로 충돌, drug2(오답,0.3)
     labels = np.array([1, 1, 0])
     scores = np.array([0.9, 0.8, 0.3])
@@ -68,20 +68,19 @@ def test_select_ddi_aware_threshold_penalizes_ddi_when_lambda_large():
     ddi_A = np.zeros((200, 200))
     ddi_A[100, 101] = 1
 
-    # lambda=0(패널티 없음): F1만 최대화하는 지점을 고르는데, 그 지점은 정답인
-    # drug0+drug1이 함께 남아 DDI가 발생한다.
-    result_no_penalty = select_ddi_aware_threshold(
-        labels, scores, scores_per_visit, ddi_A, gt_ddi_rate=0.0,
-        lambdas=(0.0,), margin=0.0,
+    # margin=0: ddi_rate=0을 만족하는 threshold만 feasible -> drug1까지 걸러내는
+    # 지점(f_beta<1.0)을 골라야 한다 (F1이 더 높은 drug0+drug1 유지 지점은
+    # ddi_rate=1.0이라 feasible하지 않음).
+    strict = select_ddi_aware_threshold(
+        labels, scores, scores_per_visit, ddi_A, gt_ddi_rate=0.0, margin=0.0,
     )
-    assert result_no_penalty["ddi_rate"] > 0.0
+    assert strict["ddi_rate"] == 0.0
+    assert strict["f_beta"] < 1.0
 
-    # lambda 그리드에 충분히 큰 값을 포함하면, DDI를 피하기 위해 recall을 일부
-    # 희생하는(F1이 내려가는) 더 높은 threshold를 선택해야 한다.
-    result_with_penalty = select_ddi_aware_threshold(
-        labels, scores, scores_per_visit, ddi_A, gt_ddi_rate=0.0,
-        lambdas=(0.0, 1.0), margin=0.0,
+    # margin을 넉넉히 주면(예: 1.0) drug0+drug1을 유지하는 f_beta=1.0 지점도
+    # feasible해지므로, 그중 F1이 가장 높은 지점을 골라야 한다 (무조건 ddi_rate만
+    # 최소화하지 않는다는 걸 검증).
+    loose = select_ddi_aware_threshold(
+        labels, scores, scores_per_visit, ddi_A, gt_ddi_rate=0.0, margin=1.0,
     )
-    assert result_with_penalty["ddi_rate"] == 0.0
-    assert result_with_penalty["lambda"] == 1.0
-    assert result_with_penalty["f_beta"] < 1.0
+    assert loose["f_beta"] == 1.0

@@ -75,17 +75,17 @@ def select_ddi_aware_threshold(
     ddi_A,
     gt_ddi_rate: float,
     beta: float = 1.0,
-    lambdas: tuple = (0.0, 0.5, 1.0, 2.0, 5.0),
     margin: float = 0.005,
     n_thresholds: int = 50,
 ) -> dict:
     """
     threshold 후보(scores의 분위수 n_thresholds개)마다 F-beta와, scores_per_visit에
-    apply_filter를 적용했을 때의 achieved DDI rate를 함께 계산한다. lambda 그리드를
-    작은 값부터 훑어 f_beta - lambda*max(0, ddi_rate - gt_ddi_rate)를 최대화하는
-    threshold를 고르고, achieved ddi_rate가 gt_ddi_rate + margin 이하로 내려오는
-    첫 lambda를 채택한다 (전부 실패하면 ddi_rate가 가장 낮은 lambda를 채택) —
-    "DDI rate=0"이 아니라 "정답 수준(gt_ddi_rate) 근처로 수렴"이 목표이기 때문이다.
+    apply_filter를 적용했을 때의 achieved DDI rate를 함께 계산한다. 그중
+    ddi_rate <= gt_ddi_rate + margin을 만족하는 후보(feasible)들 중 f_beta가 가장
+    높은 threshold를 직접 고른다 (constrained argmax) — "DDI rate=0"이 아니라
+    "정답 수준(gt_ddi_rate) 근처로 수렴"이 목표이므로, margin 안에서는 필터링
+    효과(precision/AVG_MED 개선)를 최대화하는 지점을 우선한다. feasible한 후보가
+    하나도 없으면 achieved ddi_rate가 가장 낮은 후보로 fallback한다.
     """
     labels = np.asarray(labels)
     scores = np.asarray(scores)
@@ -101,17 +101,7 @@ def select_ddi_aware_threshold(
             "f_beta": f_beta, "ddi_rate": ddi_rate,
         })
 
-    best_by_lambda = []
-    for lam in lambdas:
-        best = max(
-            candidates,
-            key=lambda c: c["f_beta"] - lam * max(0.0, c["ddi_rate"] - gt_ddi_rate),
-        )
-        best_by_lambda.append((lam, best))
-
-    for lam, best in best_by_lambda:
-        if best["ddi_rate"] <= gt_ddi_rate + margin:
-            return {**best, "lambda": lam}
-
-    lam, best = min(best_by_lambda, key=lambda pair: pair[1]["ddi_rate"])
-    return {**best, "lambda": lam}
+    feasible = [c for c in candidates if c["ddi_rate"] <= gt_ddi_rate + margin]
+    if feasible:
+        return max(feasible, key=lambda c: c["f_beta"])
+    return min(candidates, key=lambda c: c["ddi_rate"])
