@@ -221,7 +221,29 @@ margin이 0.02를 넘으면 achieved DDI rate 제약이 사실상 무력화된�
 
 **해석상 주의**: p-value가 극단적으로 작은 경우(예: p=2.4×10⁻¹⁴⁸)가 나온 건 n=1255로 표본이 커서 나타나는 자연스러운 현상이다. 이 정도 표본 크기에서는 p-value의 절대적 작음보다 **효과 크기(%p)와 방향이 얼마나 일관됐는가**가 실질적 근거로서 더 중요하다 — 이 관점에서도 위 표의 방향성은 5-seed 분산 분석(§7-3)과 정확히 일치해 결론이 견고함을 뒷받침한다.
 
-**남은 검증 공백**: 이번 검정은 전부 **하나의 고정된 test split(907명) 내부**에서의 방문 단위 재표집(bootstrap)·방문 단위 짝검정(paired test)이다. train/eval/test를 다르게 분할했을 때도(예: k-fold cross-validation) 같은 결론이 나오는지는 아직 확인하지 않았다 — 데이터 분할 자체의 우연성은 여전히 남은 리스크다.
+**남은 검증 공백**: 이번 검정은 전부 **하나의 고정된 test split(907명) 내부**에서의 방문 단위 재표집(bootstrap)·방문 단위 짝검정(paired test)이다. train/eval/test를 다르게 분할했을 때도(예: k-fold cross-validation) 같은 결론이 나오는지는 §7-5에서 부분적으로 다뤘다.
+
+### 7-5. eval/test 재분할 강건성 (Monte Carlo split validation)
+
+완전한 k-fold cross-validation(train까지 다르게 나눠 beam search를 전부 재실행)은 train split 빔서치만 1시간 이상 걸려 비용이 너무 크다. 대신 **모델은 고정**하고(재학습 없음), 이미 캐싱된 eval+test 방문 2541개를 풀에 합쳐 **무작위로 10회 재분할**해 "어느 방문이 eval-role(threshold 선택용)/test-role(평가용)에 들어가는가"에 결론이 민감한지만 검증했다(`HEIDR/drug_filter/split_robustness.py`). 매 반복마다 새 eval-role에서 threshold를 다시 고르고 새 test-role에 적용한다.
+
+| 지표 | 평균 | 표준편차 | 최소 | 최대 |
+|---|---|---|---|---|
+| Precision | 0.6974 | 0.0049 | 0.6881 | 0.7054 |
+| Recall | 0.5948 | 0.0060 | 0.5875 | 0.6014 |
+| Jaccard | 0.4643 | 0.0031 | 0.4604 | 0.4695 |
+| F1 | 0.6236 | 0.0029 | 0.6199 | 0.6287 |
+| DDI Rate | 0.0871 | 0.0012 | 0.0844 | 0.0892 |
+| AVG_MED | 17.12 | 0.28 | 16.72 | 17.54 |
+
+**방향성 일관성 — 10회 재분할 전부 성립:**
+
+| 비교 | 지표 | 10/10 성립? |
+|---|---|---|
+| DDI-aware vs 그 반복의 필터 전 | Precision↑, Jaccard↑, F1↑, Recall↓, AVG_MED↓ | ✅ 전부 |
+| DDI-aware vs F1-only(같은 모델, 같은 분할) | Precision↓, Recall↑, Jaccard↑, F1↑, DDI rate↓, AVG_MED↑ | ✅ 전부 |
+
+11개 방향성 주장이 무작위 재분할 10회 전부에서 흔들리지 않았다 — §7-4의 통계 검정이 "이 특정 test split에서 우연이 아니다"를 보였다면, 이 실험은 "**어느 방문이 하필 eval/test에 배정됐는지도 결론을 바꾸지 않는다**"를 보인다. 다만 train 쪽 표본(어느 환자가 학습에 쓰였는가)의 우연성은 여전히 미검증이다 — 이건 beam search 재실행이 필요해 비용이 크다.
 
 ---
 
@@ -254,7 +276,7 @@ margin이 0.02를 넘으면 achieved DDI rate 제약이 사실상 무력화된�
 - **eval→test 일반화의 경계 근접**: margin=0.005 시점 기준으로, eval split에서 achieved DDI rate가 margin 경계 안쪽이었으나 test split에서는 근소하게 넘는 경우가 있었음 — 통계적 변동 범위이나 threshold 일반화 리스크로 문서화되어 있음.
 - **하이퍼파라미터의 잔여 임의성**: `margin`은 §7-2의 sweep으로 실측 기반 근거를 갖게 됐지만(0.01이 두 목표를 절반 이상씩 만족), quantile 후보 수(`n_thresholds=50`)와 `min_recall_ratio=0.5`는 여전히 원칙적 도출이 아니라 합리적 기본값으로 설정됨.
 - **필터 재학습의 잔여 비재현성**: `train_filter.py --seed`로 시드 고정은 가능해졌고(동일 seed → 완전히 동일한 loss curve 확인), 5-seed 재학습으로 정확한 수치가 소폭(변동계수 0.3~2.7%) 흔들린다는 것도 정량화했다(§7-3) — 다만 기본 seed(0) 없이 그냥 실행하면 여전히 매번 다른 결과가 나오므로, 재현하려면 반드시 `--seed`를 명시해야 한다는 점은 사용자가 인지해야 함.
-- **데이터 분할의 우연성 미검증**: 이번 통계 검정(§7-4)은 하나의 고정된 train/eval/test 분할 내부에서만 이뤄졌다 — k-fold cross-validation 등으로 분할 자체를 바꿔도 같은 결론이 나오는지는 확인하지 않았다.
+- **train 표본의 우연성은 여전히 미검증**: eval/test 재분할 강건성은 §7-5에서 확인했지만(10/10 방향성 일관), 어느 환자가 train에 쓰였는지를 바꾸는 완전한 k-fold CV는 beam search 재실행 비용(train split만 1시간+) 때문에 수행하지 않았다.
 - HEIDR 코어(`HEIDR_model.py`, `beam.py`, `util.py` 등)는 이번 작업 전체에서 한 글자도 수정하지 않았다.
 
 ---
@@ -263,5 +285,5 @@ margin이 0.02를 넘으면 achieved DDI rate 제약이 사실상 무력화된�
 
 - 설계 문서: `docs/specs/2026-07-27-drug-recommendation-postfilter-design.md` (Section 6.1, 6.2, 6.3, 9)
 - 구현 계획: `docs/plans/2026-07-28-ddi-aware-drug-filter.md`
-- 코드: `HEIDR/drug_filter/{ddi_features,filter_model,dataset,select_threshold,train_filter,evaluate_filter,significance_test}.py`
-- 테스트: `HEIDR/drug_filter/tests/` (24개, 전부 통과)
+- 코드: `HEIDR/drug_filter/{ddi_features,filter_model,dataset,select_threshold,train_filter,evaluate_filter,significance_test,split_robustness}.py`
+- 테스트: `HEIDR/drug_filter/tests/` (26개, 전부 통과)
