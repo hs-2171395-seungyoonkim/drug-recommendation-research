@@ -32,3 +32,86 @@ def apply_filter(candidate_ids: list, scores: list, threshold: float) -> list:
         return []
     best_idx = int(np.argmax(scores))
     return [candidate_ids[best_idx]]
+
+
+def apply_filter_to_visits(scores_per_visit: list, threshold: float) -> list:
+    """방문별 (candidate_ids, scores)에 apply_filter를 적용해 방문별 예측 라벨 리스트를 만든다."""
+    return [apply_filter(cids, scores, threshold) for cids, scores in scores_per_visit]
+
+
+def compute_achieved_ddi_rate(predicted_labels: list, ddi_A) -> float:
+    """방문별 예측 약물 리스트에서 DDI rate(dd_cnt/all_cnt, HEIDR/util.py의
+    ddi_rate_score와 동일 정의)를 계산한다."""
+    all_cnt = 0
+    dd_cnt = 0
+    for label in predicted_labels:
+        for i in range(len(label)):
+            for j in range(i + 1, len(label)):
+                a, b = label[i], label[j]
+                all_cnt += 1
+                if ddi_A[a, b] == 1 or ddi_A[b, a] == 1:
+                    dd_cnt += 1
+    return dd_cnt / all_cnt if all_cnt > 0 else 0.0
+
+
+def _precision_recall_f_beta_at_threshold(labels: np.ndarray, scores: np.ndarray, threshold: float, beta: float) -> tuple:
+    predicted = scores >= threshold
+    tp = int(np.sum(predicted & (labels == 1)))
+    fp = int(np.sum(predicted & (labels == 0)))
+    fn = int(np.sum((~predicted) & (labels == 1)))
+    precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    if precision + recall == 0:
+        f_beta = 0.0
+    else:
+        f_beta = (1 + beta**2) * precision * recall / (beta**2 * precision + recall)
+    return precision, recall, f_beta
+
+
+def select_ddi_aware_threshold(
+    labels: np.ndarray,
+    scores: np.ndarray,
+    scores_per_visit: list,
+    ddi_A,
+    gt_ddi_rate: float,
+    beta: float = 1.0,
+    lambdas: tuple = (0.0, 0.5, 1.0, 2.0, 5.0),
+    margin: float = 0.005,
+    n_thresholds: int = 50,
+) -> dict:
+    """
+    threshold 후보(scores의 분위수 n_thresholds개)마다 F-beta와, scores_per_visit에
+    apply_filter를 적용했을 때의 achieved DDI rate를 함께 계산한다. lambda 그리드를
+    작은 값부터 훑어 f_beta - lambda*max(0, ddi_rate - gt_ddi_rate)를 최대화하는
+    threshold를 고르고, achieved ddi_rate가 gt_ddi_rate + margin 이하로 내려오는
+    첫 lambda를 채택한다 (전부 실패하면 ddi_rate가 가장 낮은 lambda를 채택) —
+    "DDI rate=0"이 아니라 "정답 수준(gt_ddi_rate) 근처로 수렴"이 목표이기 때문이다.
+    """
+    labels = np.asarray(labels)
+    scores = np.asarray(scores)
+    candidate_thresholds = np.unique(np.quantile(scores, np.linspace(0.0, 1.0, n_thresholds)))
+
+    candidates = []
+    for t in candidate_thresholds:
+        precision, recall, f_beta = _precision_recall_f_beta_at_threshold(labels, scores, float(t), beta)
+        predicted = apply_filter_to_visits(scores_per_visit, float(t))
+        ddi_rate = compute_achieved_ddi_rate(predicted, ddi_A)
+        candidates.append({
+            "threshold": float(t), "precision": precision, "recall": recall,
+            "f_beta": f_beta, "ddi_rate": ddi_rate,
+        })
+
+    best_by_lambda = []
+    for lam in lambdas:
+        best = max(
+            candidates,
+            key=lambda c: c["f_beta"] - lam * max(0.0, c["ddi_rate"] - gt_ddi_rate),
+        )
+        best_by_lambda.append((lam, best))
+
+    for lam, best in best_by_lambda:
+        if best["ddi_rate"] <= gt_ddi_rate + margin:
+            return {**best, "lambda": lam}
+
+    lam, best = min(best_by_lambda, key=lambda pair: pair[1]["ddi_rate"])
+    return {**best, "lambda": lam}
