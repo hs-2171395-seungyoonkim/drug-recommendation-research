@@ -17,20 +17,19 @@ HPARAMS = {"visit_emb_dim": 64, "drug_emb_dim": 64, "hidden_dim": 128, "ddi_feat
 DEFAULT_SEED = 0
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
-    parser.add_argument("--output", type=str, default="HEIDR/drug_filter/drug_filter.pt")
-    args = parser.parse_args()
-
-    torch.manual_seed(args.seed)
+def train_model(seed: int, verbose: bool = True):
+    """seed 고정 학습을 수행하고 (학습된 DrugFilterHead, device, dataset 크기)를 반환한다.
+    체크포인트 저장은 호출자 책임 -- 여러 seed를 메모리에서만 비교하는 용도(예:
+    absolute_ddi_exposure.py)로 파일 I/O 없이 재사용할 수 있도록 분리했다."""
+    torch.manual_seed(seed)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     cache = torch.load("HEIDR/drug_filter/candidates_train.pt")
     ddi_A = dill.load(open("data/ddi_A_final.pkl", "rb"))
     dataset = DrugFilterDataset(cache["visit_records"], cache["drug_memory"], ddi_A)
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-    print(f"train samples (visit x candidate pairs): {len(dataset)}")
+    if verbose:
+        print(f"train samples (visit x candidate pairs): {len(dataset)}")
 
     model = DrugFilterHead(**HPARAMS).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
@@ -60,13 +59,25 @@ def main():
 
             total_loss += loss.item() * label.size(0)
             n += label.size(0)
-        print(f"epoch {epoch}: loss={total_loss / n:.4f}")
+        if verbose:
+            print(f"epoch {epoch}: loss={total_loss / n:.4f}")
+
+    return model, device, len(dataset)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", type=int, default=DEFAULT_SEED)
+    parser.add_argument("--output", type=str, default="HEIDR/drug_filter/drug_filter.pt")
+    args = parser.parse_args()
+
+    model, _, n_samples = train_model(args.seed)
 
     torch.save(
         {"state_dict": model.state_dict(), "hparams": HPARAMS},
         args.output,
     )
-    print(f"saved filter (seed={args.seed}) trained on {len(dataset)} (visit, candidate) pairs to {args.output}")
+    print(f"saved filter (seed={args.seed}) trained on {n_samples} (visit, candidate) pairs to {args.output}")
 
 
 if __name__ == "__main__":

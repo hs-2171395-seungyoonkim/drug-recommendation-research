@@ -54,6 +54,33 @@ def compute_achieved_ddi_rate(predicted_labels: list, ddi_A) -> float:
     return dd_cnt / all_cnt if all_cnt > 0 else 0.0
 
 
+def compute_ddi_pair_stats(predicted_labels: list, ddi_A) -> dict:
+    """compute_achieved_ddi_rate와 같은 정의(dd_cnt/all_cnt)의 rate뿐 아니라, 방문당
+    평균 DDI쌍 개수(절대량)도 함께 계산한다. rate는 필터링으로 전체 약물쌍(all_cnt)이
+    줄어들면 분모 효과로 오르기 쉬운 반면, 절대량은 "환자 한 명이 실제로 노출되는
+    위험 약물쌍이 몇 개인가"를 직접 보여줘서 rate만으로는 가려지는 임상적 개선을
+    드러낼 수 있다 (작업 보고서 §7-7 참고)."""
+    all_cnt = 0
+    dd_cnt = 0
+    per_visit_dd = []
+    for label in predicted_labels:
+        visit_dd = 0
+        for i in range(len(label)):
+            for j in range(i + 1, len(label)):
+                a, b = label[i], label[j]
+                all_cnt += 1
+                if ddi_A[a, b] == 1 or ddi_A[b, a] == 1:
+                    dd_cnt += 1
+                    visit_dd += 1
+        per_visit_dd.append(visit_dd)
+    return {
+        "rate": dd_cnt / all_cnt if all_cnt > 0 else 0.0,
+        "dd_cnt_total": dd_cnt,
+        "avg_dd_per_visit": float(np.mean(per_visit_dd)) if per_visit_dd else 0.0,
+        "avg_med": float(np.mean([len(l) for l in predicted_labels])) if predicted_labels else 0.0,
+    }
+
+
 def _prf_from_predictions(scores_per_visit: list, predicted: list, labels: np.ndarray, beta: float) -> tuple:
     """
     predicted(방문별 실제로 남은 약물 id 리스트, apply_filter의 fallback 포함)를

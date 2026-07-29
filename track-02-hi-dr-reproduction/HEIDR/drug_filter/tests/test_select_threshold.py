@@ -60,6 +60,28 @@ def test_compute_achieved_ddi_rate_returns_zero_when_no_pairs():
     assert compute_achieved_ddi_rate([[0], [1]], np.zeros((4, 4))) == 0.0
 
 
+from HEIDR.drug_filter.select_threshold import compute_ddi_pair_stats
+
+
+def test_compute_ddi_pair_stats_counts_absolute_pairs_per_visit():
+    ddi_A = np.zeros((4, 4))
+    ddi_A[0, 1] = 1
+    # visit1: 0-1 쌍(DDI) 1개, visit2: 2-3 쌍(비-DDI) 1개
+    predicted_labels = [[0, 1], [2, 3]]
+
+    stats = compute_ddi_pair_stats(predicted_labels, ddi_A)
+
+    assert stats["rate"] == 0.5
+    assert stats["dd_cnt_total"] == 1
+    assert stats["avg_dd_per_visit"] == 0.5  # (1 + 0) / 2 visits
+    assert stats["avg_med"] == 2.0
+
+
+def test_compute_ddi_pair_stats_returns_zeros_for_empty_input():
+    stats = compute_ddi_pair_stats([], np.zeros((4, 4)))
+    assert stats == {"rate": 0.0, "dd_cnt_total": 0, "avg_dd_per_visit": 0.0, "avg_med": 0.0}
+
+
 def test_select_ddi_aware_threshold_picks_best_f_beta_among_feasible_thresholds():
     # 방문 하나: drug0(정답,0.9)+drug1(정답,0.8)이 서로 DDI로 충돌, drug2(오답,0.3)
     labels = np.array([1, 1, 0])
