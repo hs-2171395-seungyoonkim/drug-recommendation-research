@@ -18,6 +18,7 @@ import numpy as np
 import torch
 
 from HEIDR.drug_filter.evaluate_filter import score_records
+from HEIDR.drug_filter.history_features import build_patient_splits, iter_visit_histories
 from HEIDR.drug_filter.select_threshold import (
     apply_filter_to_visits,
     compute_achieved_ddi_rate,
@@ -32,11 +33,11 @@ VARIANTS = ("before", "ddi_aware", "f1_only")
 STAT_KEYS = ("rate", "avg_dd_per_visit", "avg_med", "dd_cnt_total")
 
 
-def _run_one_seed(seed: int, ddi_A, eval_cache, test_cache) -> dict:
+def _run_one_seed(seed: int, ddi_A, eval_cache, test_cache, eval_histories, test_histories) -> dict:
     model, device, _ = train_model(seed, verbose=False)
     model.eval()
 
-    eval_scores = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], ddi_A, device)
+    eval_scores = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], eval_histories, device)
     all_labels, all_scores = [], []
     for rec, (candidate_ids, scores) in zip(eval_cache["visit_records"], eval_scores):
         gt_set = set(rec["gt_ids"])
@@ -51,7 +52,7 @@ def _run_one_seed(seed: int, ddi_A, eval_cache, test_cache) -> dict:
     )
     f1_only_info = select_threshold_f_beta(all_labels, all_scores, beta=1.0)
 
-    test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], ddi_A, device)
+    test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], test_histories, device)
     before_labels = [[d for d, _ in rec["candidates"]] for rec in test_cache["visit_records"]]
     ddi_aware_labels = apply_filter_to_visits(test_scores, ddi_aware_info["threshold"])
     f1_only_labels = apply_filter_to_visits(test_scores, f1_only_info["threshold"])
@@ -68,9 +69,13 @@ def main():
     eval_cache = torch.load("HEIDR/drug_filter/candidates_eval.pt")
     test_cache = torch.load("HEIDR/drug_filter/candidates_test.pt")
 
+    splits = build_patient_splits()
+    eval_histories = iter_visit_histories(splits["eval"])
+    test_histories = iter_visit_histories(splits["test"])
+
     per_seed = []
     for seed in range(N_SEEDS):
-        result = _run_one_seed(seed, ddi_A, eval_cache, test_cache)
+        result = _run_one_seed(seed, ddi_A, eval_cache, test_cache, eval_histories, test_histories)
         per_seed.append(result)
         print(f"seed={seed}  " + "  ".join(
             f"{v}.avg_dd_per_visit={result[v]['avg_dd_per_visit']:.3f}" for v in VARIANTS

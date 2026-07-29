@@ -9,6 +9,7 @@ import torch
 from scipy import stats
 
 from HEIDR.drug_filter.filter_model import DrugFilterHead
+from HEIDR.drug_filter.history_features import build_patient_splits, iter_visit_histories
 from HEIDR.drug_filter.select_threshold import (
     apply_filter_to_visits,
     compute_achieved_ddi_rate,
@@ -95,8 +96,12 @@ def main():
 
     ddi_A = dill.load(open("data/ddi_A_final.pkl", "rb"))
 
+    splits = build_patient_splits()
+    eval_histories = iter_visit_histories(splits["eval"])
+    test_histories = iter_visit_histories(splits["test"])
+
     eval_cache = torch.load("HEIDR/drug_filter/candidates_eval.pt")
-    eval_scores = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], ddi_A, device)
+    eval_scores = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], eval_histories, device)
 
     all_labels, all_scores = [], []
     for rec, (candidate_ids, scores) in zip(eval_cache["visit_records"], eval_scores):
@@ -111,7 +116,7 @@ def main():
     )
 
     test_cache = torch.load("HEIDR/drug_filter/candidates_test.pt")
-    test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], ddi_A, device)
+    test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], test_histories, device)
     records = test_cache["visit_records"]
 
     before_labels = [[d for d, _ in rec["candidates"]] for rec in records]

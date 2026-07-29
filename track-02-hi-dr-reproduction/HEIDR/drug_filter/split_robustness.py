@@ -8,6 +8,7 @@ import numpy as np
 import torch
 
 from HEIDR.drug_filter.filter_model import DrugFilterHead
+from HEIDR.drug_filter.history_features import build_patient_splits, iter_visit_histories
 from HEIDR.drug_filter.select_threshold import (
     apply_filter_to_visits,
     compute_achieved_ddi_rate,
@@ -68,12 +69,21 @@ def main():
 
     ddi_A = dill.load(open("data/ddi_A_final.pkl", "rb"))
 
+    splits = build_patient_splits()
+    eval_histories = iter_visit_histories(splits["eval"])
+    test_histories = iter_visit_histories(splits["test"])
+
     eval_cache = torch.load("HEIDR/drug_filter/candidates_eval.pt")
     test_cache = torch.load("HEIDR/drug_filter/candidates_test.pt")
 
-    eval_scored = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], ddi_A, device)
-    test_scored = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], ddi_A, device)
+    eval_scored = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], eval_histories, device)
+    test_scored = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], test_histories, device)
 
+    # score_records를 eval/test 각각의 올바른 histories와 짝지어 먼저 호출한 뒤
+    # 결과(scored)만 이어붙인다. eval_scored는 eval_cache["visit_records"]와,
+    # test_scored는 test_cache["visit_records"]와 이미 같은 순서이므로, 이후
+    # records = eval + test 로 이어붙이는 순서와 scored = eval_scored + test_scored
+    # 순서가 원소 단위로 정확히 대응한다 — histories를 직접 풀링할 필요가 없다.
     records = eval_cache["visit_records"] + test_cache["visit_records"]
     scored = eval_scored + test_scored
     n_total = len(records)
