@@ -8,6 +8,7 @@ import numpy as np
 import torch
 from scipy import stats
 
+from HEIDR.drug_filter.candidate_pool import expand_candidates
 from HEIDR.drug_filter.filter_model import DrugFilterHead
 from HEIDR.drug_filter.history_features import build_patient_splits, iter_visit_histories
 from HEIDR.drug_filter.select_threshold import (
@@ -17,6 +18,24 @@ from HEIDR.drug_filter.select_threshold import (
     select_threshold_f_beta,
 )
 from HEIDR.drug_filter.evaluate_filter import score_records
+
+
+def _last_prev_set(hist: dict) -> set:
+    prev_sets = hist["prev_med_sets"]
+    return prev_sets[-1] if prev_sets else set()
+
+
+def _expanded_before_labels(records: list, histories: list) -> list:
+    """'before' 베이스라인은 score_records가 실제로 채점하는 확장된 풀(빔 +
+    직전 방문 처방, evaluate_filter.py의 _last_prev_set/_expanded_pools와 동일
+    패턴)에서 뽑아야 필터링된 확장 풀인 'after'/'DDI-aware'와 공정하게
+    비교된다. rec['candidates']만 쓰면 빔-only 풀(coverage 낮음)을 확장 풀
+    필터링 결과와 비교하는 셈이 되어 두 값이 서로 다른 후보집합을 가리키게
+    된다."""
+    return [
+        [d for d, _, _ in expand_candidates(rec["candidates"], _last_prev_set(hist))]
+        for rec, hist in zip(records, histories)
+    ]
 
 
 def per_visit_scores(records: list, predicted_labels: list) -> dict:
@@ -119,7 +138,7 @@ def main():
     test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], test_histories, device)
     records = test_cache["visit_records"]
 
-    before_labels = [[d for d, _ in rec["candidates"]] for rec in records]
+    before_labels = _expanded_before_labels(records, test_histories)
 
     ddi_aware_info = select_ddi_aware_threshold(all_labels, all_scores, eval_scores, ddi_A, gt_ddi_rate, beta=1.0)
     ddi_aware_labels = apply_filter_to_visits(test_scores, ddi_aware_info["threshold"])

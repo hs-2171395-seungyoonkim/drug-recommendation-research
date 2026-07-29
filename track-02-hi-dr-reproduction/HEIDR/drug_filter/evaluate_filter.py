@@ -12,7 +12,6 @@ from HEIDR.drug_filter.filter_model import DrugFilterHead
 from HEIDR.drug_filter.history_features import build_patient_splits, iter_visit_histories
 from HEIDR.drug_filter.select_threshold import (
     N_THRESHOLDS,
-    SAFETY_MARGIN,
     apply_filter_to_visits,
     select_min_avgmed_threshold,
     visit_jaccard,
