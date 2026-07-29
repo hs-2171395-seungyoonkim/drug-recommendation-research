@@ -194,9 +194,11 @@ def select_min_avgmed_threshold(
     """quality_floor + safety_margin 이상의 Jaccard를 유지하는 threshold 중
     AVG_MED가 가장 낮은 것을 고른다. 만족하는 후보가 없으면 Jaccard가 가장
     높은 지점으로 fallback하고 feasible=False로 표시한다."""
-    all_scores = np.concatenate(
-        [np.asarray(s) for _, s in scores_per_visit if len(s) > 0]
-    )
+    score_lists = [np.asarray(s) for _, s in scores_per_visit if len(s) > 0]
+    # Degenerate case: no candidates to filter (all visits have empty candidate lists).
+    if len(score_lists) == 0:
+        return {"threshold": 0.0, "jaccard": 0.0, "avg_med": 0.0, "feasible": False}
+    all_scores = np.concatenate(score_lists)
     candidate_thresholds = np.unique(
         np.quantile(all_scores, np.linspace(0.0, 1.0, n_thresholds))
     )

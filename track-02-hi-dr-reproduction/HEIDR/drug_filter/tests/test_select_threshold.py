@@ -142,6 +142,9 @@ def test_visit_jaccard_averages_per_visit_intersection_over_union():
 
 def test_select_min_avgmed_picks_smallest_pool_meeting_quality_floor():
     # 후보 3개 중 2개가 정답. threshold를 올릴수록 AVG_MED가 준다.
+    # Possible thresholds: keep [10,11,12] (J≈0.667, avg_med=3.0),
+    # keep [10,11] (J=1.0, avg_med=2.0), keep [10] (J=0.5, avg_med=1.0).
+    # With quality_floor=0.0, all are feasible; minimum avg_med is 1.0.
     records = [{"gt_ids": [10, 11]}]
     scores_per_visit = [([10, 11, 12], [0.9, 0.8, 0.2])]
 
@@ -149,7 +152,7 @@ def test_select_min_avgmed_picks_smallest_pool_meeting_quality_floor():
     result = select_min_avgmed_threshold(records, scores_per_visit, quality_floor=0.0, safety_margin=0.0)
 
     assert result["feasible"] is True
-    assert result["avg_med"] <= 3.0
+    assert result["avg_med"] == 1.0
 
 
 def test_select_min_avgmed_respects_the_quality_floor():
@@ -165,13 +168,23 @@ def test_select_min_avgmed_respects_the_quality_floor():
 
 
 def test_safety_margin_makes_selection_more_conservative():
-    records = [{"gt_ids": [10, 11]}]
-    scores_per_visit = [([10, 11, 12], [0.9, 0.8, 0.2])]
+    # Two visits: visit1 has 1 correct answer (high score) + 1 wrong (low score);
+    # visit2 has 3 correct answers with decreasing scores.
+    # At low threshold: visit1 → [10, 11], visit2 → [20,21,22]; avg J=1.0, avg_med=2.5
+    # At medium threshold: visit1 → [10], visit2 → [20,21]; avg J≈0.833, avg_med=1.5
+    # At high threshold: visit1 → [10], visit2 → [20]; avg J≈0.667, avg_med=1.0
+    # With quality_floor=0.75, safety_margin=0.0: J >= 0.75 qualifies
+    # [1.0, 0.833, 0.667]; minimum avg_med is 1.5 (the 0.833 point).
+    # With quality_floor=0.75, safety_margin=0.1: J >= 0.85 qualifies only [1.0];
+    # minimum avg_med is 2.5, forcing a different threshold.
+    records = [{"gt_ids": [10]}, {"gt_ids": [20, 21, 22]}]
+    scores_per_visit = [([10, 11], [0.9, 0.3]), ([20, 21, 22], [0.9, 0.8, 0.7])]
 
-    loose = select_min_avgmed_threshold(records, scores_per_visit, 0.6, safety_margin=0.0)
-    tight = select_min_avgmed_threshold(records, scores_per_visit, 0.6, safety_margin=0.3)
+    loose = select_min_avgmed_threshold(records, scores_per_visit, 0.75, safety_margin=0.0)
+    tight = select_min_avgmed_threshold(records, scores_per_visit, 0.75, safety_margin=0.1)
 
-    assert tight["jaccard"] >= loose["jaccard"]
+    assert tight["threshold"] != loose["threshold"]
+    assert tight["avg_med"] > loose["avg_med"]
 
 
 def test_falls_back_to_best_quality_when_floor_unreachable():
@@ -185,3 +198,17 @@ def test_falls_back_to_best_quality_when_floor_unreachable():
 
 def test_default_safety_margin_is_documented_value():
     assert SAFETY_MARGIN == 0.005
+
+
+def test_select_min_avgmed_handles_all_empty_visit_scores():
+    # Degenerate case: every visit has an empty score list.
+    # Should return sensible defaults without crashing.
+    records = [{"gt_ids": [10, 11]}, {"gt_ids": [20]}]
+    scores_per_visit = [([], []), ([], [])]
+
+    result = select_min_avgmed_threshold(records, scores_per_visit, quality_floor=0.5)
+
+    assert result["threshold"] == 0.0
+    assert result["jaccard"] == 0.0
+    assert result["avg_med"] == 0.0
+    assert result["feasible"] is False
