@@ -3,41 +3,83 @@ import sys
 sys.path.insert(0, ".")
 sys.path.insert(0, "HEIDR")
 
-import dill
 import numpy as np
 import torch
 
-from HEIDR.drug_filter.ddi_features import compute_ddi_conflict_features
+from HEIDR.drug_filter.candidate_pool import expand_candidates, pool_coverage
+from HEIDR.drug_filter.dataset import build_scoring_inputs
 from HEIDR.drug_filter.filter_model import DrugFilterHead
+from HEIDR.drug_filter.history_features import build_patient_splits, iter_visit_histories
 from HEIDR.drug_filter.select_threshold import (
+    N_THRESHOLDS,
+    SAFETY_MARGIN,
     apply_filter_to_visits,
-    compute_achieved_ddi_rate,
-    select_ddi_aware_threshold,
+    select_min_avgmed_threshold,
+    visit_jaccard,
 )
 from util import sequence_metric, ddi_rate_score
 
 MED_NUM = 131
 
+# 세 매칭 AVG_MED 운영점(설계 문서 §4). 20.07은 test split 정답 처방 자체의
+# 평균 크기와 같아, 방식 간 비교에서 가장 우선하는 지점이다.
+MATCHED_AVG_MED_POINTS = (13.0, 16.85, 20.07)
 
-def score_records(model, records, drug_memory, ddi_A, device):
-    """방문별로 그 방문의 모든 후보 약물에 필터 점수(0~1)를 매긴다 (DDI 충돌 피처 포함)."""
+
+def score_records(model, records, drug_memory, visit_histories, device):
+    """방문별로 확장된 풀의 각 후보에 필터 점수(0~1)를 매긴다.
+    records와 build_scoring_inputs(records, visit_histories)의 출력을 함께
+    zip해, 각 방문의 임베딩이 반드시 같은 방문의 풀에 쓰이도록 한다."""
     model.eval()
+    scoring_inputs = build_scoring_inputs(records, visit_histories)
     per_visit_scores = []
     with torch.no_grad():
-        for rec in records:
-            candidate_ids = [d for d, _ in rec["candidates"]]
-            if not candidate_ids:
+        for rec, (pool_ids, logprobs, extras) in zip(records, scoring_inputs):
+            if not pool_ids:
                 per_visit_scores.append(([], []))
                 continue
-            ddi_feats = compute_ddi_conflict_features(rec["candidates"], ddi_A)
-            visit_emb = rec["visit_emb"].unsqueeze(0).repeat(len(candidate_ids), 1).to(device)
-            drug_emb = drug_memory[candidate_ids].to(device)
-            hidr_prob = torch.tensor([p for _, p in rec["candidates"]], dtype=torch.float).to(device)
-            ddi_features = torch.tensor(ddi_feats, dtype=torch.float).to(device)
-            logits = model(visit_emb, drug_emb, hidr_prob, ddi_features)
-            scores = torch.sigmoid(logits).cpu().tolist()
-            per_visit_scores.append((candidate_ids, scores))
+            visit_emb = rec["visit_emb"].unsqueeze(0).repeat(len(pool_ids), 1).to(device)
+            logits = model(
+                visit_emb.float(),
+                drug_memory[pool_ids].to(device).float(),
+                torch.tensor(logprobs, dtype=torch.float32).to(device),
+                torch.tensor(extras, dtype=torch.float32).to(device),
+            )
+            per_visit_scores.append((pool_ids, torch.sigmoid(logits).cpu().tolist()))
     return per_visit_scores
+
+
+def deleted_gt_per_visit(records: list, pools: list, predicted_labels: list) -> float:
+    """풀에는 들어 있었는데 필터가 잘라낸 정답 약물 수의 방문 평균.
+    기존 필터가 방문당 1.38개를 지우면서 한 번도 보고하지 않았던 값이다."""
+    counts = []
+    for rec, pool, pred in zip(records, pools, predicted_labels):
+        gt = set(rec["gt_ids"])
+        in_pool = gt & {d for d, _, _ in pool}
+        counts.append(len(in_pool - set(pred)))
+    return float(np.mean(counts)) if counts else 0.0
+
+
+def jaccard_at_avg_med(records: list, scores_per_visit: list, target_avg_med: float) -> dict:
+    """threshold를 훑어 AVG_MED가 target에 가장 가까운 지점의 지표를 낸다.
+    풀 크기가 달라지면 운영점이 달라지므로, 방식 간 비교는 반드시 동일
+    AVG_MED에서 해야 한다(설계 문서 §4)."""
+    all_scores = np.concatenate([np.asarray(s) for _, s in scores_per_visit if len(s) > 0])
+    thresholds = np.unique(np.quantile(all_scores, np.linspace(0.0, 1.0, N_THRESHOLDS)))
+
+    best = None
+    for t in thresholds:
+        predicted = apply_filter_to_visits(scores_per_visit, float(t))
+        avg_med = float(np.mean([len(p) for p in predicted]))
+        row = {
+            "threshold": float(t),
+            "avg_med": avg_med,
+            "jaccard": visit_jaccard(records, predicted),
+            "gap": abs(avg_med - target_avg_med),
+        }
+        if best is None or row["gap"] < best["gap"]:
+            best = row
+    return best
 
 
 def compute_metrics(records, predicted_labels):
@@ -68,6 +110,20 @@ def compute_metrics(records, predicted_labels):
     }
 
 
+def _last_prev_set(hist: dict) -> set:
+    prev_sets = hist["prev_med_sets"]
+    return prev_sets[-1] if prev_sets else set()
+
+
+def _expanded_pools(records: list, histories: list) -> list:
+    """레코드마다 expand_candidates가 반환하는 (drug_id, hidr_logprob, is_beam)
+    3-tuple 풀을 그대로 재구성한다. pool_coverage는 이 형태를 요구한다."""
+    return [
+        expand_candidates(rec["candidates"], _last_prev_set(hist))
+        for rec, hist in zip(records, histories)
+    ]
+
+
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -75,44 +131,55 @@ def main():
     model = DrugFilterHead(**ckpt["hparams"]).to(device)
     model.load_state_dict(ckpt["state_dict"])
 
-    ddi_A = dill.load(open("data/ddi_A_final.pkl", "rb"))
+    splits = build_patient_splits()
+    eval_histories = iter_visit_histories(splits["eval"])
+    test_histories = iter_visit_histories(splits["test"])
 
+    # --- eval split: quality floor + threshold 선택 ---
     eval_cache = torch.load("HEIDR/drug_filter/candidates_eval.pt")
-    eval_scores = score_records(model, eval_cache["visit_records"], eval_cache["drug_memory"], ddi_A, device)
+    eval_records = eval_cache["visit_records"]
+    eval_scores = score_records(model, eval_records, eval_cache["drug_memory"], eval_histories, device)
 
-    all_labels, all_scores = [], []
-    for rec, (candidate_ids, scores) in zip(eval_cache["visit_records"], eval_scores):
-        gt_set = set(rec["gt_ids"])
-        for cid, s in zip(candidate_ids, scores):
-            all_labels.append(1 if cid in gt_set else 0)
-            all_scores.append(s)
+    # quality floor = "필터 없이 확장된 풀을 통째로 남겼을 때"의 Jaccard.
+    eval_scoring_inputs = build_scoring_inputs(eval_records, eval_histories)
+    eval_no_filter_pools = [pool_ids for pool_ids, _, _ in eval_scoring_inputs]
+    quality_floor = visit_jaccard(eval_records, eval_no_filter_pools)
+    print(f"quality floor (eval split, no filter / full expanded pool jaccard): {quality_floor:.4f}")
 
-    # eval split 정답(ground truth) 처방 자체의 DDI rate를 threshold 선택의 목표치로
-    # 쓴다 — "DDI rate=0"이 아니라 "정답 수준으로 수렴"이 목표이기 때문이다
-    # (docs/specs/2026-07-27-drug-recommendation-postfilter-design.md
-    # Section 6.1 참고).
-    gt_ddi_rate = compute_achieved_ddi_rate(
-        [rec["gt_ids"] for rec in eval_cache["visit_records"]], ddi_A
-    )
-    print(f"eval split ground-truth DDI rate (threshold selection target): {gt_ddi_rate:.4f}")
+    threshold_info = select_min_avgmed_threshold(eval_records, eval_scores, quality_floor)
+    print(f"selected threshold (eval split, min AVG_MED at quality floor): {threshold_info}")
+    print(f"  feasible: {threshold_info['feasible']}")
 
-    threshold_info = select_ddi_aware_threshold(
-        np.array(all_labels), np.array(all_scores), eval_scores, ddi_A, gt_ddi_rate, beta=1.0,
-    )
-    print(f"selected threshold (eval split, DDI-aware F1-max): {threshold_info}")
-
+    # --- test split: before/after 지표, 커버리지, 삭제된 정답, 매칭 AVG_MED 지점 ---
     test_cache = torch.load("HEIDR/drug_filter/candidates_test.pt")
-    test_scores = score_records(model, test_cache["visit_records"], test_cache["drug_memory"], ddi_A, device)
+    test_records = test_cache["visit_records"]
+    test_scores = score_records(model, test_records, test_cache["drug_memory"], test_histories, device)
 
-    before_labels = [[d for d, _ in rec["candidates"]] for rec in test_cache["visit_records"]]
+    expanded_pools = _expanded_pools(test_records, test_histories)
+    before_labels = [[d for d, _, _ in pool] for pool in expanded_pools]  # 확장된 풀 전체
     after_labels = apply_filter_to_visits(test_scores, threshold_info["threshold"])
 
-    before_metrics = compute_metrics(test_cache["visit_records"], before_labels)
-    after_metrics = compute_metrics(test_cache["visit_records"], after_labels)
+    before_metrics = compute_metrics(test_records, before_labels)
+    after_metrics = compute_metrics(test_records, after_labels)
 
     print(f"{'metric':<12}{'before':>10}{'after':>10}")
     for key in ("precision", "recall", "jaccard", "f1", "ddi_rate", "avg_med"):
         print(f"{key:<12}{before_metrics[key]:>10.4f}{after_metrics[key]:>10.4f}")
+
+    gt_id_lists = [rec["gt_ids"] for rec in test_records]
+    expanded_coverage = pool_coverage(expanded_pools, gt_id_lists)
+    beam_only_pools = [[(d, p, 1.0) for d, p in rec["candidates"]] for rec in test_records]
+    beam_only_coverage = pool_coverage(beam_only_pools, gt_id_lists)
+    print(f"{'pool coverage':<20}{'expanded':>12}{'beam-only':>12}")
+    print(f"{'':<20}{expanded_coverage:>12.4f}{beam_only_coverage:>12.4f}")
+
+    deleted = deleted_gt_per_visit(test_records, expanded_pools, after_labels)
+    print(f"deleted ground-truth drugs per visit (after filter): {deleted:.4f}")
+
+    print(f"{'target_avg_med':>15}{'achieved_avg_med':>18}{'jaccard':>10}")
+    for target in MATCHED_AVG_MED_POINTS:
+        row = jaccard_at_avg_med(test_records, test_scores, target)
+        print(f"{target:>15.2f}{row['avg_med']:>18.4f}{row['jaccard']:>10.4f}")
 
 
 if __name__ == "__main__":
