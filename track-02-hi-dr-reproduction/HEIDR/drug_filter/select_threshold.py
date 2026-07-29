@@ -163,3 +163,56 @@ def select_ddi_aware_threshold(
     if non_degenerate:
         return min(non_degenerate, key=lambda c: c["ddi_rate"])
     return min(candidates, key=lambda c: c["ddi_rate"])
+
+
+# threshold 후보 격자 크기. 촘촘하게 할수록 eval 경계에 과적합해 test 일반화가
+# 나빠지는 것이 실측됐으므로(격자 50 -> test 제약 3/5, 1000 -> 1/5) 값을 고정한다.
+N_THRESHOLDS = 50
+
+# eval에서 제약이 딱 맞는 지점을 고르면 winner's curse가 최대화된다. 마진을 주면
+# 5-seed 전부 test에서 제약이 지켜진다(설계 문서 §4).
+SAFETY_MARGIN = 0.005
+
+
+def visit_jaccard(records: list, predicted_labels: list) -> float:
+    """방문별 |교집합|/|합집합|의 평균 (util.py의 macro 정의와 동일)."""
+    scores = []
+    for rec, label in zip(records, predicted_labels):
+        gt, pred = set(rec["gt_ids"]), set(label)
+        union = gt | pred
+        scores.append(len(gt & pred) / len(union) if union else 0.0)
+    return float(np.mean(scores)) if scores else 0.0
+
+
+def select_min_avgmed_threshold(
+    records: list,
+    scores_per_visit: list,
+    quality_floor: float,
+    safety_margin: float = SAFETY_MARGIN,
+    n_thresholds: int = N_THRESHOLDS,
+) -> dict:
+    """quality_floor + safety_margin 이상의 Jaccard를 유지하는 threshold 중
+    AVG_MED가 가장 낮은 것을 고른다. 만족하는 후보가 없으면 Jaccard가 가장
+    높은 지점으로 fallback하고 feasible=False로 표시한다."""
+    all_scores = np.concatenate(
+        [np.asarray(s) for _, s in scores_per_visit if len(s) > 0]
+    )
+    candidate_thresholds = np.unique(
+        np.quantile(all_scores, np.linspace(0.0, 1.0, n_thresholds))
+    )
+
+    rows = []
+    for t in candidate_thresholds:
+        predicted = apply_filter_to_visits(scores_per_visit, float(t))
+        rows.append({
+            "threshold": float(t),
+            "jaccard": visit_jaccard(records, predicted),
+            "avg_med": float(np.mean([len(p) for p in predicted])),
+        })
+
+    required = quality_floor + safety_margin
+    feasible = [r for r in rows if r["jaccard"] >= required]
+    if feasible:
+        best = min(feasible, key=lambda r: r["avg_med"])
+        return {**best, "feasible": True}
+    return {**max(rows, key=lambda r: r["jaccard"]), "feasible": False}

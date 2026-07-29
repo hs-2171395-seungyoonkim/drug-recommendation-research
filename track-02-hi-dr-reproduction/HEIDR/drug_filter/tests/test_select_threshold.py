@@ -124,3 +124,64 @@ def test_select_ddi_aware_threshold_excludes_degenerate_high_threshold_candidate
     )
 
     assert result["recall"] >= 0.5
+
+
+from HEIDR.drug_filter.select_threshold import (
+    SAFETY_MARGIN,
+    select_min_avgmed_threshold,
+    visit_jaccard,
+)
+
+
+def test_visit_jaccard_averages_per_visit_intersection_over_union():
+    records = [{"gt_ids": [1, 2]}, {"gt_ids": [3]}]
+    predicted = [[1, 2], [3, 4]]  # 1.0, 0.5
+
+    assert abs(visit_jaccard(records, predicted) - 0.75) < 1e-9
+
+
+def test_select_min_avgmed_picks_smallest_pool_meeting_quality_floor():
+    # 후보 3개 중 2개가 정답. threshold를 올릴수록 AVG_MED가 준다.
+    records = [{"gt_ids": [10, 11]}]
+    scores_per_visit = [([10, 11, 12], [0.9, 0.8, 0.2])]
+
+    # floor를 아주 낮게 두면 가장 공격적인(=AVG_MED 최소) 지점을 고른다
+    result = select_min_avgmed_threshold(records, scores_per_visit, quality_floor=0.0, safety_margin=0.0)
+
+    assert result["feasible"] is True
+    assert result["avg_med"] <= 3.0
+
+
+def test_select_min_avgmed_respects_the_quality_floor():
+    records = [{"gt_ids": [10, 11]}]
+    scores_per_visit = [([10, 11, 12], [0.9, 0.8, 0.2])]
+
+    # 정답 2개를 모두 남겨야만 도달 가능한 floor
+    result = select_min_avgmed_threshold(
+        records, scores_per_visit, quality_floor=0.66, safety_margin=0.0
+    )
+
+    assert result["jaccard"] >= 0.66
+
+
+def test_safety_margin_makes_selection_more_conservative():
+    records = [{"gt_ids": [10, 11]}]
+    scores_per_visit = [([10, 11, 12], [0.9, 0.8, 0.2])]
+
+    loose = select_min_avgmed_threshold(records, scores_per_visit, 0.6, safety_margin=0.0)
+    tight = select_min_avgmed_threshold(records, scores_per_visit, 0.6, safety_margin=0.3)
+
+    assert tight["jaccard"] >= loose["jaccard"]
+
+
+def test_falls_back_to_best_quality_when_floor_unreachable():
+    records = [{"gt_ids": [10, 11]}]
+    scores_per_visit = [([10, 12], [0.9, 0.8])]  # 정답 11이 후보에 없어 1.0 불가
+
+    result = select_min_avgmed_threshold(records, scores_per_visit, quality_floor=1.0)
+
+    assert result["feasible"] is False
+
+
+def test_default_safety_margin_is_documented_value():
+    assert SAFETY_MARGIN == 0.005
