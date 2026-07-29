@@ -194,12 +194,19 @@ def main():
     print(f"deleted ground-truth drugs/visit: {del_mean:.4f} +/- {del_std:.4f}")
 
     print()
-    print(f"{'target_avg_med':>15}{'avg_med_mean':>15}{'avg_med_std':>13}{'jaccard_mean':>14}{'jaccard_std':>13}{'recall_mean':>13}{'recall_std':>12}")
+    print(
+        f"{'target_avg_med':>15}{'avg_med_mean':>15}{'avg_med_std':>13}{'jaccard_mean':>14}{'jaccard_std':>13}"
+        f"{'precision_mean':>15}{'precision_std':>14}{'recall_mean':>13}{'recall_std':>12}"
+    )
     for target in MATCHED_AVG_MED_POINTS:
         am_mean, am_std = _mean_std([r["matched_points"][target]["avg_med"] for r in results])
         j_mean, j_std = _mean_std([r["matched_points"][target]["jaccard"] for r in results])
+        pr_mean, pr_std = _mean_std([r["matched_points"][target]["precision"] for r in results])
         rc_mean, rc_std = _mean_std([r["matched_points"][target]["recall"] for r in results])
-        print(f"{target:>15.2f}{am_mean:>15.4f}{am_std:>13.4f}{j_mean:>14.4f}{j_std:>13.4f}{rc_mean:>13.4f}{rc_std:>12.4f}")
+        print(
+            f"{target:>15.2f}{am_mean:>15.4f}{am_std:>13.4f}{j_mean:>14.4f}{j_std:>13.4f}"
+            f"{pr_mean:>15.4f}{pr_std:>14.4f}{rc_mean:>13.4f}{rc_std:>12.4f}"
+        )
 
     n_satisfied = sum(1 for r in results if r["test_constraint_satisfied"])
     print()
