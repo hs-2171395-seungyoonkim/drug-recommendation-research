@@ -45,3 +45,46 @@ def iter_visit_histories(patients: list) -> list:
                 "gt_ids": [int(x) for x in patient[idx][2]],
             })
     return out
+
+
+MED_NUM = 131
+RECENCY_DECAY = 0.5
+
+HISTORY_FEATURE_NAMES = (
+    "in_prev",          # 직전 방문에 처방됐는가 (0/1)
+    "in_any_prev",      # 과거 어느 방문에든 처방됐는가 (0/1)
+    "frac_prev",        # 이 약물이 등장한 과거 방문 비율
+    "n_prev",           # 과거 방문 수 (raw, 대개 1~3)
+    "prev_size",        # 직전 방문 처방 약물 수 / MED_NUM
+    "recency_weighted",  # 최근 방문에 더 큰 가중치를 준 등장 빈도 (0~1)
+)
+
+
+def compute_history_features(prev_med_sets: list, candidate_ids: list) -> list:
+    """후보별 이력 피처 6종을 계산한다. prev_med_sets는 오래된 방문이 앞.
+    현재 방문 정보는 인자로 받지 않으므로 누수가 구조적으로 불가능하다."""
+    n_prev = len(prev_med_sets)
+    if n_prev == 0:
+        return [(0.0,) * len(HISTORY_FEATURE_NAMES) for _ in candidate_ids]
+
+    last = prev_med_sets[-1]
+    prev_size = len(last) / MED_NUM
+
+    # age=0이 가장 최근. 정규화해서 0~1로 만든다.
+    weights = [RECENCY_DECAY ** (n_prev - 1 - i) for i in range(n_prev)]
+    weight_total = sum(weights)
+
+    features = []
+    for drug_id in candidate_ids:
+        hits = [1.0 if drug_id in s else 0.0 for s in prev_med_sets]
+        n_hits = sum(hits)
+        recency = sum(w * h for w, h in zip(weights, hits)) / weight_total
+        features.append((
+            1.0 if drug_id in last else 0.0,
+            1.0 if n_hits > 0 else 0.0,
+            n_hits / n_prev,
+            float(n_prev),
+            prev_size,
+            recency,
+        ))
+    return features
