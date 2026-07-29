@@ -33,10 +33,12 @@ def test_no_duplicates_even_if_previous_visit_repeats():
 
 
 def test_pool_coverage_counts_ground_truth_found_in_pool():
+    # Asymmetric GT sizes to distinguish per-visit averaging from global pooling:
+    # per-visit mean(2/2, 1/3) = 2/3 ≈ 0.6667 vs global pooling (2+1)/(2+3) = 0.6
     pools = [[(1, -0.1, 1.0), (2, -0.2, 1.0)], [(3, -0.1, 1.0)]]
-    gt_lists = [[1, 2], [3, 4]]  # 첫 방문 2/2, 둘째 1/2
+    gt_lists = [[1, 2], [3, 4, 5]]  # 첫 방문 2/2, 둘째 1/3
 
-    assert abs(pool_coverage(pools, gt_lists) - 0.75) < 1e-9
+    assert abs(pool_coverage(pools, gt_lists) - (2/3)) < 1e-9
 
 
 def test_pool_coverage_ignores_visits_without_ground_truth():
