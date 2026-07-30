@@ -1,3 +1,4 @@
+import pytest
 import torch
 
 from HEIDR.drug_filter.dataset import DrugFilterDataset, build_scoring_inputs
@@ -71,3 +72,26 @@ def test_build_scoring_inputs_matches_dataset_pool():
     assert pool_ids == [2, 3]
     assert len(logprobs) == 2
     assert len(extras) == 2 and len(extras[0]) == 7
+
+
+def test_build_scoring_inputs_rejects_length_mismatch():
+    # records/histories 캐시를 서로 다른 split끼리 잘못 짝지으면(예: test 캐시와
+    # eval histories) 길이부터 어긋나는 게 흔한 실패 형태다. zip이 조용히 뒤쪽을
+    # 잘라내며 삼켜버리지 않고 즉시 에러가 나야 한다.
+    records = _records()
+    histories = _histories()[:1]  # 하나 모자란 history 리스트
+
+    with pytest.raises(ValueError, match="visit_records"):
+        build_scoring_inputs(records, histories)
+
+
+def test_build_scoring_inputs_rejects_crossed_pairing():
+    # 길이는 같지만 순서가 한 칸 밀려 서로 다른 방문이 짝지어진 경우(크로스
+    # 페어링). gt_ids가 위치별로 일치하지 않으면 잡아내야 한다 — 이런 경우
+    # 길이 체크만으로는 통과해버리고, 커버리지 같은 지표가 그럴듯하지만 틀린
+    # 값을 낸다.
+    records = _records()
+    histories = list(reversed(_histories()))  # 순서를 뒤집어 gt_ids를 어긋나게 함
+
+    with pytest.raises(ValueError, match="gt_ids"):
+        build_scoring_inputs(records, histories)

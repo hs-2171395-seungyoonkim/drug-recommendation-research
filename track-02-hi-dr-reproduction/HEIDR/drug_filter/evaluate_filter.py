@@ -20,8 +20,11 @@ from util import sequence_metric, ddi_rate_score
 
 MED_NUM = 131
 
-# 세 매칭 AVG_MED 운영점(설계 문서 §4). 20.07은 test split 정답 처방 자체의
-# 평균 크기와 같아, 방식 간 비교에서 가장 우선하는 지점이다.
+# 세 매칭 AVG_MED 운영점(설계 문서 §4). 20.07은 test split "정답 처방 크기"가
+# 아니라 구(舊) 시스템(빔-only 후보 풀)의 방문당 평균 크기다(정답 처방 평균
+# 크기는 20.1625로 별개 값). 20.07에서 비교하는 이유는 구 시스템이 실제로
+# 그 크기에서 운영됐기 때문에, 이 지점이 구 필터의 size-matched Jaccard(0.4550)와
+# 가장 공정하게 비교되는 지점이라서다.
 MATCHED_AVG_MED_POINTS = (13.0, 16.85, 20.07)
 
 
