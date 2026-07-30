@@ -4,7 +4,10 @@ Training/evaluation loop, ported from SOTA/SafeDrug/src/SafeDrug.py, with:
 - GPU device (RTX 5060, torch 2.13.0+cu130, verified working)
 - subgroup evaluation (Renal/Liver Dysfunction, design spec §6) alongside
   overall metrics
-Run: python -m safedrug.train --organ_function   (omit the flag for baseline)
+Run (there's no pyproject.toml/setup.py, so `python -m safedrug.train` does not
+work from the repo root outside of pytest's conftest.py - use the wrapper script):
+  C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python312\\python.exe scripts/run_safedrug_train.py --organ_function
+  (omit the flag for baseline)
 """
 import argparse
 import pickle
@@ -23,8 +26,8 @@ from safedrug.data import (
     load_records_and_features,
     split_patients,
 )
-from safedrug.ddi_mask import build_ddi_mask_h, build_molecule_map
-from safedrug.metrics import ddi_rate_score, multi_label_metric
+from safedrug.ddi_mask import build_molecule_map
+from safedrug.metrics import ddi_rate_score, get_n_params, multi_label_metric
 from safedrug.model import SafeDrugModel
 from safedrug.mpnn import build_mpnn_set
 from safedrug.subgroups import is_liver_dysfunction, is_renal_dysfunction
@@ -42,36 +45,37 @@ def evaluate(model, data_eval, organ_features_eval, voc_size, ddi_adj):
     ja_list, prauc_list, f1_list = [], [], []
     renal_ja, liver_ja = [], []
 
-    for patient_idx, input in enumerate(data_eval):
-        y_gt, y_pred, y_pred_prob, y_pred_label = [], [], [], []
-        for adm_idx, adm in enumerate(input):
-            target_output, _ = model(input[: adm_idx + 1])
-            y_gt_tmp = np.zeros(voc_size[2])
-            y_gt_tmp[adm[2]] = 1
-            y_gt.append(y_gt_tmp)
+    with torch.no_grad():
+        for patient_idx, input in enumerate(data_eval):
+            y_gt, y_pred, y_pred_prob, y_pred_label = [], [], [], []
+            for adm_idx, adm in enumerate(input):
+                target_output, _ = model(input[: adm_idx + 1])
+                y_gt_tmp = np.zeros(voc_size[2])
+                y_gt_tmp[adm[2]] = 1
+                y_gt.append(y_gt_tmp)
 
-            target_output = torch.sigmoid(target_output).detach().cpu().numpy()[0]
-            y_pred_prob.append(target_output)
+                target_output = torch.sigmoid(target_output).detach().cpu().numpy()[0]
+                y_pred_prob.append(target_output)
 
-            y_pred_tmp = target_output.copy()
-            y_pred_tmp[y_pred_tmp >= 0.5] = 1
-            y_pred_tmp[y_pred_tmp < 0.5] = 0
-            y_pred.append(y_pred_tmp)
-            y_pred_label.append(sorted(np.where(y_pred_tmp == 1)[0]))
+                y_pred_tmp = target_output.copy()
+                y_pred_tmp[y_pred_tmp >= 0.5] = 1
+                y_pred_tmp[y_pred_tmp < 0.5] = 0
+                y_pred.append(y_pred_tmp)
+                y_pred_label.append(sorted(np.where(y_pred_tmp == 1)[0]))
 
-        smm_record.append(y_pred_label)
-        ja, prauc, _, _, f1 = multi_label_metric(
-            np.array(y_gt), np.array(y_pred), np.array(y_pred_prob)
-        )
-        ja_list.append(ja)
-        prauc_list.append(prauc)
-        f1_list.append(f1)
+            smm_record.append(y_pred_label)
+            ja, prauc, _, _, f1 = multi_label_metric(
+                np.array(y_gt), np.array(y_pred), np.array(y_pred_prob)
+            )
+            ja_list.append(ja)
+            prauc_list.append(prauc)
+            f1_list.append(f1)
 
-        patient_features = organ_features_eval[patient_idx]
-        if any(is_renal_dysfunction(v) for v in patient_features):
-            renal_ja.append(ja)
-        if any(is_liver_dysfunction(v) for v in patient_features):
-            liver_ja.append(ja)
+            patient_features = organ_features_eval[patient_idx]
+            if any(is_renal_dysfunction(v) for v in patient_features):
+                renal_ja.append(ja)
+            if any(is_liver_dysfunction(v) for v in patient_features):
+                liver_ja.append(ja)
 
     ddi_rate = ddi_rate_score(smm_record, ddi_adj)
     return {
@@ -138,6 +142,7 @@ def main():
     device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu"
     )
+    print(f"device selected: {device}")
     run_name = "organ_function" if args.organ_function else "baseline"
     organ_dim = 73 if args.organ_function else 0
 
@@ -186,9 +191,18 @@ def main():
     model.to(device=device)
     optimizer = Adam(model.parameters(), lr=args.lr)
 
+    print(f"voc_size: {voc_size}")
+    print(
+        f"split sizes: train={len(train_idx)} test={len(test_idx)} eval={len(eval_idx)}"
+    )
+    print(f"parameter count: {get_n_params(model)}")
+
     save_dir = ROOT / "saved" / run_name
     save_dir.mkdir(parents=True, exist_ok=True)
     history = []
+    history_path = save_dir / "history.pkl"
+    best_path = save_dir / "best.pt"
+    best_jaccard = float("-inf")
 
     for epoch in range(args.epochs):
         tic = time.time()
@@ -205,10 +219,28 @@ def main():
         )
         torch.save(model.state_dict(), save_dir / f"epoch_{epoch}.pt")
 
-    test_metrics = evaluate(model, data_test, organ_features_test, voc_size, ddi_adj)
-    print("final test metrics:", test_metrics)
+        if metrics["jaccard"] > best_jaccard:
+            best_jaccard = metrics["jaccard"]
+            torch.save(model.state_dict(), best_path)
+            print(f"  new best eval jaccard={best_jaccard:.4f} -> saved {best_path}")
 
-    with open(save_dir / "history.pkl", "wb") as f:
+        # Persist per-epoch history after every epoch (not just at the end) so a
+        # crash mid-run doesn't lose all metrics gathered so far.
+        with open(history_path, "wb") as f:
+            pickle.dump({"per_epoch": history, "test": None}, f)
+
+    # Final test-set evaluation uses the BEST checkpoint by eval Jaccard, not
+    # whatever state the model happens to be in after the last epoch.
+    if best_path.exists():
+        model.load_state_dict(torch.load(best_path, map_location=device))
+        print(f"loaded best checkpoint ({best_path}, eval jaccard={best_jaccard:.4f}) for final test evaluation")
+    else:
+        print("no best checkpoint was saved (0 epochs run?) - evaluating current model state")
+
+    test_metrics = evaluate(model, data_test, organ_features_test, voc_size, ddi_adj)
+    print("final test metrics (best checkpoint):", test_metrics)
+
+    with open(history_path, "wb") as f:
         pickle.dump({"per_epoch": history, "test": test_metrics}, f)
 
 
