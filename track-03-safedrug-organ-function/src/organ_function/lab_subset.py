@@ -29,9 +29,22 @@ def extract_lab_subset(csv_path: str, chunksize: int = 2_000_000) -> pd.DataFram
     reader = pd.read_csv(
         csv_path,
         usecols=["subject_id", "itemid", "charttime", "valuenum", "ref_range_lower", "ref_range_upper"],
+        # Pinned explicitly: without this a single malformed cell anywhere in
+        # the 122M-row file would silently promote a whole column to object
+        # dtype, which would break the numeric comparisons downstream.
+        dtype={
+            "subject_id": "int64",
+            "itemid": "int64",
+            "valuenum": "float64",
+            "ref_range_lower": "float64",
+            "ref_range_upper": "float64",
+        },
         chunksize=chunksize,
     )
     for chunk in reader:
+        # Parsed per chunk (not once on the concatenated result) so no
+        # full-file column of datetime strings is ever held at once.
+        chunk["charttime"] = pd.to_datetime(chunk["charttime"])
         filtered = chunk[chunk["itemid"].isin(target_itemids) & chunk["valuenum"].notna()]
         if len(filtered):
             kept_chunks.append(filtered)
@@ -40,7 +53,6 @@ def extract_lab_subset(csv_path: str, chunksize: int = 2_000_000) -> pd.DataFram
         return pd.DataFrame(columns=LAB_SUBSET_COLUMNS)
 
     result = pd.concat(kept_chunks, ignore_index=True)
-    result["charttime"] = pd.to_datetime(result["charttime"])
     return (
         result[LAB_SUBSET_COLUMNS]
         .sort_values(["subject_id", "charttime"])

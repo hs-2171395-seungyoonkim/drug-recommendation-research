@@ -10,7 +10,17 @@ import pandas as pd
 def build_hadm_to_subject(diag_df: pd.DataFrame) -> pd.Series:
     """diag_df: DataFrame with at least [subject_id, hadm_id] columns
     (data/raw_mimic_iv/diagnoses_icd.csv). Returns a Series indexed by
-    hadm_id, values subject_id."""
+    hadm_id, values subject_id. Raises ValueError if any hadm_id maps to more
+    than one subject_id (verified zero such cases on the real
+    diagnoses_icd.csv, but drop_duplicates would otherwise silently keep an
+    arbitrary row and produce a wrong subject_id)."""
+    per_hadm_subjects = diag_df.groupby("hadm_id")["subject_id"].nunique()
+    ambiguous = per_hadm_subjects[per_hadm_subjects > 1]
+    if len(ambiguous):
+        raise ValueError(
+            "hadm_id maps to multiple subject_ids: "
+            + ", ".join(f"{h} -> {n} distinct subject_ids" for h, n in ambiguous.items())
+        )
     return diag_df.drop_duplicates("hadm_id").set_index("hadm_id")["subject_id"]
 
 

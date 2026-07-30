@@ -15,6 +15,15 @@ def test_builds_one_to_one_hadm_to_subject_mapping():
     assert mapping.loc[200] == 20
 
 
+def test_build_hadm_to_subject_raises_when_hadm_id_maps_to_two_subjects():
+    diag_df = pd.DataFrame({
+        "subject_id": [10, 99, 20],
+        "hadm_id": [100, 100, 200],
+    })
+    with pytest.raises(ValueError, match="hadm_id maps to multiple subject_ids"):
+        build_hadm_to_subject(diag_df)
+
+
 def test_subject_id_for_patient_uses_first_hadm_id():
     mapping = pd.Series({100: 10, 101: 10, 200: 20})
     assert subject_id_for_patient(mapping, [100, 101]) == 10
