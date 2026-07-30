@@ -6,6 +6,15 @@ the query projection (design spec §3). When organ_dim=0 the model is
 architecturally IDENTICAL to the original SafeDrug (the baseline arm of
 the ablation); when organ_dim=73 it is the +OrganFunction arm. Both arms
 use this same class, differing only in construction and input shape.
+
+Note on `self.mpnn_emb` and `retain_graph`: `self.mpnn_emb` is computed once in
+`__init__` from a throwaway `MolecularGraphNeuralNetwork` and its autograd graph
+stays attached for the lifetime of the model; every `forward()` call reuses that
+same graph. A caller that calls `loss.backward()` more than once across training
+steps (as any standard training loop does) must call
+`loss.backward(retain_graph=True)`, or the second call will raise "Trying to
+backward through the graph a second time". This is faithful to upstream
+SafeDrug, which relies on its trainer doing the same.
 """
 import math
 
