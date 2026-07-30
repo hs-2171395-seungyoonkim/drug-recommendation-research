@@ -1,0 +1,70 @@
+{
+  "generated_at_utc": "2026-07-30T15:13:52.895513+00:00",
+  "git_commit_sha": "ebc79a2259b7df6e727ccc0b3f56841e73c046a8",
+  "script": "scripts/build_organ_function_features.py",
+  "output": "data/mimic-iv/organ_function_features.pkl",
+  "inputs": [
+    {
+      "path": "data/mimic-iv/records_final2.pkl",
+      "size_bytes": 7627648,
+      "mtime_utc": "2026-07-21T14:22:48.958095+00:00"
+    },
+    {
+      "path": "data/mimic-iv/records_final2_hadm_ids.pkl",
+      "size_bytes": 597982,
+      "mtime_utc": "2026-07-21T14:22:49.221539+00:00"
+    },
+    {
+      "path": "data/raw_mimic_iv/diagnoses_icd.csv",
+      "size_bytes": 149455168,
+      "mtime_utc": "2026-07-21T13:07:45.576425+00:00"
+    },
+    {
+      "path": "data/raw_mimic_iv/prescriptions.csv",
+      "size_bytes": 2386072616,
+      "mtime_utc": "2026-07-21T13:09:03.392717+00:00"
+    },
+    {
+      "path": "data/raw_labs/labevents.csv.gz",
+      "size_bytes": 2096142623,
+      "mtime_utc": "2026-07-30T11:03:27.260176+00:00"
+    }
+  ],
+  "patient_count": 29518,
+  "visit_count": 95951,
+  "extracted_lab_row_count": 26999379,
+  "feature_keys_per_visit": 73,
+  "per_lab_missing_rate": {
+    "creatinine": 0.09054621629790205,
+    "bun": 0.09858156767516753,
+    "alt": 0.23253535658825858,
+    "ast": 0.2428635449343936,
+    "bilirubin_total": 0.2879490573313462,
+    "albumin": 0.3396837969380204,
+    "inr": 0.1795604006211504,
+    "pt": 0.17966462048337173,
+    "potassium": 0.10790924534397765,
+    "platelet": 0.06991068357807631,
+    "wbc": 0.07224520849183437,
+    "glucose": 0.10756531979864722
+  },
+  "lab_itemids": {
+    "creatinine": 50912,
+    "bun": 51006,
+    "alt": 50861,
+    "ast": 50878,
+    "bilirubin_total": 50885,
+    "albumin": 50862,
+    "inr": 51237,
+    "pt": 51274,
+    "potassium": 50971,
+    "platelet": 51265,
+    "wbc": 51301,
+    "glucose": 50931
+  },
+  "runtime_seconds": {
+    "lab_extract": 154.2,
+    "feature_table_build": 798.4,
+    "total": 975.8
+  }
+}
