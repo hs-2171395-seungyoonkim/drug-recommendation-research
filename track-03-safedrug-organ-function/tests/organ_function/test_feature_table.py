@@ -81,3 +81,69 @@ def test_ignores_rows_for_other_itemids():
     ])
     result = compute_lab_features(labs, 50912, pd.Timestamp("2240-11-06 10:24:00"))
     assert result["value"] == 0.8
+
+
+from organ_function.feature_table import build_visit_features, build_feature_table
+from organ_function.lab_config import LAB_NAMES
+
+
+def test_build_visit_features_has_all_expected_keys():
+    labs = _labs([[100, 50912, pd.Timestamp("2240-11-05 10:24:00"), 0.8, 0.4, 1.1]])
+    result = build_visit_features(
+        subject_labs=labs,
+        index_time=pd.Timestamp("2240-11-06 10:24:00"),
+        current_diag_ids=[1, 2],
+        prior_diag_ids_seen=set(),
+    )
+    for name in LAB_NAMES:
+        assert f"{name}_value" in result
+        assert f"{name}_deviation" in result
+        assert f"{name}_delta" in result
+        assert f"{name}_missing" in result
+    assert "new_diagnosis_flag" in result
+    assert result["creatinine_value"] == 0.8
+    assert result["bun_missing"] is True
+    assert result["new_diagnosis_flag"] is False  # empty prior history
+
+
+def test_build_feature_table_matches_records_shape_and_uses_previous_visit_only():
+    # Two patients: patient 0 has 2 visits, patient 1 has 1 visit.
+    records = [
+        [
+            [[1], [], [0]],       # patient 0, visit 0: diag=[1]
+            [[1, 2], [], [0]],    # patient 0, visit 1: diag gains code 2 (new)
+        ],
+        [
+            [[9], [], [0]],       # patient 1, visit 0
+        ],
+    ]
+    hadm_ids = [[100, 101], [200]]
+
+    lab_subset = _labs([
+        # subject 5 (patient 0): one creatinine reading before visit 0's index time
+        [5, 50912, pd.Timestamp("2240-11-05 10:24:00"), 0.8, 0.4, 1.1],
+        # and a later one, before visit 1's index time but after visit 0's
+        [5, 50912, pd.Timestamp("2240-11-14 10:24:00"), 1.5, 0.4, 1.1],
+    ])
+
+    hadm_to_subject = pd.Series({100: 5, 101: 5, 200: 7})
+    admission_times = pd.Series({
+        100: pd.Timestamp("2240-11-09 10:24:00"),
+        101: pd.Timestamp("2240-11-19 10:24:00"),
+        200: pd.Timestamp("2240-12-06 10:24:00"),
+    })
+
+    table = build_feature_table(records, hadm_ids, lab_subset, admission_times, hadm_to_subject)
+
+    assert len(table) == len(records)
+    assert len(table[0]) == 2
+    assert len(table[1]) == 1
+
+    # visit 0 (index_time 11-09 10:24): only the 11-05 10:24 reading is prior -> value 0.8
+    assert table[0][0]["creatinine_value"] == 0.8
+    # visit 1 (index_time 11-19 10:24): both readings are prior -> latest is 1.5
+    assert table[0][1]["creatinine_value"] == 1.5
+    assert table[0][1]["new_diagnosis_flag"] is True  # code 2 is new vs. {1}
+
+    # patient 1 has no labs for subject 7 -> missing
+    assert table[1][0]["creatinine_missing"] is True
