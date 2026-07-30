@@ -12,6 +12,22 @@ from HEIDR_model import HEIDR
 from data_loader_new import mimic_data, pad_batch_v2_eval, pad_num_replace
 from beam import Beam
 
+# 원본 HI-DR의 모든 진입점(HEIDR_main.py:29, recommend_heidr.py:28,
+# Pretrain_embedding_codes/recommend_gumbel.py:28, VITA_another_pretrain_main.py:27)이
+# import 직후 최상단에서 이 시드를 고정한다. 같은 값을 쓴다.
+#
+# 왜 반드시 필요한가: HEIDR_model.py:129의
+#   F.gumbel_softmax(gumbel_input, tau=self.gumbel_tau, hard=True)
+# 는 "어느 과거 방문을 참조할지"를 매 호출마다 새로 샘플링하며, `if self.training`
+# 분기가 없어 model.eval()로도 막히지 않는다. 시드를 고정하지 않으면 같은
+# 체크포인트·같은 데이터로 재실행해도 방문의 약 40%에서 후보 집합이 달라진다
+# (2026-07-30 실측: candidate set 일치율 train 57.97% / eval 62.60% / test 63.98%).
+#
+# 이 파일이 원본 recommend_heidr.py의 test_recommend_batch 함수 "본문"을 본떠
+# 작성됐기 때문에, 호출 스크립트 최상단에 있던 이 한 줄이 최초 커밋(a0540e9)에서
+# 누락됐다. 자세한 경위는 기술_설명_및_한계점_총정리.md §1.4 참고.
+torch.manual_seed(1203)
+
 CHECKPOINT = (
     "HEIDR/saved/heidr_top_3_att_20_gumbel_06/"
     "Epoch_43_top_3_JA_0.6238_DDI_0.08245_LOSS_0.8576875820190583.model"
