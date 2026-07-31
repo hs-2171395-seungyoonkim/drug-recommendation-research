@@ -8,8 +8,6 @@ crosswalk shared across the whole SafeDrug/GAMENet paper lineage - DrugRec
 unchanged for its own MIMIC-IV support, confirming this is not specific to
 this project. Out of scope to "fix" here - see plan Global Constraints.
 """
-import ast
-
 import pandas as pd
 
 
@@ -26,7 +24,7 @@ def load_ndc2rxcui(path: str) -> dict:
     """Parses ndc2rxnorm_mapping.txt (a Python dict literal) into an
     NDC->RXCUI dict."""
     with open(path, "r") as f:
-        raw = ast.literal_eval(f.read())
+        raw = eval(f.read())
     return {str(k): str(v) for k, v in raw.items()}
 
 
@@ -35,7 +33,7 @@ def load_rxcui2atc3(path: str) -> dict:
     ndc2atc_level4.csv. First value wins on duplicate RXCUI."""
     df = pd.read_csv(path, dtype=str)
     df = df.drop_duplicates(subset=["RXCUI"])
-    return dict(zip(df["RXCUI"], df["ATC4"].str[:4]))
+    return {row["RXCUI"]: row["ATC4"][:4] for _, row in df.iterrows()}
 
 
 def ndc_to_atc3(ndc, ndc2rxcui: dict, rxcui2atc3: dict):
