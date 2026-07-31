@@ -229,7 +229,7 @@ def test_build_visit_features_all_missing_when_index_time_is_nat():
         assert math.isnan(result[f"{name}_age_days"])
 
 
-def test_new_diagnosis_flag_uses_chronological_order_but_keeps_input_list_order():
+def test_build_feature_table_rejects_non_chronological_input_order():
     # Regression for the whole-branch review finding: records_final2.pkl stores
     # visits in hadm_id order, which is NOT chronological. hadm 100 sits at
     # list position 0 but happened AFTER hadm 101 at position 1.
@@ -244,22 +244,11 @@ def test_new_diagnosis_flag_uses_chronological_order_but_keeps_input_list_order(
     })
     hadm_to_subject = pd.Series({100: 5, 101: 5})
 
-    table = build_feature_table(records, hadm_ids, _labs([]), admission_times, hadm_to_subject)
-
-    # Output order must still match the INPUT hadm_ids order (positional
-    # alignment with records_final2.pkl is required downstream).
-    assert len(table) == 1 and len(table[0]) == 2
-
-    # Chronologically: 101 (diag {1}) is first -> no baseline -> False.
-    # Then 100 (diag {1,2}) sees prior {1} -> code 2 is new -> True.
-    assert table[0][1]["new_diagnosis_flag"] is False   # position 1 = hadm 101
-    assert table[0][0]["new_diagnosis_flag"] is True    # position 0 = hadm 100
-
-    # Sanity: computing in naive list order would give the opposite pair
-    # (position 0 -> False, position 1 -> False), so this assertion is the bug.
+    with pytest.raises(ValueError, match="nondecreasing admission-time order"):
+        build_feature_table(records, hadm_ids, _labs([]), admission_times, hadm_to_subject)
 
 
-def test_visit_with_unresolvable_admission_time_sorts_last_and_stays_all_missing():
+def test_build_feature_table_rejects_missing_official_admission_time():
     # hadm 102 has NaT: it must not poison the earlier visits' history order,
     # and its own labs must all be missing (real NaT is still passed through).
     records = [[
@@ -276,38 +265,17 @@ def test_visit_with_unresolvable_admission_time_sorts_last_and_stays_all_missing
     hadm_to_subject = pd.Series({100: 5, 101: 5, 102: 5})
     labs = _labs([[5, 50912, pd.Timestamp("2240-10-05 10:24:00"), 0.8, 0.4, 1.1]])
 
-    table = build_feature_table(records, hadm_ids, labs, admission_times, hadm_to_subject)
-
-    # NaT visit -> all labs missing even though the subject has an older lab.
-    assert table[0][0]["creatinine_missing"] is True
-    assert math.isnan(table[0][0]["creatinine_age_days"])
-    # 101 is chronologically first among resolvable visits -> no baseline.
-    assert table[0][1]["new_diagnosis_flag"] is False
-    assert table[0][1]["creatinine_value"] == 0.8
-    # 102 comes after 101 -> code 2 is new.
-    assert table[0][2]["new_diagnosis_flag"] is True
-    # The NaT visit sorted last, so its diag ids are NOT part of 102's history.
+    with pytest.raises(ValueError, match="missing official admission time"):
+        build_feature_table(records, hadm_ids, labs, admission_times, hadm_to_subject)
 
 
-def test_hadm_id_absent_from_admission_times_behaves_like_explicit_nat():
+def test_build_feature_table_rejects_absent_official_admission_time():
     labs = _labs([[5, 50912, pd.Timestamp("2240-10-05 10:24:00"), 0.8, 0.4, 1.1]])
     hadm_to_subject = pd.Series({100: 5, 200: 5})
     records = [[[[1], [], [0]]]]
 
-    # hadm 100 present but NaT
-    explicit_nat = build_feature_table(
-        records, [[100]], labs, pd.Series({100: pd.NaT}), hadm_to_subject
-    )
-    # hadm 200 not in admission_times at all -> .get(hadm_id, np.nan) default
-    absent = build_feature_table(
-        records, [[200]], labs, pd.Series({100: pd.Timestamp("2240-11-05 10:24:00")}), hadm_to_subject
-    )
-
-    for name in LAB_NAMES:
-        assert explicit_nat[0][0][f"{name}_missing"] is True
-        assert absent[0][0][f"{name}_missing"] is True
-    assert explicit_nat[0][0].keys() == absent[0][0].keys()
-    assert math.isnan(absent[0][0]["creatinine_value"])
+    with pytest.raises(ValueError, match="missing official admission time"):
+        build_feature_table(records, [[200]], labs, pd.Series({100: pd.Timestamp("2240-11-05 10:24:00")}), hadm_to_subject)
 
 
 def test_build_feature_table_raises_on_patient_count_mismatch():

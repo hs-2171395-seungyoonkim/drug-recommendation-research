@@ -205,19 +205,13 @@ def main():
     run_name = "organ_function" if args.organ_function else "baseline"
     organ_dim = 73 if args.organ_function else 0
 
-    if args.organ_function:
-        records, organ_features = load_records_and_features(
-            str(paths.records), str(paths.organ_features)
-        )
-        with paths.vocabulary.open("rb") as f:
-            voc = dill.load(f)
-        with paths.ddi.open("rb") as f:
-            ddi_adj = dill.load(f)
-    else:
-        records, voc, ddi_adj = load_final4_baseline(
-            paths.records, paths.vocabulary, paths.ddi
-        )
-        organ_features = None
+    records, organ_features = load_records_and_features(
+        str(paths.records), str(paths.organ_features)
+    )
+    with paths.vocabulary.open("rb") as f:
+        voc = dill.load(f)
+    with paths.ddi.open("rb") as f:
+        ddi_adj = dill.load(f)
     diag_voc, pro_voc, med_voc = voc["diag_voc"], voc["pro_voc"], voc["med_voc"]
     voc_size = (len(diag_voc.idx2word), len(pro_voc.idx2word), len(med_voc.idx2word))
     with paths.ddi_mask.open("rb") as f:
@@ -248,8 +242,8 @@ def main():
         data_test = build_baseline_dataset(records, test_idx)
         data_eval = build_baseline_dataset(records, eval_idx)
 
-    organ_features_test = [organ_features[i] for i in test_idx] if organ_features else None
-    organ_features_eval = [organ_features[i] for i in eval_idx] if organ_features else None
+    organ_features_test = [organ_features[i] for i in test_idx]
+    organ_features_eval = [organ_features[i] for i in eval_idx]
 
     model = SafeDrugModel(
         voc_size, ddi_adj, ddi_mask_h, mpnn_set, n_fingerprint, average_projection,

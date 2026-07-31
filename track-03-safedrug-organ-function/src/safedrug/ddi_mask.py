@@ -32,9 +32,9 @@ def build_ddi_mask_h(molecule: "defaultdict[str, set]", med_voc_idx2word: dict) 
     the BRICS fragment-membership indicator for med_voc index i's SMILES set.
     A code with no SMILES gets an all-zero row."""
     fraction = []
-    for _, atc3 in med_voc_idx2word.items():
+    for _, atc3 in sorted(med_voc_idx2word.items()):
         frags = set()
-        for smiles in molecule[atc3]:
+        for smiles in sorted(molecule[atc3]):
             try:
                 decomposed = BRICS.BRICSDecompose(Chem.MolFromSmiles(smiles))
                 frags.update(decomposed)
@@ -42,13 +42,11 @@ def build_ddi_mask_h(molecule: "defaultdict[str, set]", med_voc_idx2word: dict) 
                 pass
         fraction.append(frags)
 
-    frag_list = []
-    for frags in fraction:
-        frag_list += list(frags)
-    frag_list = list(set(frag_list))
+    frag_list = sorted(set().union(*fraction)) if fraction else []
+    fragment_index = {fragment: index for index, fragment in enumerate(frag_list)}
 
     ddi_mask_h = np.zeros((len(med_voc_idx2word), len(frag_list)))
     for i, frags in enumerate(fraction):
         for frag in frags:
-            ddi_mask_h[i, frag_list.index(frag)] = 1
+            ddi_mask_h[i, fragment_index[frag]] = 1
     return ddi_mask_h

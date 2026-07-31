@@ -18,7 +18,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 import pandas as pd
 
-from organ_function.admission_time import build_admission_times
 from organ_function.feature_table import build_feature_table
 from organ_function.lab_config import LAB_ITEMIDS, LAB_NAMES
 from organ_function.lab_subset import extract_lab_subset
@@ -29,14 +28,14 @@ ROOT = Path(__file__).resolve().parent.parent
 RECORDS_PATH = ROOT / "data/mimic-iv/records_final4.pkl"
 HADM_IDS_PATH = ROOT / "data/mimic-iv/records_final4_hadm_ids.pkl"
 DIAGNOSES_PATH = ROOT / "data/raw_mimic_iv/diagnoses_icd.csv"
-PRESCRIPTIONS_PATH = ROOT / "data/raw_mimic_iv/prescriptions.csv"
+ADMISSIONS_PATH = ROOT / "data/raw_mimic_iv/admissions.csv.gz"
 LABEVENTS_PATH = ROOT / "data/raw_labs/labevents.csv.gz"
 
 INPUT_PATHS = [
     RECORDS_PATH,
     HADM_IDS_PATH,
     DIAGNOSES_PATH,
-    PRESCRIPTIONS_PATH,
+    ADMISSIONS_PATH,
     LABEVENTS_PATH,
 ]
 OUTPUT_PATH = ROOT / "data/mimic-iv/organ_function_features_final4.pkl"
@@ -97,9 +96,12 @@ def main():
     diag_df = pd.read_csv(DIAGNOSES_PATH, usecols=["subject_id", "hadm_id"])
     hadm_to_subject = build_hadm_to_subject(diag_df)
 
-    print("building proxy admission times from prescriptions.csv ...")
-    presc_df = pd.read_csv(PRESCRIPTIONS_PATH, usecols=["hadm_id", "starttime"])
-    admission_times = build_admission_times(presc_df)
+    print("loading official admission times ...")
+    admissions = pd.read_csv(ADMISSIONS_PATH, usecols=["hadm_id", "admittime"])
+    admissions["admittime"] = pd.to_datetime(admissions["admittime"], errors="coerce")
+    if admissions["hadm_id"].duplicated().any() or admissions["admittime"].isna().any():
+        raise ValueError("official admissions contains duplicate or invalid admission times")
+    admission_times = admissions.set_index("hadm_id")["admittime"]
 
     print("streaming labevents.csv.gz (this takes a few minutes) ...")
     tic = time.time()
@@ -148,9 +150,6 @@ def main():
     print("\n--- sanity check ---")
     print(f"patients: {len(table)}  visits: {built_visits}")
     print(f"keys per visit dict: {len(table[0][0])}")
-    print("first patient / first visit:")
-    for k, v in table[0][0].items():
-        print(f"  {k} = {v}")
     print("\nper-lab missing rate:")
     for name, rate in missing_rates.items():
         print(f"  {name}: {rate:.4f}")

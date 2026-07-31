@@ -169,26 +169,23 @@ def build_feature_table(
         row_idx = subject_row_indices.get(subject_id)
         subject_labs = empty_labs if row_idx is None else lab_subset.take(row_idx)
 
-        def sort_key(i: int) -> pd.Timestamp:
-            t = admission_times.get(patient_hadm_ids[i], pd.NaT)
-            # NaT sorts last: we cannot confidently place an unknown time early.
-            return pd.Timestamp.max if pd.isna(t) else t
-
-        chronological_order = sorted(range(len(patient_hadm_ids)), key=sort_key)
+        patient_times = [admission_times.get(hadm_id, pd.NaT) for hadm_id in patient_hadm_ids]
+        if any(pd.isna(t) for t in patient_times):
+            raise ValueError(f"patient {patient_idx} is missing official admission time")
+        if any(later < earlier for earlier, later in zip(patient_times, patient_times[1:])):
+            raise ValueError(f"patient {patient_idx} is not in nondecreasing admission-time order")
 
         prior_diag_ids_seen: set = set()
-        patient_features: list = [None] * len(patient_hadm_ids)
-        for i in chronological_order:
+        patient_features: list = []
+        for i in range(len(patient_hadm_ids)):
             visit = patient_records[i]
             hadm_id = patient_hadm_ids[i]
             current_diag_ids = visit[0]
-            # NOTE: the real (possibly NaT) index_time is used here, not the
-            # pd.Timestamp.max sort substitute.
-            index_time = admission_times.get(hadm_id, np.nan)
+            index_time = patient_times[i]
             visit_features = build_visit_features(
                 subject_labs, index_time, current_diag_ids, prior_diag_ids_seen
             )
-            patient_features[i] = visit_features
+            patient_features.append(visit_features)
             prior_diag_ids_seen |= set(current_diag_ids)
 
         table.append(patient_features)
