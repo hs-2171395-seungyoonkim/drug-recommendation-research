@@ -1,12 +1,12 @@
 """
-One-time real-data run: rebuilds records_final3.pkl, voc_final3.pkl,
-records_final3_hadm_ids.pkl, and ddi_A_final3.pkl - a corrected version of
+One-time real-data run: rebuilds records_final4.pkl, voc_final4.pkl,
+records_final4_hadm_ids.pkl, and ddi_A_final4.pkl - a corrected version of
 records_final2.pkl/voc_final2.pkl/records_final2_hadm_ids.pkl/ddi_A_final2.pkl
 that includes BOTH ICD-9 and ICD-10 diagnoses/procedures (tagged by
 version) instead of silently dropping all ICD-10 admissions (35.6% of all
 MIMIC-IV admissions - see plan Global Constraints).
 
-Writes to NEW filenames ("final3") - never overwrites records_final2.pkl
+Writes to NEW filenames ("final4") - never overwrites records_final2.pkl
 etc, which are hardlinked to Desktop/HI-DR's own copy (confirmed via
 `stat`: same inode, Links: 2) - overwriting them in place would corrupt
 HI-DR's project data too. Enforced in code below (not just by convention):
@@ -26,6 +26,7 @@ convention), not for cross-project consumption by Desktop/HI-DR.
 Run: C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python312\\python.exe scripts/rebuild_mimic_iv_records.py
 """
 import json
+import hashlib
 import pickle
 import subprocess
 import sys
@@ -44,18 +45,24 @@ from mimic_iv_rebuild.medication_mapping import (
     load_ndc2rxcui,
     load_rxcui2atc3,
 )
-from mimic_iv_rebuild.records import build_records_and_hadm_ids, combine_admissions
+from mimic_iv_rebuild.records import (
+    attach_and_sort_admissions,
+    build_records_and_hadm_ids,
+    combine_admissions,
+    load_admissions,
+)
 from mimic_iv_rebuild.vocab import build_vocab_from_column
 
 ROOT = Path(__file__).resolve().parent.parent
 
 OUTPUT_PATHS = [
-    ROOT / "data/mimic-iv/records_final3.pkl",
-    ROOT / "data/mimic-iv/records_final3_hadm_ids.pkl",
-    ROOT / "data/mimic-iv/voc_final3.pkl",
-    ROOT / "data/mimic-iv/ddi_A_final3.pkl",
-    ROOT / "data/mimic-iv/records_final3.meta.json",
+    ROOT / "data/mimic-iv/records_final4.pkl",
+    ROOT / "data/mimic-iv/records_final4_hadm_ids.pkl",
+    ROOT / "data/mimic-iv/voc_final4.pkl",
+    ROOT / "data/mimic-iv/ddi_A_final4.pkl",
+    ROOT / "data/mimic-iv/records_final4.meta.json",
 ]
+ADMISSIONS_PATH = ROOT / "data/raw_mimic_iv/admissions.csv.gz"
 
 
 def _git_commit_sha() -> str:
@@ -67,9 +74,19 @@ def _git_commit_sha() -> str:
         return "unknown"
 
 
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def main():
     for p in OUTPUT_PATHS:
-        assert "final2" not in str(p), f"refusing to write to a final2-named path: {p}"
+        assert "final4" in p.name, f"refusing non-final4 output: {p}"
+        if p.exists():
+            raise FileExistsError(f"refusing to overwrite existing output: {p}")
 
     tic = time.time()
     print("loading and tagging diagnoses/procedures (ICD-9+10)...")
@@ -92,6 +109,8 @@ def main():
 
     print("combining admissions (inner join + >=2 visits filter)...")
     table = combine_admissions(diag_df, proc_df, med_df)
+    print("attaching official admission times and sorting chronologically...")
+    table = attach_and_sort_admissions(table, load_admissions(ADMISSIONS_PATH))
     print(f"  surviving admissions: {len(table)}, patients: {table['subject_id'].nunique()}")
 
     print("building vocabularies...")
@@ -119,7 +138,7 @@ def main():
     avg_diag = sum(len(v[0]) for p in records for v in p) / n_visits
     avg_proc = sum(len(v[1]) for p in records for v in p) / n_visits
     avg_med = sum(len(v[2]) for p in records for v in p) / n_visits
-    print("\n=== final3 (corrected, ICD-9+10) statistics ===")
+    print("\n=== final4 (corrected, ICD-9+10, chronological) statistics ===")
     print(f"patients: {n_patients}, visits: {n_visits}, avg visits/patient: {avg_visits:.2f}")
     print(f"avg diag/visit: {avg_diag:.2f}, avg proc/visit: {avg_proc:.2f}, avg med/visit: {avg_med:.2f}")
     print("(compare against final2: 29518 patients, 95951 visits, 11.50 diag/visit, 2.53 proc/visit, 14.32 med/visit)")
@@ -128,13 +147,13 @@ def main():
     elapsed = time.time() - tic
     print(f"\ntotal time: {elapsed:.1f}s")
 
-    with open(ROOT / "data/mimic-iv/records_final3.pkl", "wb") as f:
+    with open(ROOT / "data/mimic-iv/records_final4.pkl", "wb") as f:
         dill.dump(records, f)
-    with open(ROOT / "data/mimic-iv/records_final3_hadm_ids.pkl", "wb") as f:
+    with open(ROOT / "data/mimic-iv/records_final4_hadm_ids.pkl", "wb") as f:
         pickle.dump(hadm_ids, f)
-    with open(ROOT / "data/mimic-iv/voc_final3.pkl", "wb") as f:
+    with open(ROOT / "data/mimic-iv/voc_final4.pkl", "wb") as f:
         dill.dump({"diag_voc": diag_voc, "pro_voc": pro_voc, "med_voc": med_voc}, f)
-    with open(ROOT / "data/mimic-iv/ddi_A_final3.pkl", "wb") as f:
+    with open(ROOT / "data/mimic-iv/ddi_A_final4.pkl", "wb") as f:
         dill.dump(ddi_adj, f)
 
     meta = {
@@ -147,6 +166,20 @@ def main():
             "medications_rows": len(med_df),
             "diag_top_k": 2000,
             "proc_top_k": None,
+            "files": {
+                path.name: {"sha256": _sha256(path), "bytes": path.stat().st_size}
+                for path in [
+                    ROOT / "data/raw_mimic_iv/diagnoses_icd.csv",
+                    ROOT / "data/raw_mimic_iv/procedures_icd.csv",
+                    ROOT / "data/raw_mimic_iv/prescriptions.csv",
+                    ADMISSIONS_PATH,
+                ]
+            },
+        },
+        "temporal_ordering": {
+            "rule": "subject_id, admittime, hadm_id",
+            "unmatched_complete_admissions": 0,
+            "missing_admittime": 0,
         },
         "outputs": {
             "n_patients": n_patients,
@@ -162,10 +195,10 @@ def main():
             "ddi_known_pairs": int(ddi_adj.sum() / 2),
         },
     }
-    with open(ROOT / "data/mimic-iv/records_final3.meta.json", "w") as f:
+    with open(ROOT / "data/mimic-iv/records_final4.meta.json", "w") as f:
         json.dump(meta, f, indent=2)
 
-    print("wrote records_final3.pkl, records_final3_hadm_ids.pkl, voc_final3.pkl, ddi_A_final3.pkl, records_final3.meta.json")
+    print("wrote records_final4.pkl, records_final4_hadm_ids.pkl, voc_final4.pkl, ddi_A_final4.pkl, records_final4.meta.json")
 
 
 if __name__ == "__main__":

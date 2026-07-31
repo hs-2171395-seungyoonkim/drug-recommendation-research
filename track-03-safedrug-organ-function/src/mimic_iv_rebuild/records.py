@@ -12,6 +12,30 @@ list[patient] of list[visit]/list[hadm_id]; records_final2.pkl has zero
 single-visit patients, which this post-join filter is what guarantees).
 """
 import pandas as pd
+from pathlib import Path
+
+
+def load_admissions(path: str | Path) -> pd.DataFrame:
+    """Read admission times required to establish visit chronology."""
+    admissions = pd.read_csv(path, usecols=["subject_id", "hadm_id", "admittime"])
+    admissions["admittime"] = pd.to_datetime(admissions["admittime"], errors="coerce")
+    if admissions[["subject_id", "hadm_id", "admittime"]].isna().any().any():
+        raise ValueError("admissions contains a missing or invalid admittime")
+    if admissions.duplicated(["subject_id", "hadm_id"]).any():
+        raise ValueError("admissions contains duplicate subject_id/hadm_id keys")
+    return admissions
+
+
+def attach_and_sort_admissions(table: pd.DataFrame, admissions: pd.DataFrame) -> pd.DataFrame:
+    """Attach admission times and order each patient's visits chronologically."""
+    timed_admissions = admissions.copy()
+    if timed_admissions.duplicated(["subject_id", "hadm_id"]).any():
+        raise ValueError("admissions contains duplicate subject_id/hadm_id keys")
+    timed_admissions["admittime"] = pd.to_datetime(timed_admissions["admittime"])
+    table = table.merge(timed_admissions, on=["subject_id", "hadm_id"], how="left")
+    if table["admittime"].isna().any():
+        raise ValueError("complete admissions are missing an admissions.admittime match")
+    return table.sort_values(["subject_id", "admittime", "hadm_id"], kind="stable").reset_index(drop=True)
 
 
 def combine_admissions(diag_df: pd.DataFrame, proc_df: pd.DataFrame, med_df: pd.DataFrame) -> pd.DataFrame:

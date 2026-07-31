@@ -69,3 +69,15 @@ def test_load_records_and_features_raises_on_per_patient_visit_mismatch(tmp_path
         pickle.dump([[{}]], f)  # patient 0 has 1 visit
     with pytest.raises(ValueError, match="visit-count mismatch"):
         load_records_and_features(str(records_path), str(features_path))
+
+
+def test_load_records_and_features_rejects_non_safedrug_visits(tmp_path):
+    records_path = tmp_path / "records_final4.pkl"
+    features_path = tmp_path / "organ_function_features_final4.pkl"
+    with open(records_path, "wb") as f:
+        pickle.dump([[[[0], [0], [0], 12.0]]], f)
+    with open(features_path, "wb") as f:
+        pickle.dump([[{}]], f)
+
+    with pytest.raises(ValueError, match="three-item SafeDrug visits"):
+        load_records_and_features(str(records_path), str(features_path))

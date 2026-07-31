@@ -1,4 +1,6 @@
 import math
+import importlib.util
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -129,6 +131,19 @@ def test_age_days_is_nan_when_no_prior_reading():
 
 from organ_function.feature_table import build_visit_features, build_feature_table
 from organ_function.lab_config import LAB_NAMES
+
+
+ORGAN_BUILD_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "build_organ_function_features.py"
+
+
+def test_organ_feature_build_targets_time_ordered_final4_artifacts():
+    spec = importlib.util.spec_from_file_location("build_organ_function_features", ORGAN_BUILD_SCRIPT)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module.RECORDS_PATH.name == "records_final4.pkl"
+    assert module.HADM_IDS_PATH.name == "records_final4_hadm_ids.pkl"
+    assert module.OUTPUT_PATH.name == "organ_function_features_final4.pkl"
 
 
 def test_build_visit_features_has_all_expected_keys():

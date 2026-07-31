@@ -56,6 +56,13 @@ def test_evaluate_returns_expected_metric_keys_and_subgroup_counts():
     assert metrics["liver_n"] == 0  # no liver-dysfunction visit
 
 
+def test_baseline_evaluation_does_not_require_organ_features():
+    model, vocab_size, ddi_adj = _tiny_model()
+    metrics = evaluate(model, [[[[0], [0], [0]]]], None, vocab_size, ddi_adj)
+    assert metrics["renal_n"] == 0
+    assert metrics["liver_n"] == 0
+
+
 def test_evaluate_with_organ_function_model_and_4_tuple_visits():
     model, vocab_size, ddi_adj = _tiny_model(organ_dim=73)
     organ_vec = np.zeros(73, dtype=np.float32)
@@ -141,3 +148,30 @@ def test_train_one_epoch_ddi_conditioned_branch_uses_min_beta_formula(monkeypatc
         1 - expected_beta
     ) * fixed_ddi_loss
     assert torch.isclose(captured_losses[0], expected_loss.detach())
+
+
+def test_final4_run_paths_are_isolated_and_require_final4_inputs(tmp_path, monkeypatch):
+    monkeypatch.setattr(train_mod, "ROOT", tmp_path)
+
+    paths = train_mod.resolve_run_paths("final4", "baseline-smoke")
+
+    assert paths.records.name == "records_final4.pkl"
+    assert paths.vocabulary.name == "voc_final4.pkl"
+    assert paths.ddi.name == "ddi_A_final4.pkl"
+    assert paths.organ_features.name == "organ_function_features_final4.pkl"
+    assert paths.run_dir == tmp_path / "saved" / "safedrug_final4" / "baseline-smoke"
+
+
+def test_smoke_subset_uses_a_deterministic_prefix_without_emptying_a_split():
+    indices = [10, 11, 12]
+    assert train_mod.smoke_subset(indices, 2) == [10, 11]
+    assert train_mod.smoke_subset(indices, 10) == indices
+
+
+def test_baseline_provenance_does_not_claim_unused_organ_feature_input(tmp_path, monkeypatch):
+    monkeypatch.setattr(train_mod, "ROOT", tmp_path)
+    paths = train_mod.resolve_run_paths("final4", "baseline-smoke")
+
+    inputs = train_mod.provenance_inputs(paths, include_organ_features=False)
+
+    assert "organ_features" not in inputs

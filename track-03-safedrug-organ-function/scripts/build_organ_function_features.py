@@ -26,8 +26,8 @@ from organ_function.subject_lookup import build_hadm_to_subject
 
 ROOT = Path(__file__).resolve().parent.parent
 
-RECORDS_PATH = ROOT / "data/mimic-iv/records_final2.pkl"
-HADM_IDS_PATH = ROOT / "data/mimic-iv/records_final2_hadm_ids.pkl"
+RECORDS_PATH = ROOT / "data/mimic-iv/records_final4.pkl"
+HADM_IDS_PATH = ROOT / "data/mimic-iv/records_final4_hadm_ids.pkl"
 DIAGNOSES_PATH = ROOT / "data/raw_mimic_iv/diagnoses_icd.csv"
 PRESCRIPTIONS_PATH = ROOT / "data/raw_mimic_iv/prescriptions.csv"
 LABEVENTS_PATH = ROOT / "data/raw_labs/labevents.csv.gz"
@@ -39,6 +39,8 @@ INPUT_PATHS = [
     PRESCRIPTIONS_PATH,
     LABEVENTS_PATH,
 ]
+OUTPUT_PATH = ROOT / "data/mimic-iv/organ_function_features_final4.pkl"
+META_PATH = ROOT / "data/mimic-iv/organ_function_features_final4.meta.json"
 
 
 def git_commit_sha() -> str:
@@ -79,8 +81,10 @@ def per_lab_missing_rates(table: list) -> dict:
 
 def main():
     run_started = time.time()
+    if OUTPUT_PATH.exists() or META_PATH.exists():
+        raise FileExistsError("refusing to overwrite existing final4 organ-function artifacts")
 
-    print("loading records_final2.pkl / records_final2_hadm_ids.pkl ...")
+    print("loading records_final4.pkl / records_final4_hadm_ids.pkl ...")
     with open(RECORDS_PATH, "rb") as f:
         records = pickle.load(f)
     with open(HADM_IDS_PATH, "rb") as f:
@@ -111,10 +115,9 @@ def main():
     built_visits = sum(len(p) for p in table)
     print(f"  built {built_visits} visit feature rows in {build_seconds:.1f}s")
 
-    out_path = ROOT / "data/mimic-iv/organ_function_features.pkl"
-    with open(out_path, "wb") as f:
+    with open(OUTPUT_PATH, "wb") as f:
         pickle.dump(table, f)
-    print(f"wrote {out_path}")
+    print(f"wrote {OUTPUT_PATH}")
 
     print("computing per-lab missing rates ...")
     missing_rates = per_lab_missing_rates(table)
@@ -124,7 +127,7 @@ def main():
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "git_commit_sha": git_commit_sha(),
         "script": "scripts/build_organ_function_features.py",
-        "output": "data/mimic-iv/organ_function_features.pkl",
+        "output": "data/mimic-iv/organ_function_features_final4.pkl",
         "inputs": input_file_stats(),
         "patient_count": patient_count,
         "visit_count": built_visits,
@@ -138,10 +141,9 @@ def main():
             "total": round(total_seconds, 1),
         },
     }
-    meta_path = ROOT / "data/mimic-iv/organ_function_features.meta.json"
-    with open(meta_path, "w", encoding="utf-8") as f:
+    with open(META_PATH, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
-    print(f"wrote {meta_path}")
+    print(f"wrote {META_PATH}")
 
     print("\n--- sanity check ---")
     print(f"patients: {len(table)}  visits: {built_visits}")

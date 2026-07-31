@@ -10,8 +10,10 @@ work from the repo root outside of pytest's conftest.py - use the wrapper script
   (omit the flag for baseline)
 """
 import argparse
+import json
 import pickle
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import dill
@@ -26,6 +28,7 @@ from safedrug.data import (
     load_records_and_features,
     split_patients,
 )
+from safedrug.baseline_data import load_final4_baseline
 from safedrug.ddi_mask import build_molecule_map
 from safedrug.metrics import ddi_rate_score, get_n_params, multi_label_metric
 from safedrug.model import SafeDrugModel
@@ -37,6 +40,55 @@ ROOT = Path(__file__).resolve().parent.parent.parent
 
 torch.manual_seed(1203)
 np.random.seed(2048)
+
+
+@dataclass(frozen=True)
+class RunPaths:
+    records: Path
+    vocabulary: Path
+    ddi: Path
+    ddi_mask: Path
+    molecule: Path
+    organ_features: Path
+    run_dir: Path
+
+
+def resolve_run_paths(dataset: str, run_id: str) -> RunPaths:
+    """Return isolated inputs and outputs for a SafeDrug experiment arm."""
+    if dataset != "final4":
+        raise ValueError("only the time-ordered final4 cohort is supported")
+    cohort_dir = ROOT / "data" / "mimic-iv"
+    asset_dir = ROOT / "data" / "safedrug" / "final4"
+    return RunPaths(
+        records=cohort_dir / "records_final4.pkl",
+        vocabulary=cohort_dir / "voc_final4.pkl",
+        ddi=cohort_dir / "ddi_A_final4.pkl",
+        ddi_mask=asset_dir / "ddi_mask_H_final4.pkl",
+        molecule=asset_dir / "molecule_final4.pkl",
+        organ_features=cohort_dir / "organ_function_features_final4.pkl",
+        run_dir=ROOT / "saved" / "safedrug_final4" / run_id,
+    )
+
+
+def smoke_subset(indices: list[int], limit: int | None) -> list[int]:
+    """Use a deterministic prefix only for non-comparative smoke runs."""
+    return indices if limit is None else indices[:limit]
+
+
+def provenance_inputs(paths: RunPaths, include_organ_features: bool) -> dict[str, str]:
+    inputs = {
+        "records": paths.records,
+        "vocabulary": paths.vocabulary,
+        "ddi": paths.ddi,
+        "ddi_mask": paths.ddi_mask,
+        "molecule": paths.molecule,
+    }
+    if include_organ_features:
+        inputs["organ_features"] = paths.organ_features
+    return {
+        name: str(path.relative_to(ROOT)).replace("\\", "/")
+        for name, path in inputs.items()
+    }
 
 
 def evaluate(model, data_eval, organ_features_eval, voc_size, ddi_adj):
@@ -71,11 +123,12 @@ def evaluate(model, data_eval, organ_features_eval, voc_size, ddi_adj):
             prauc_list.append(prauc)
             f1_list.append(f1)
 
-            patient_features = organ_features_eval[patient_idx]
-            if any(is_renal_dysfunction(v) for v in patient_features):
-                renal_ja.append(ja)
-            if any(is_liver_dysfunction(v) for v in patient_features):
-                liver_ja.append(ja)
+            if organ_features_eval is not None:
+                patient_features = organ_features_eval[patient_idx]
+                if any(is_renal_dysfunction(v) for v in patient_features):
+                    renal_ja.append(ja)
+                if any(is_liver_dysfunction(v) for v in patient_features):
+                    liver_ja.append(ja)
 
     ddi_rate = ddi_rate_score(smm_record, ddi_adj)
     return {
@@ -132,12 +185,18 @@ def train_one_epoch(
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", choices=["final4"], default="final4")
+    parser.add_argument("--run-id", required=True)
     parser.add_argument("--organ_function", action="store_true", default=False)
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--lr", type=float, default=5e-4)
     parser.add_argument("--dim", type=int, default=64)
     parser.add_argument("--cuda", type=int, default=0)
+    parser.add_argument("--smoke-patients", type=int, default=None)
     args = parser.parse_args()
+    paths = resolve_run_paths(args.dataset, args.run_id)
+    if paths.run_dir.exists():
+        raise FileExistsError(f"refusing to overwrite existing run directory: {paths.run_dir}")
 
     device = torch.device(
         f"cuda:{args.cuda}" if torch.cuda.is_available() else "cpu"
@@ -146,21 +205,24 @@ def main():
     run_name = "organ_function" if args.organ_function else "baseline"
     organ_dim = 73 if args.organ_function else 0
 
-    data_dir = ROOT / "data"
-    records, organ_features = load_records_and_features(
-        str(data_dir / "mimic-iv" / "records_final2.pkl"),
-        str(data_dir / "mimic-iv" / "organ_function_features.pkl"),
-    )
-    with open(data_dir / "mimic-iv" / "voc_final2.pkl", "rb") as f:
-        voc = dill.load(f)
+    if args.organ_function:
+        records, organ_features = load_records_and_features(
+            str(paths.records), str(paths.organ_features)
+        )
+        with paths.vocabulary.open("rb") as f:
+            voc = dill.load(f)
+        with paths.ddi.open("rb") as f:
+            ddi_adj = dill.load(f)
+    else:
+        records, voc, ddi_adj = load_final4_baseline(
+            paths.records, paths.vocabulary, paths.ddi
+        )
+        organ_features = None
     diag_voc, pro_voc, med_voc = voc["diag_voc"], voc["pro_voc"], voc["med_voc"]
     voc_size = (len(diag_voc.idx2word), len(pro_voc.idx2word), len(med_voc.idx2word))
-
-    with open(data_dir / "mimic-iv" / "ddi_A_final2.pkl", "rb") as f:
-        ddi_adj = dill.load(f)
-    with open(data_dir / "ddi_mask_H_v2.pkl", "rb") as f:
+    with paths.ddi_mask.open("rb") as f:
         ddi_mask_h = dill.load(f)
-    with open(data_dir / "atc3toSMILES_v2.pkl", "rb") as f:
+    with paths.molecule.open("rb") as f:
         molecule_raw = dill.load(f)
     molecule = build_molecule_map(molecule_raw)
 
@@ -169,6 +231,11 @@ def main():
     )
 
     train_idx, test_idx, eval_idx = split_patients(records)
+    if args.smoke_patients is not None and args.smoke_patients < 1:
+        raise ValueError("--smoke-patients must be positive")
+    train_idx = smoke_subset(train_idx, args.smoke_patients)
+    test_idx = smoke_subset(test_idx, args.smoke_patients)
+    eval_idx = smoke_subset(eval_idx, args.smoke_patients)
 
     if args.organ_function:
         train_features_flat = [v for i in train_idx for v in organ_features[i]]
@@ -181,8 +248,8 @@ def main():
         data_test = build_baseline_dataset(records, test_idx)
         data_eval = build_baseline_dataset(records, eval_idx)
 
-    organ_features_test = [organ_features[i] for i in test_idx]
-    organ_features_eval = [organ_features[i] for i in eval_idx]
+    organ_features_test = [organ_features[i] for i in test_idx] if organ_features else None
+    organ_features_eval = [organ_features[i] for i in eval_idx] if organ_features else None
 
     model = SafeDrugModel(
         voc_size, ddi_adj, ddi_mask_h, mpnn_set, n_fingerprint, average_projection,
@@ -197,8 +264,20 @@ def main():
     )
     print(f"parameter count: {get_n_params(model)}")
 
-    save_dir = ROOT / "saved" / run_name
-    save_dir.mkdir(parents=True, exist_ok=True)
+    save_dir = paths.run_dir
+    save_dir.mkdir(parents=True)
+    with (save_dir / "run.json").open("w", encoding="utf-8") as f:
+        json.dump({
+            "dataset": args.dataset,
+            "run_id": args.run_id,
+            "organ_function": args.organ_function,
+            "seeds": {"torch": 1203, "numpy": 2048},
+            "hyperparameters": {
+                "epochs": args.epochs, "lr": args.lr, "dim": args.dim,
+                "smoke_patients": args.smoke_patients,
+            },
+            "inputs": provenance_inputs(paths, args.organ_function),
+        }, f, indent=2)
     history = []
     history_path = save_dir / "history.pkl"
     best_path = save_dir / "best.pt"

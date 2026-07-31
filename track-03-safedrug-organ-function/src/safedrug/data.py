@@ -23,6 +23,10 @@ def load_records_and_features(records_path: str, organ_features_path: str):
     for i, (patient_visits, patient_features) in enumerate(zip(records, organ_features)):
         if len(patient_visits) != len(patient_features):
             raise ValueError(f"patient {i} visit-count mismatch between records and organ_features")
+        if any(len(visit) != 3 for visit in patient_visits):
+            raise ValueError(
+                f"patient {i} records must contain three-item SafeDrug visits"
+            )
     return records, organ_features
 
 

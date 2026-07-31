@@ -1,11 +1,92 @@
 import pandas as pd
+import pytest
 
-from mimic_iv_rebuild.records import build_records_and_hadm_ids, combine_admissions
+from mimic_iv_rebuild.records import (
+    attach_and_sort_admissions,
+    build_records_and_hadm_ids,
+    combine_admissions,
+    load_admissions,
+)
 from mimic_iv_rebuild.vocab import Voc, build_vocab_from_column
 
 
 def _codes_df(rows):
     return pd.DataFrame(rows, columns=["subject_id", "hadm_id", "code"])
+
+
+def _complete_table(rows):
+    return pd.DataFrame({
+        "subject_id": [subject_id for subject_id, _ in rows],
+        "hadm_id": [hadm_id for _, hadm_id in rows],
+        "diag_codes": [["D"] for _ in rows],
+        "proc_codes": [["P"] for _ in rows],
+        "med_codes": [["M"] for _ in rows],
+    })
+
+
+def test_attach_and_sort_admissions_uses_admittime_not_hadm_id():
+    table = _complete_table([[1, 200], [1, 100]])
+    admissions = pd.DataFrame({
+        "subject_id": [1, 1],
+        "hadm_id": [100, 200],
+        "admittime": ["2258-05-20 11:08:00", "2258-05-22 11:08:00"],
+    })
+
+    ordered = attach_and_sort_admissions(table, admissions)
+
+    assert ordered["hadm_id"].tolist() == [100, 200]
+    assert ordered["admittime"].is_monotonic_increasing
+
+
+def test_attach_and_sort_admissions_rejects_unmatched_complete_admission():
+    table = _complete_table([[1, 100], [1, 200]])
+    admissions = pd.DataFrame({
+        "subject_id": [1],
+        "hadm_id": [100],
+        "admittime": ["2258-05-20 11:08:00"],
+    })
+
+    with pytest.raises(ValueError, match="missing an admissions.admittime match"):
+        attach_and_sort_admissions(table, admissions)
+
+
+def test_attach_and_sort_admissions_rejects_duplicate_admission_keys():
+    table = _complete_table([[1, 100], [1, 200]])
+    admissions = pd.DataFrame({
+        "subject_id": [1, 1, 1],
+        "hadm_id": [100, 100, 200],
+        "admittime": ["2258-05-20 11:08:00", "2258-05-21 11:08:00", "2258-05-22 11:08:00"],
+    })
+
+    with pytest.raises(ValueError, match="duplicate subject_id/hadm_id keys"):
+        attach_and_sort_admissions(table, admissions)
+
+
+def test_load_admissions_reads_gzip_and_parses_admittime(tmp_path):
+    path = tmp_path / "admissions.csv.gz"
+    pd.DataFrame({
+        "subject_id": [1],
+        "hadm_id": [100],
+        "admittime": ["2258-05-20 11:08:00"],
+        "unused": ["ignored"],
+    }).to_csv(path, index=False, compression="gzip")
+
+    admissions = load_admissions(path)
+
+    assert admissions.columns.tolist() == ["subject_id", "hadm_id", "admittime"]
+    assert admissions["admittime"].tolist() == [pd.Timestamp("2258-05-20 11:08:00")]
+
+
+def test_load_admissions_rejects_missing_or_invalid_admittime(tmp_path):
+    path = tmp_path / "admissions.csv.gz"
+    pd.DataFrame({
+        "subject_id": [1, 1],
+        "hadm_id": [100, 200],
+        "admittime": ["2258-05-20 11:08:00", "not-a-time"],
+    }).to_csv(path, index=False, compression="gzip")
+
+    with pytest.raises(ValueError, match="missing or invalid admittime"):
+        load_admissions(path)
 
 
 def test_combine_admissions_inner_joins_and_drops_incomplete_admissions():

@@ -5,8 +5,8 @@ reaches sys.path outside of pytest's conftest.py - this script does the same
 sys.path insertion conftest.py does, then delegates to safedrug.train.main().
 
 Run from the ServerityMed repo root:
-  C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python312\\python.exe scripts/run_safedrug_train.py --organ_function
-  (omit the flag for baseline)
+  C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python312\\python.exe scripts/run_safedrug_train.py --run-id baseline-final4-001
+  C:\\Users\\Administrator\\AppData\\Local\\Programs\\Python\\Python312\\python.exe scripts/run_safedrug_train.py --run-id organ-final4-001 --organ_function
 """
 import sys
 from pathlib import Path
