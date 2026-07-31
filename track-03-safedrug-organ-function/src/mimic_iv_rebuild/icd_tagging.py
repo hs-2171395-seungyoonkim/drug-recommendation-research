@@ -17,11 +17,14 @@ def tag_icd(icd_code: str, icd_version) -> str:
     return f"{icd_code}_{icd_version}"
 
 
-def _load_and_tag(path: str, top_k: int) -> pd.DataFrame:
+def _load_and_tag(path: str, top_k) -> pd.DataFrame:
     df = pd.read_csv(path, dtype={"icd_code": str})
     df = df.dropna(subset=["icd_code", "icd_version"])
     df["code"] = [tag_icd(c, v) for c, v in zip(df["icd_code"], df["icd_version"])]
     df = df[["subject_id", "hadm_id", "code"]].drop_duplicates()
+
+    if top_k is None:
+        return df.reset_index(drop=True)
 
     top_codes = df["code"].value_counts().nlargest(top_k).index
     return df[df["code"].isin(top_codes)].reset_index(drop=True)
@@ -32,13 +35,24 @@ def load_and_tag_diagnoses(path: str, top_k: int = 2000) -> pd.DataFrame:
     ([subject_id, hadm_id, seq_num, icd_code, icd_version]).
     Returns [subject_id, hadm_id, code], code = tag_icd(...), kept only for
     the top_k most frequent tagged codes (matches original SafeDrug's
-    filter_2000_most_diag, applied over the combined ICD-9+10 code space)."""
+    filter_2000_most_diag, applied over the combined ICD-9+10 code space).
+    Pass top_k=None to keep every code with no frequency cutoff."""
     return _load_and_tag(path, top_k)
 
 
-def load_and_tag_procedures(path: str, top_k: int = 1000) -> pd.DataFrame:
+def load_and_tag_procedures(path: str, top_k=None) -> pd.DataFrame:
     """path: data/raw_mimic_iv/procedures_icd.csv
     ([subject_id, hadm_id, seq_num, chartdate, icd_code, icd_version]).
-    Same tagging/top-K logic as load_and_tag_diagnoses, with SafeDrug's
-    procedure cutoff (1000)."""
+    Same tagging logic as load_and_tag_diagnoses. Default top_k=None (no
+    frequency cutoff) - verified against reference/SafeDrug/data/processing.py:500,
+    which defines filter_1000_most_pro but never calls it (line is commented
+    out), and against DrugRec's data/mimic-iv/processing_iv.py, which also
+    never calls a procedure-frequency filter. The original SafeDrug/DrugRec
+    lineage does NOT cut procedure codes by frequency - only diagnoses
+    (filter_2000_most_diag) and medications (filter_300_most_med) get a
+    cutoff. An earlier version of this function defaulted to top_k=1000,
+    which was an incorrect assumption that cost 2,317 admissions their
+    entire procedure list in the first real run - see
+    docs/plans/2026-07-31-mimic-iv-icd-version-fix.md's final
+    review notes."""
     return _load_and_tag(path, top_k)

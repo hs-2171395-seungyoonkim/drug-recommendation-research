@@ -62,3 +62,18 @@ def test_load_and_tag_diagnoses_against_real_data_has_both_icd_versions():
     has_icd10 = any(c.endswith("_10") for c in result["code"])
     assert has_icd9 is True
     assert has_icd10 is True
+
+
+def test_load_and_tag_procedures_defaults_to_no_frequency_cutoff(tmp_path):
+    """Matches the original SafeDrug/DrugRec lineage: filter_1000_most_pro
+    is defined but never called (reference/SafeDrug/data/processing.py:500,
+    commented out) - only diagnoses and medications get a frequency cutoff,
+    procedures never do."""
+    path = tmp_path / "procedures_icd.csv"
+    rows = [PRO_HEADER]
+    for hadm in range(10):
+        rows.append(f"1,{hadm},1,2024-01-01,COMMON,9\n")
+    rows.append("1,999,1,2024-01-01,RARE,9\n")
+    path.write_text("".join(rows))
+    result = load_and_tag_procedures(str(path))
+    assert set(result["code"]) == {"COMMON_9", "RARE_9"}
