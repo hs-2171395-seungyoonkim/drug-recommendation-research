@@ -42,3 +42,23 @@ def test_build_ddi_adjacency_zero_when_no_matching_pair(tmp_path):
     med_voc_idx2word = {0: "A01A", 1: "B01A"}
     ddi_adj = build_ddi_adjacency(med_voc_idx2word, str(ddi_path), str(atc_path), top_k=1)
     assert ddi_adj.sum() == 0
+
+
+def test_build_ddi_adjacency_selects_least_common_side_effects_not_most_common(tmp_path):
+    atc_path = tmp_path / "drug-atc.csv"
+    atc_path.write_text("CID001,A01AB\nCID002,B01AA\n")
+
+    ddi_path = tmp_path / "drug-DDI.csv"
+    rows = ["STITCH 1,STITCH 2,Polypharmacy Side Effect,Side Effect Name\n"]
+    # 100 rows of a VERY common side effect between two OTHER, unrelated CIDs
+    for i in range(100):
+        rows.append(f"CID999,CID998,C9999,very_common_effect\n")
+    # exactly 1 row of a rare side effect between CID001 and CID002
+    rows.append("CID001,CID002,C0001,rare_effect\n")
+    ddi_path.write_text("".join(rows))
+
+    med_voc_idx2word = {0: "A01A", 1: "B01A"}
+    # top_k=1: only the LEAST common effect should be kept -> CID001/CID002 pair should be flagged
+    ddi_adj = build_ddi_adjacency(med_voc_idx2word, str(ddi_path), str(atc_path), top_k=1)
+    assert ddi_adj[0, 1] == 1
+    assert ddi_adj[1, 0] == 1
