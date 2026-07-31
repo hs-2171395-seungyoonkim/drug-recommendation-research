@@ -1,0 +1,7 @@
+{
+  "med_vocab_size": 154,
+  "ddi_mask_shape": [
+    154,
+    492
+  ]
+}

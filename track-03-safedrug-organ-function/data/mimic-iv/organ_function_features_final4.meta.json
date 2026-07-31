@@ -1,0 +1,70 @@
+{
+  "generated_at_utc": "2026-07-31T11:19:02.812988+00:00",
+  "git_commit_sha": "d23b0f66ffb2e2e4f4a849ca167932fedbad92b8",
+  "script": "scripts/build_organ_function_features.py",
+  "output": "data/mimic-iv/organ_function_features_final4.pkl",
+  "inputs": [
+    {
+      "path": "data/mimic-iv/records_final4.pkl",
+      "size_bytes": 12396461,
+      "mtime_utc": "2026-07-31T10:35:08.468214+00:00"
+    },
+    {
+      "path": "data/mimic-iv/records_final4_hadm_ids.pkl",
+      "size_bytes": 964191,
+      "mtime_utc": "2026-07-31T10:35:08.531214+00:00"
+    },
+    {
+      "path": "data/raw_mimic_iv/diagnoses_icd.csv",
+      "size_bytes": 149455168,
+      "mtime_utc": "2026-07-21T13:07:45.576425+00:00"
+    },
+    {
+      "path": "data/raw_mimic_iv/prescriptions.csv",
+      "size_bytes": 2386072616,
+      "mtime_utc": "2026-07-21T13:09:03.392717+00:00"
+    },
+    {
+      "path": "data/raw_labs/labevents.csv.gz",
+      "size_bytes": 2096142623,
+      "mtime_utc": "2026-07-30T11:03:27.260176+00:00"
+    }
+  ],
+  "patient_count": 46528,
+  "visit_count": 155569,
+  "extracted_lab_row_count": 26999379,
+  "feature_keys_per_visit": 73,
+  "per_lab_missing_rate": {
+    "creatinine": 0.08610970051874088,
+    "bun": 0.09408044019052639,
+    "alt": 0.22624044636142163,
+    "ast": 0.2345775829374747,
+    "bilirubin_total": 0.27646253430953466,
+    "albumin": 0.32171576599451046,
+    "inr": 0.17503487198606407,
+    "pt": 0.1750991521447075,
+    "potassium": 0.10234686859207169,
+    "platelet": 0.06658781633873072,
+    "wbc": 0.0682076763365452,
+    "glucose": 0.10076557668944328
+  },
+  "lab_itemids": {
+    "creatinine": 50912,
+    "bun": 51006,
+    "alt": 50861,
+    "ast": 50878,
+    "bilirubin_total": 50885,
+    "albumin": 50862,
+    "inr": 51237,
+    "pt": 51274,
+    "potassium": 50971,
+    "platelet": 51265,
+    "wbc": 51301,
+    "glucose": 50931
+  },
+  "runtime_seconds": {
+    "lab_extract": 102.4,
+    "feature_table_build": 485.9,
+    "total": 606.0
+  }
+}
