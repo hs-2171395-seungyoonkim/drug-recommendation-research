@@ -1,7 +1,7 @@
 import pandas as pd
 
 from mimic_iv_rebuild.records import build_records_and_hadm_ids, combine_admissions
-from mimic_iv_rebuild.vocab import Voc
+from mimic_iv_rebuild.vocab import Voc, build_vocab_from_column
 
 
 def _codes_df(rows):
@@ -9,11 +9,16 @@ def _codes_df(rows):
 
 
 def test_combine_admissions_inner_joins_and_drops_incomplete_admissions():
-    diag_df = _codes_df([[1, 100, "D1"], [1, 100, "D2"], [1, 200, "D3"]])
-    proc_df = _codes_df([[1, 100, "P1"], [1, 200, "P2"]])
-    med_df = _codes_df([[1, 100, "M1"]])  # hadm 200 has no med -> dropped
+    # Subject 1 has 3 diagnosis-level admissions (100, 200, 300); hadm 200
+    # has no medication row so it gets dropped by the inner join, but the
+    # subject still legitimately has 2 COMPLETE surviving admissions (100,
+    # 300), so this isolates "does the inner join drop incomplete
+    # admissions" from the separate ">=2 complete visits" filter.
+    diag_df = _codes_df([[1, 100, "D1"], [1, 100, "D2"], [1, 200, "D3"], [1, 300, "D4"]])
+    proc_df = _codes_df([[1, 100, "P1"], [1, 200, "P2"], [1, 300, "P3"]])
+    med_df = _codes_df([[1, 100, "M1"], [1, 300, "M2"]])  # hadm 200 has no med -> dropped
     table = combine_admissions(diag_df, proc_df, med_df)
-    assert list(table["hadm_id"]) == [100]
+    assert list(table["hadm_id"]) == [100, 300]
     assert table.iloc[0]["diag_codes"] == ["D1", "D2"]
     assert table.iloc[0]["proc_codes"] == ["P1"]
     assert table.iloc[0]["med_codes"] == ["M1"]
@@ -54,3 +59,27 @@ def test_build_records_and_hadm_ids_matches_shapes_and_index_mapping():
     assert records[0][0] == [[diag_voc.word2idx["D1"]], [pro_voc.word2idx["P1"]], [med_voc.word2idx["M1"]]]
     assert records[0][1][0] == [diag_voc.word2idx["D1"], diag_voc.word2idx["D2"]]
     assert records[0][1][1] == []
+
+
+def test_build_records_and_hadm_ids_pre_built_and_auto_built_vocs_agree():
+    table = pd.DataFrame({
+        "subject_id": [1, 1, 2],
+        "hadm_id": [100, 101, 200],
+        "diag_codes": [["D1"], ["D1", "D2"], ["D3"]],
+        "proc_codes": [["P1"], [], ["P1", "P2"]],
+        "med_codes": [["M1"], ["M1", "M2"], ["M3"]],
+    })
+
+    pre_diag_voc = build_vocab_from_column(table["diag_codes"])
+    pre_pro_voc = build_vocab_from_column(table["proc_codes"])
+    pre_med_voc = build_vocab_from_column(table["med_codes"])
+    pre_records, pre_hadm_ids = build_records_and_hadm_ids(table, pre_diag_voc, pre_pro_voc, pre_med_voc)
+
+    auto_diag_voc, auto_pro_voc, auto_med_voc = Voc(), Voc(), Voc()
+    auto_records, auto_hadm_ids = build_records_and_hadm_ids(table, auto_diag_voc, auto_pro_voc, auto_med_voc)
+
+    assert pre_records == auto_records
+    assert pre_hadm_ids == auto_hadm_ids
+    assert pre_diag_voc.word2idx == auto_diag_voc.word2idx
+    assert pre_pro_voc.word2idx == auto_pro_voc.word2idx
+    assert pre_med_voc.word2idx == auto_med_voc.word2idx
