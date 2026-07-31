@@ -1,5 +1,3 @@
-import pandas as pd
-
 from mimic_iv_rebuild.medication_mapping import (
     build_medication_table,
     ndc_to_atc3,
