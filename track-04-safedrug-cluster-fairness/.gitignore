@@ -1,0 +1,18 @@
+# Deny everything by default. This project contains restricted MIMIC data.
+*
+
+# Repository metadata and safe source-only directories.
+!.gitignore
+!README.md
+!scripts/
+!scripts/*.py
+!tests/
+!tests/*.py
+!docs/
+!docs/**
+
+# Never track generated/runtime files even inside allowlisted directories.
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+
