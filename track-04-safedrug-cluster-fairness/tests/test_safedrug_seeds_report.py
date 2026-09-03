@@ -1,4 +1,5 @@
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -103,3 +104,19 @@ def test_render_report_notes_pooled_absent_when_missing(tmp_path):
     (seeds_dir / "table_pooled_permutation.csv").unlink()
     report = render_report(seeds_dir, mechanism_dir, ksweep_dir, eval_dir)
     assert "풀링" in report or "pooled" in report.lower()
+
+
+def test_render_report_notes_mechanism_absent_when_dir_missing(tmp_path):
+    eval_dir, seeds_dir, mechanism_dir, ksweep_dir = _build_fixture(tmp_path)
+    shutil.rmtree(mechanism_dir)
+    report = render_report(seeds_dir, mechanism_dir, ksweep_dir, eval_dir)
+    assert "기전 분해 표가 없어 이 절을 건너뜀" in report
+
+
+def test_render_report_notes_mechanism_seed0_only_when_pooled_absent(tmp_path):
+    # _build_fixture's own mechanism tables all carry source == "seed0" only
+    # (the literal scenario D-C's design spec text describes: safedrug_mechanism.py
+    # ran without --pooled-csv), so no extra fixture mutation is needed here.
+    eval_dir, seeds_dir, mechanism_dir, ksweep_dir = _build_fixture(tmp_path)
+    report = render_report(seeds_dir, mechanism_dir, ksweep_dir, eval_dir)
+    assert "풀링 지표 기반 기전 분해는 실행되지 않아 시드 0 결과만 제시함" in report

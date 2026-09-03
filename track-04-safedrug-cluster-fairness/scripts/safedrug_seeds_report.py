@@ -88,21 +88,37 @@ def _mechanism_section(mechanism_dir: Path) -> list:
     lines = ["\n## 2. 기전 분해\n"]
 
     pr_gap = _read_csv_if_exists(mechanism_dir / "table_mechanism_precision_recall_gap.csv")
+    groups = _read_csv_if_exists(mechanism_dir / "table_mechanism_groups.csv")
+    v2 = _read_csv_if_exists(mechanism_dir / "table_mechanism_adjusted_v2.csv")
+    tables = [pr_gap, groups, v2]
+
+    if all(t is None for t in tables):
+        lines.append("기전 분해 표가 없어 이 절을 건너뜀.")
+        return lines
+
     if pr_gap is not None:
         lines.append("### 정밀도 vs 재현율 격차\n")
         lines.append(_df_to_markdown(pr_gap))
 
-    groups = _read_csv_if_exists(mechanism_dir / "table_mechanism_groups.csv")
     if groups is not None:
         lines.append("\n### 학습 대표성 및 약물 희소성 (군집별)\n")
         cols = [c for c in ["source", "partition", "group", "train_n_visits", "train_share",
                              "test_share", "mean_gt_freq"] if c in groups.columns]
         lines.append(_df_to_markdown(groups[cols]))
 
-    v2 = _read_csv_if_exists(mechanism_dir / "table_mechanism_adjusted_v2.csv")
     if v2 is not None:
         lines.append("\n### 조정 v1 vs v2 (대표성·희소성 통제 전/후)\n")
         lines.append(_df_to_markdown(v2))
+
+    has_pooled = any(
+        t is not None and "source" in t.columns and (t["source"] == "pooled").any()
+        for t in tables
+    )
+    if not has_pooled:
+        lines.append(
+            "\n풀링 지표 기반 기전 분해는 실행되지 않아 시드 0 결과만 제시함 "
+            "(safedrug_mechanism.py 실행 시 --pooled-csv 입력 파일이 없었음)."
+        )
 
     return lines
 
