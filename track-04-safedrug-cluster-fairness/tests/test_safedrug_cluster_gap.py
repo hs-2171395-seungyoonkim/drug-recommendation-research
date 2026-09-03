@@ -1,3 +1,4 @@
+import json
 import sys
 from pathlib import Path
 
@@ -14,6 +15,7 @@ from safedrug_cluster_gap import (
     gap_statistics,
     largest_remainder,
     permutation_p,
+    write_report,
 )
 
 
@@ -112,3 +114,89 @@ def test_adjusted_group_means_recovers_planted_effect():
         true_effect[2] - true_effect[0], abs=0.02
     )
     assert set(coef_table["term"]) == {0, 1, 2, "log_n_dx", "n_med_gt", "visit_index"}
+
+
+def test_write_report_renders_adjusted_means_section(tmp_path):
+    # Fix-round regression test: write_report() previously read only
+    # table_group_summary.csv/table_permutation.csv/per_visit_metrics.csv and never
+    # rendered table_adjusted_means.csv/table_ols_coefficients.csv, so D9's required
+    # "D6 raw-vs-adjusted" content never made it into the report. This test builds a
+    # tiny synthetic out-dir with every file write_report() reads (including the two
+    # it was missing), plants a distinctive adjusted_mean value, and asserts it shows
+    # up in the rendered Markdown -- it fails if the adjusted-means section is removed
+    # or if write_report() goes back to ignoring those two CSVs.
+    eval_dir = tmp_path
+
+    (eval_dir / "run_manifest.json").write_text(
+        json.dumps(
+            {
+                "best_epoch": 5,
+                "best_eval_jaccard": 0.51,
+                "official_metrics": {
+                    "test": {"ja": 0.50, "prauc": 0.70, "avg_f1": 0.60, "ddi_rate": 0.06, "avg_med": 8.0},
+                    "eval": {"ja": 0.50, "prauc": 0.70, "avg_f1": 0.60, "ddi_rate": 0.06, "avg_med": 8.0},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    pd.DataFrame(
+        {
+            "partition": ["long_k10", "long_k10"],
+            "scope": ["test", "test"],
+            "group": [0, 1],
+            "n_visits": [40, 35],
+            "n_patients": [30, 25],
+            "small": [False, False],
+        }
+    ).to_csv(eval_dir / "table_group_summary.csv", index=False)
+
+    pd.DataFrame(
+        {
+            "partition": ["long_k10"], "scope": ["test"], "outcome": ["jaccard"],
+            "source": ["raw"], "statistic": ["range"], "observed": [0.1],
+            "null_mean": [0.05], "null_p95": [0.09], "z": [1.5],
+            "p_raw": [0.2], "p_bonferroni": [1.0],
+        }
+    ).to_csv(eval_dir / "table_permutation.csv", index=False)
+
+    pd.DataFrame({"split": ["test", "eval"], "has_label": [True, True]}).to_csv(
+        eval_dir / "per_visit_metrics.csv", index=False
+    )
+
+    # Planted group means -- group 0's adjusted_mean (0.5500) is the value under test.
+    pd.DataFrame(
+        {
+            "partition": ["long_k10", "long_k10"],
+            "scope": ["test", "test"],
+            "outcome": ["jaccard", "jaccard"],
+            "group": [0, 1],
+            "raw_mean": [0.4000, 0.6000],
+            "adjusted_mean": [0.5500, 0.5800],
+        }
+    ).to_csv(eval_dir / "table_adjusted_means.csv", index=False)
+
+    pd.DataFrame(
+        {
+            "partition": ["long_k10"] * 3,
+            "scope": ["test"] * 3,
+            "outcome": ["jaccard"] * 3,
+            "term": ["log_n_dx", "n_med_gt", "visit_index"],
+            "estimate": [0.0123, 0.0012, 0.0001],
+            "cluster_robust_se": [0.0045, 0.0006, 0.0002],
+        }
+    ).to_csv(eval_dir / "table_ols_coefficients.csv", index=False)
+
+    write_report(eval_dir)
+    report = (eval_dir / "REPORT_SAFEDRUG_CLUSTER_KO.md").read_text(encoding="utf-8")
+
+    assert "조정 전/후 군집별 평균" in report
+    assert "long_k10 / test" in report
+    assert "| group | n_visits | raw_mean | adjusted_mean |" in report
+    # The planted adjusted_mean value -- absent from every other section, so its
+    # presence here can only come from the adjusted-means section actually rendering.
+    assert "0.5500" in report
+    assert "0.4000" in report
+    assert "공변량 계수" in report
+    assert "log_n_dx" in report

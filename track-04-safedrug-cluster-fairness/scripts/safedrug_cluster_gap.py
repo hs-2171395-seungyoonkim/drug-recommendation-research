@@ -448,6 +448,68 @@ def _df_to_markdown(df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+_COVARIATE_TERMS = ("log_n_dx", "n_med_gt", "visit_index")
+
+
+def _adjusted_means_section(eval_dir: Path, summary: pd.DataFrame) -> list[str]:
+    """D6 fix-round addition: render raw-vs-adjusted group means (from
+    table_adjusted_means.csv) and the covariate coefficients (from
+    table_ols_coefficients.csv) that write_report previously never read --
+    D9 requires this content ("D6 raw-vs-adjusted") and it was missing.
+
+    One subsection per (partition, scope) pair present in
+    table_adjusted_means.csv, primary (long_k10, test) first, then the rest
+    in PARTITIONS order (test scope before test+eval); within each, one
+    small table per ADJUSTED_OUTCOMES outcome (group, n_visits, raw_mean,
+    adjusted_mean -- n_visits joined in from the group-summary table, since
+    table_adjusted_means.csv itself does not carry it), plus one combined
+    covariate-coefficient table (outcome, term, estimate, cluster_robust_se)
+    restricted to the three covariate terms (the group-dummy terms are not
+    shown here -- they are already folded into adjusted_mean).
+    """
+    adjusted = pd.read_csv(eval_dir / "table_adjusted_means.csv")
+    coefficients = pd.read_csv(eval_dir / "table_ols_coefficients.csv")
+
+    combos = sorted(
+        {(p, s) for p, s in adjusted[["partition", "scope"]].itertuples(index=False)},
+        key=lambda ps: (
+            0 if ps == ("long_k10", "test") else 1,
+            PARTITIONS.index(ps[0]) if ps[0] in PARTITIONS else len(PARTITIONS),
+            0 if ps[1] == "test" else 1,
+        ),
+    )
+
+    lines = ["\n## 4. 조정 전/후 군집별 평균 (D6: raw vs adjusted)\n"]
+    for partition, scope in combos:
+        lines.append(f"### {partition} / {scope}\n")
+        part_scope_adj = adjusted[(adjusted["partition"] == partition) & (adjusted["scope"] == scope)]
+        group_n_visits = summary[
+            (summary["partition"] == partition) & (summary["scope"] == scope)
+        ][["group", "n_visits"]]
+
+        for outcome in ADJUSTED_OUTCOMES:
+            out_adj = part_scope_adj[part_scope_adj["outcome"] == outcome]
+            if out_adj.empty:
+                continue
+            table = out_adj.merge(group_n_visits, on="group", how="left")[
+                ["group", "n_visits", "raw_mean", "adjusted_mean"]
+            ]
+            lines.append(f"**{outcome}**\n")
+            lines.append(_df_to_markdown(table))
+            lines.append("")
+
+        coef = coefficients[
+            (coefficients["partition"] == partition)
+            & (coefficients["scope"] == scope)
+            & (coefficients["term"].isin(_COVARIATE_TERMS))
+        ][["outcome", "term", "estimate", "cluster_robust_se"]]
+        if not coef.empty:
+            lines.append("**공변량 계수 (cluster-robust SE)**\n")
+            lines.append(_df_to_markdown(coef))
+            lines.append("")
+    return lines
+
+
 def write_report(eval_dir: Path) -> None:
     manifest = json.loads((eval_dir / "run_manifest.json").read_text(encoding="utf-8"))
     summary = pd.read_csv(eval_dir / "table_group_summary.csv")
@@ -485,10 +547,12 @@ def write_report(eval_dir: Path) -> None:
         lines.append(_df_to_markdown(part))
         lines.append("")
 
-    lines.append("## 4. 순열 검정 (p_비보정 / p_bonferroni)\n")
+    lines.extend(_adjusted_means_section(eval_dir, summary))
+
+    lines.append("## 5. 순열 검정 (p_비보정 / p_bonferroni)\n")
     lines.append(_df_to_markdown(permutation))
 
-    lines.append("\n## 5. 해석\n")
+    lines.append("\n## 6. 해석\n")
     lines.append(
         "- 위 표는 각 파티션·지표별 관측 격차와 순열 귀무분포 대비 p값을 보여준다. "
         "조정(adjusted) 열은 log(진단수)·처방수·방문순서를 통제한 뒤에도 격차가 남는지를 "
