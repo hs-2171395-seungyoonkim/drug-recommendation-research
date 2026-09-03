@@ -75,6 +75,38 @@ def test_assemble_dump_arrays_rejects_empty_input():
         assemble_dump_arrays([])
 
 
+def test_resolve_seeds_none_returns_existing_defaults_unchanged():
+    """--seed defaults to None; resolve_seeds(None) must reproduce the exact
+    values SafeDrug.py itself hard-codes (lines 14-15: torch.manual_seed(1203),
+    np.random.seed(2048); PY_RANDOM_SEED is a wrapper-only addition), so a run
+    without --seed is byte-for-byte identical to before --seed existed."""
+    from safedrug_train_dump import resolve_seeds
+
+    seeds = resolve_seeds(None)
+    assert seeds == {"torch": 1203, "numpy": 2048, "python": 1203}
+
+
+def test_resolve_seeds_int_overrides_all_three():
+    from safedrug_train_dump import resolve_seeds
+
+    seeds = resolve_seeds(7)
+    assert seeds == {"torch": 7, "numpy": 7, "python": 7}
+
+
+def test_parse_args_seed_defaults_to_none():
+    from safedrug_train_dump import parse_args
+
+    args = parse_args(["--epochs", "5"])
+    assert args.seed is None
+
+
+def test_parse_args_accepts_seed_flag():
+    from safedrug_train_dump import parse_args
+
+    args = parse_args(["--epochs", "5", "--seed", "7"])
+    assert args.seed == 7
+
+
 def test_select_best_state_snapshots_epoch_zero_trained_weights_as_fallback():
     """Fix round 1: the fallback best_state must be epoch 0's *trained* weights
     (design D1a), not weights snapshotted before any training happened. Drives

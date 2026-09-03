@@ -65,10 +65,27 @@ NUMPY_SEED = 2048
 PY_RANDOM_SEED = 1203
 
 
-def set_seeds() -> None:
-    torch.manual_seed(TORCH_SEED)
-    np.random.seed(NUMPY_SEED)
-    random.seed(PY_RANDOM_SEED)
+def resolve_seeds(seed: int | None = None) -> dict:
+    """Resolve the three seeds set_seeds() applies. Pure function -- no I/O,
+    no side effects -- so it is unit-testable without touching torch/numpy
+    global state.
+
+    seed is None: returns the module's existing defaults unchanged (the
+    same byte-for-byte behaviour as before --seed existed -- TORCH_SEED,
+    NUMPY_SEED, PY_RANDOM_SEED, which are NOT all equal to each other).
+
+    seed is an int: all three seeds are overridden to that single value,
+    for a multi-seed robustness study (e.g. --seed 1, --seed 2, ...).
+    """
+    if seed is None:
+        return {"torch": TORCH_SEED, "numpy": NUMPY_SEED, "python": PY_RANDOM_SEED}
+    return {"torch": seed, "numpy": seed, "python": seed}
+
+
+def set_seeds(seeds: dict) -> None:
+    torch.manual_seed(seeds["torch"])
+    np.random.seed(seeds["numpy"])
+    random.seed(seeds["python"])
     torch.backends.cudnn.deterministic = True
 
 
@@ -357,6 +374,10 @@ def parse_args(argv=None):
     parser.add_argument("--epochs", type=int, default=50)
     parser.add_argument("--smoke", action="store_true", default=False)
     parser.add_argument("--out-dir", type=str, default="out/safedrug_eval")
+    parser.add_argument("--seed", type=int, default=None,
+                         help="Override torch/numpy/python seeds with a single "
+                              "value (default: SafeDrug's own per-library "
+                              "defaults, unchanged).")
     return parser.parse_args(argv)
 
 
@@ -368,7 +389,8 @@ def main(argv=None) -> None:
         args.epochs = 1
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    set_seeds()
+    seeds = resolve_seeds(args.seed)
+    set_seeds(seeds)
     device = select_device()
 
     bundle = load_safedrug_data()
@@ -470,10 +492,11 @@ def main(argv=None) -> None:
     manifest = {
         "args": {"epochs": args.epochs, "smoke": args.smoke, "out_dir": str(out_dir)},
         "seeds": {
-            "torch_manual_seed": TORCH_SEED,
-            "numpy_seed": NUMPY_SEED,
-            "python_random_seed": PY_RANDOM_SEED,
+            "torch_manual_seed": seeds["torch"],
+            "numpy_seed": seeds["numpy"],
+            "python_random_seed": seeds["python"],
             "cudnn_deterministic": True,
+            "seed_override": args.seed,
         },
         "torch_version": torch.__version__,
         "torch_cuda_version": torch.version.cuda,
