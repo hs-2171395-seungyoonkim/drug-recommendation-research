@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import safedrug_cluster_gap as scg
 from safedrug_cluster_gap import ADJUSTED_OUTCOMES, PARTITIONS
+from safedrug_percluster.labels import short_group_label
 
 DEFAULT_EVAL_DIRS = [
     "out/safedrug_eval",
@@ -225,7 +226,28 @@ def pooled_group_tables(pooled_df: pd.DataFrame, n_perm: int = None):
     return table_pooled_groups, table_pooled_permutation
 
 
-def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, figs_dir: Path) -> None:
+def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, figs_dir: Path):
+    """long_k10/jaccard by seed: per-seed points, a mean +/- SD error bar
+    across seeds, and the pooled (per-visit-mean) marker, groups ordered by
+    the pooled adjusted mean, short curated y-axis labels.
+
+    Fix-round note: pooled_groups' "group" column is computed fresh in this
+    process (pooled_group_tables never round-trips through a CSV), so a
+    numeric long_k10 id stays a plain float (e.g. 0.0). seed_groups' "group"
+    column instead comes from load_seed_groups() -> pd.read_csv() over each
+    seed's table_adjusted_means.csv, whose "group" column mixes numeric ids
+    with ccs_group name strings across partitions and so round-trips as an
+    object column of literal strings ("0.0", not 0.0). A bare `.isin()` join
+    between the two, without normalizing both sides first, silently matches
+    nothing -- every seed row got dropped and only the pooled diamonds ever
+    rendered. Both sides are normalized via safedrug_cluster_gap's own
+    _normalize_group_id (imported as `scg` at this module's top) before the
+    join, exactly like safedrug_cluster_gap.make_figures does for its own
+    group ids.
+
+    Returns the closed Figure (for tests to inspect its axes/artists) --
+    main()'s caller ignores the return value.
+    """
     import matplotlib
 
     matplotlib.use("Agg")
@@ -234,28 +256,41 @@ def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, fig
     matplotlib.rcParams.update({"font.family": "Malgun Gothic", "axes.unicode_minus": False})
 
     pooled_long = pooled_groups[pooled_groups["partition"] == "long_k10"].copy()
+    pooled_long["group"] = pooled_long["group"].map(scg._normalize_group_id)
     pooled_long = pooled_long.sort_values("adjusted_mean_jaccard")
     order = pooled_long["group"].tolist()
     group_pos = {g: i for i, g in enumerate(order)}
 
     seed_long = seed_groups[(seed_groups["partition"] == "long_k10")
-                             & (seed_groups["outcome"] == "jaccard")]
+                             & (seed_groups["outcome"] == "jaccard")].copy()
+    seed_long["group"] = seed_long["group"].map(scg._normalize_group_id)
     seed_long = seed_long[seed_long["group"].isin(group_pos)]
 
-    fig, ax = plt.subplots(figsize=(8, 5.5))
+    fig, ax = plt.subplots(figsize=(9, 6.5))
     for seed, sub in seed_long.groupby("seed"):
         y = [group_pos[g] for g in sub["group"]]
-        ax.scatter(sub["adjusted_mean"], y, s=22, alpha=0.75, label=f"seed {seed}")
+        ax.scatter(sub["adjusted_mean"], y, s=22, alpha=0.7, zorder=2, label=f"seed {seed}")
+
+    agg = aggregate_seed_groups(seed_long)
+    agg = agg[agg["group"].isin(group_pos)]
+    agg_y = [group_pos[g] for g in agg["group"]]
+    ax.errorbar(
+        agg["mean_adjusted"], agg_y, xerr=agg["sd_adjusted"],
+        fmt="s", color="#e67e22", ecolor="#e67e22", elinewidth=1.5, capsize=4,
+        markersize=6, linestyle="none", zorder=3, label="mean ± SD (seeds)",
+    )
+
     ax.scatter(pooled_long["adjusted_mean_jaccard"], [group_pos[g] for g in order],
-               marker="D", color="#0b0b0b", s=40, label="pooled")
+               marker="D", color="#0b0b0b", s=40, zorder=4, label="pooled")
     ax.set_yticks(range(len(order)))
-    ax.set_yticklabels([str(g) for g in order], fontsize=8)
+    ax.set_yticklabels([short_group_label("long_k10", g) for g in order], fontsize=8)
     ax.set_xlabel("adjusted mean Jaccard")
     ax.set_title("long_k10 - adjusted mean Jaccard by seed (pooled = diamond)")
     ax.legend(fontsize=8, frameon=False)
     fig.tight_layout()
     fig.savefig(figs_dir / "fig_seed_long_k10.png", dpi=160, bbox_inches="tight")
     plt.close(fig)
+    return fig
 
 
 def parse_args(argv=None):
@@ -276,6 +311,8 @@ def main(argv=None) -> None:
 
     seed_groups = load_seed_groups(eval_dirs)
     seed_groups.to_csv(out_dir / "table_seed_groups.csv", index=False)
+
+    seed_rank_correlations(seed_groups).to_csv(out_dir / "table_seed_rank_correlations.csv", index=False)
 
     load_seed_gap(eval_dirs).to_csv(out_dir / "table_seed_gap.csv", index=False)
 

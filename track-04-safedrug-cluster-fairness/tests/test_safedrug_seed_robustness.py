@@ -15,6 +15,7 @@ from safedrug_seed_robustness import (
     load_seed_gap,
     load_seed_groups,
     load_seed_official,
+    make_seed_figure,
     pool_per_visit_metrics,
     pooled_group_tables,
     seed_label,
@@ -221,6 +222,81 @@ def test_pool_per_visit_metrics_hadm_mismatch_raises(tmp_path):
 
     with pytest.raises(ValueError):
         pool_per_visit_metrics([d0, d1])
+
+
+def test_seed_rank_correlations_csv_has_expected_columns(tmp_path):
+    # Task F item 1a: main() now also writes seed_rank_correlations()'s
+    # output to table_seed_rank_correlations.csv alongside the other seed
+    # tables (previously it was only ever rendered into the Markdown
+    # report, via safedrug_seeds_report.py re-deriving it from
+    # table_seed_groups.csv). This checks the exact write+columns contract
+    # main() now performs, without paying for main()'s full pipeline
+    # (pool_per_visit_metrics/pooled_group_tables/make_seed_figure need a
+    # lot of fixture files and, for pooled_group_tables, N_PERM=10000 by
+    # default).
+    rows = []
+    for seed in (0, 1, 2):
+        for g in (0, 1, 2, 3):
+            rows.append({"seed": seed, "partition": "long_k10", "outcome": "jaccard",
+                         "group": g, "adjusted_mean": 0.3 + 0.05 * g + 0.01 * seed})
+    seed_groups = pd.DataFrame(rows)
+
+    out_path = tmp_path / "table_seed_rank_correlations.csv"
+    seed_rank_correlations(seed_groups).to_csv(out_path, index=False)
+
+    assert out_path.exists()
+    written = pd.read_csv(out_path)
+    assert set(written.columns) == {
+        "partition", "outcome", "seed_a", "seed_b", "n_groups", "spearman_r",
+    }
+    assert len(written) == 3  # seed pairs (0,1), (0,2), (1,2)
+    assert set(zip(written["seed_a"], written["seed_b"])) == {(0, 1), (0, 2), (1, 2)}
+
+
+def test_make_seed_figure_smoke_shows_per_seed_points_and_error_bars(tmp_path):
+    # Task F item 1b regression test. Fix-round bug: pooled_groups' "group"
+    # column (computed fresh, never round-tripped through CSV) stayed float
+    # (0.0), while seed_groups' "group" column (read back from
+    # table_adjusted_means.csv, whose "group" column mixes numeric ids with
+    # ccs_group name strings across partitions) round-tripped as the
+    # *string* "0.0". The old code's `seed_long["group"].isin(group_pos)`
+    # compared floats against strings and matched nothing -- every seed
+    # point silently vanished and only the pooled diamonds ever rendered.
+    # This plants exactly that float-vs-string mismatch and checks the
+    # per-seed scatter actually got points, not zero.
+    pooled_groups = pd.DataFrame(
+        [
+            {"partition": "long_k10", "group": 0.0, "adjusted_mean_jaccard": 0.50},
+            {"partition": "long_k10", "group": 1.0, "adjusted_mean_jaccard": 0.55},
+            {"partition": "long_k10", "group": 2.0, "adjusted_mean_jaccard": 0.45},
+        ]
+    )
+    rows = []
+    for seed in (0, 1, 2):
+        for g_str, base in [("0.0", 0.50), ("1.0", 0.55), ("2.0", 0.45)]:
+            rows.append({"seed": seed, "partition": "long_k10", "outcome": "jaccard",
+                         "group": g_str, "adjusted_mean": base + 0.01 * seed,
+                         "raw_mean": base - 0.02})
+    seed_groups = pd.DataFrame(rows)
+
+    figs_dir = tmp_path / "figs"
+    figs_dir.mkdir()
+    fig = make_seed_figure(pooled_groups, seed_groups, figs_dir)
+
+    assert (figs_dir / "fig_seed_long_k10.png").exists()
+    ax = fig.axes[0]
+
+    n_seed_points = sum(
+        len(coll.get_offsets()) for coll in ax.collections
+        if coll.get_label().startswith("seed ")
+    )
+    assert n_seed_points == 9  # 3 groups x 3 seeds
+
+    assert any(c.get_label() == "mean ± SD (seeds)" for c in ax.containers)
+
+    yticklabels = [t.get_text() for t in ax.get_yticklabels()]
+    assert "0.0" not in yticklabels  # short curated label, not the raw group id
+    assert "CAD / MI" in yticklabels
 
 
 def test_pooled_group_tables_smoke():

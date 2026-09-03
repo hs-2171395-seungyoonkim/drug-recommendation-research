@@ -15,6 +15,7 @@ from safedrug_cluster_gap import (
     cluster_robust_ols,
     gap_statistics,
     largest_remainder,
+    make_figures,
     permutation_p,
     write_report,
 )
@@ -227,3 +228,50 @@ def test_figure_group_labels_normalizes_float_formatted_group_ids():
     # A genuine (non-numeric) CCS group name is not in the long_k10 theme dict and
     # must pass through unchanged, exactly like the pre-fix str(g) fallback did.
     assert labels[2] == "기타(소규모)"
+
+
+def test_make_figures_smoke_writes_pngs_with_short_labels(tmp_path):
+    # Task F item 2: make_figures previously called _figure_group_labels(),
+    # whose long_k10 output ("code title (pct) / code title xlift (pct)")
+    # overlaps badly once tick-labeled on an axis -- it now uses the shared
+    # safedrug_percluster.labels.short_group_label() helper instead. This is
+    # a smoke test (tiny synthetic table under tmp_path, matplotlib 3.11
+    # under py -3.12) -- it only checks the figures actually get written,
+    # not their pixel content.
+    eval_dir = tmp_path
+    groups = [0, 1, 2]
+
+    summary_rows = [
+        {
+            "partition": "long_k10", "scope": "test", "group": g,
+            "mean_jaccard": 0.40 + 0.05 * g,
+            "ci_low_jaccard": 0.35 + 0.05 * g,
+            "ci_high_jaccard": 0.45 + 0.05 * g,
+            "mean_ddi_rate_visit": 0.05 + 0.01 * g,
+            "mean_n_med_pred": 15 + g,
+        }
+        for g in groups
+    ]
+    pd.DataFrame(summary_rows).to_csv(eval_dir / "table_group_summary.csv", index=False)
+
+    adjusted_rows = [
+        {"partition": "long_k10", "scope": "test", "group": g, "outcome": "jaccard",
+         "adjusted_mean": 0.42 + 0.03 * g}
+        for g in groups
+    ]
+    pd.DataFrame(adjusted_rows).to_csv(eval_dir / "table_adjusted_means.csv", index=False)
+
+    pd.DataFrame(
+        {"epoch": [0, 1, 2], "eval_ja": [0.40, 0.45, 0.50], "eval_ddi_rate": [0.07, 0.065, 0.06]}
+    ).to_csv(eval_dir / "train_log.csv", index=False)
+
+    figs_dir = tmp_path / "figs"
+    figs_dir.mkdir()
+    make_figures(eval_dir, figs_dir)
+
+    assert (figs_dir / "fig_long_k10_raw_vs_adjusted.png").exists()
+    assert (figs_dir / "fig_long_k10_ddi_nmed.png").exists()
+    assert (figs_dir / "fig_train_log.png").exists()
+    # Other partitions (short_k10/concise_k10/long_k25/ccs_group) have no
+    # rows in this tiny fixture -- make_figures must skip them, not crash.
+    assert not (figs_dir / "fig_ccs_group_raw_vs_adjusted.png").exists()

@@ -30,6 +30,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from safedrug_percluster.labels import short_group_label
 from safedrug_percluster.metrics import attach_labels, patient_bootstrap_ci, visit_metrics
 
 DXTEXT_CSV = ROOT / "out" / "dxtext_cluster_assignments.csv"
@@ -402,9 +403,13 @@ def make_figures(eval_dir: Path, figs_dir: Path) -> None:
         if part_summary.empty:
             continue
         merged = part_summary.merge(part_adjusted, on="group", how="left").sort_values("mean_jaccard")
-        labels = _figure_group_labels(partition, merged["group"].tolist())
+        labels = [short_group_label(partition, g) for g in merged["group"].tolist()]
 
-        fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
+        # Height grows with the number of groups (ccs_group has 22, long_k25
+        # has 25) so the y tick labels never overlap; width is unaffected by
+        # group count since it's a two-column dot plot, not a bar chart.
+        fig_height = max(4.5, 0.32 * len(merged) + 1.2)
+        fig, axes = plt.subplots(1, 2, figsize=(12, fig_height))
         y_pos = np.arange(len(merged))
         axes[0].errorbar(
             merged["mean_jaccard"], y_pos,
@@ -429,7 +434,7 @@ def make_figures(eval_dir: Path, figs_dir: Path) -> None:
 
     primary = summary[(summary["partition"] == "long_k10") & (summary["scope"] == "test")].sort_values("group")
     if not primary.empty:
-        labels = _figure_group_labels("long_k10", primary["group"].tolist())
+        labels = [short_group_label("long_k10", g) for g in primary["group"].tolist()]
         fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
         x_pos = np.arange(len(primary))
         axes[0].bar(x_pos, primary["mean_ddi_rate_visit"], color="#7d3c98")

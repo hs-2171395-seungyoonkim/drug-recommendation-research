@@ -6,6 +6,8 @@
 !README.md
 !scripts/
 !scripts/*.py
+!scripts/safedrug_percluster/
+!scripts/safedrug_percluster/*.py
 !tests/
 !tests/*.py
 !docs/
