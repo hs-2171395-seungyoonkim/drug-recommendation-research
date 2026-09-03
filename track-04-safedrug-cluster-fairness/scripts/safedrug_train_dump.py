@@ -325,6 +325,33 @@ def assemble_dump_arrays(rows: list[dict]) -> dict[str, np.ndarray]:
     return out
 
 
+def select_best_state(epoch, ja, best_epoch, best_ja, best_state, snapshot_fn):
+    """SafeDrug.py lines 202, 299-301's best_epoch/best_ja selection, transcribed
+    exactly (`if epoch != 0 and best_ja < ja: best_epoch, best_ja = epoch, ja`) --
+    unchanged here -- plus the wrapper-only fallback-snapshot mechanism built
+    around it (design D1a). The fallback `best_state` must be epoch 0's *trained*
+    weights (what the original would always persist to `Epoch_0_...model` on disk,
+    regardless of the best-epoch quirk that keeps `best_ja` at its initial 0 after
+    epoch 0), not the pre-training, never-trained init weights -- so the snapshot is
+    taken here, at the end of epoch 0's processing, rather than once before any
+    epoch has run.
+
+    `snapshot_fn` is a zero-arg callable that deep-copies the model's current
+    state_dict; it is called lazily -- only when a snapshot is actually needed (at
+    epoch 0, or when `ja` improves on `best_ja` for epoch >= 1) -- so this takes
+    exactly as many snapshots as the pre-fix code did (one at the point that used to
+    be "before the loop", now moved to "end of epoch 0"; one per later improvement).
+    Pure w.r.t. everything but `snapshot_fn`'s own side effect, so it is
+    unit-testable with a stub callable and no real model.
+    """
+    if epoch == 0:
+        best_state = snapshot_fn()
+    if epoch != 0 and best_ja < ja:
+        best_epoch, best_ja = epoch, ja
+        best_state = snapshot_fn()
+    return best_epoch, best_ja, best_state
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="SafeDrug training + per-visit dump wrapper")
     parser.add_argument("--epochs", type=int, default=50)
@@ -376,8 +403,11 @@ def main(argv=None) -> None:
 
     # SafeDrug.py lines 202, 299-301: best_epoch/best_ja bookkeeping, transcribed
     # exactly (epoch 0 can never itself become the recorded best -- design D1a).
+    # best_state itself is set inside the loop by select_best_state() -- at the end
+    # of epoch 0 (fallback) and on every later improvement -- never before training
+    # has produced any weights to snapshot.
     best_epoch, best_ja = 0, 0
-    best_state = copy.deepcopy(model.state_dict())  # fallback so best.model is always written
+    best_state = None
     log_rows = []
 
     for epoch in range(args.epochs):
@@ -413,9 +443,10 @@ def main(argv=None) -> None:
             }
         )
 
-        if epoch != 0 and best_ja < metrics["ja"]:
-            best_epoch, best_ja = epoch, metrics["ja"]
-            best_state = copy.deepcopy(model.state_dict())
+        best_epoch, best_ja, best_state = select_best_state(
+            epoch, metrics["ja"], best_epoch, best_ja, best_state,
+            lambda: copy.deepcopy(model.state_dict()),
+        )
 
     pd.DataFrame(log_rows).to_csv(out_dir / "train_log.csv", index=False)
     torch.save(best_state, out_dir / "best.model")

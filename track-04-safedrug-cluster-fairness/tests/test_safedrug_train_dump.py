@@ -73,3 +73,46 @@ def test_assemble_dump_arrays_rejects_empty_input():
 
     with pytest.raises(ValueError):
         assemble_dump_arrays([])
+
+
+def test_select_best_state_snapshots_epoch_zero_trained_weights_as_fallback():
+    """Fix round 1: the fallback best_state must be epoch 0's *trained* weights
+    (design D1a), not weights snapshotted before any training happened. Drives
+    select_best_state over a 3-epoch sequence with a stub snapshot_fn (no real
+    model, no training) so the fix is exercised directly and cheaply."""
+    from safedrug_train_dump import select_best_state
+
+    best_epoch, best_ja, best_state = 0, 0, None
+
+    # Epoch 0: even though its own ja (0.3979) can never satisfy `epoch != 0` (the
+    # original's own quirk, unchanged), best_state must still become epoch 0's
+    # *trained* snapshot -- not stay at the pre-loop, never-trained None/init.
+    best_epoch, best_ja, best_state = select_best_state(
+        epoch=0, ja=0.3979, best_epoch=best_epoch, best_ja=best_ja,
+        best_state=best_state, snapshot_fn=lambda: "epoch0_trained_state",
+    )
+    assert (best_epoch, best_ja) == (0, 0)  # unchanged -- SafeDrug's own quirk
+    assert best_state == "epoch0_trained_state"  # the actual fix
+
+    # Epoch 1: does not improve on best_ja=0 is false here since any ja > 0 beats
+    # the floor of 0 -- use ja=0 itself to exercise the "no improvement" branch and
+    # confirm epoch 0's snapshot survives untouched, and snapshot_fn is not called
+    # (lazy -- no wasted deep copy).
+    snapshot_calls = []
+    best_epoch, best_ja, best_state = select_best_state(
+        epoch=1, ja=0.0, best_epoch=best_epoch, best_ja=best_ja,
+        best_state=best_state,
+        snapshot_fn=lambda: snapshot_calls.append(1) or "epoch1_state",
+    )
+    assert (best_epoch, best_ja) == (0, 0)
+    assert best_state == "epoch0_trained_state"  # still epoch 0's, not overwritten
+    assert snapshot_calls == []  # no improvement -> snapshot_fn never invoked
+
+    # Epoch 2: improves on best_ja=0 -- best_state must advance to epoch 2's own
+    # snapshot (the ordinary, always-worked improvement path, unaffected by the fix).
+    best_epoch, best_ja, best_state = select_best_state(
+        epoch=2, ja=0.41, best_epoch=best_epoch, best_ja=best_ja,
+        best_state=best_state, snapshot_fn=lambda: "epoch2_state",
+    )
+    assert (best_epoch, best_ja) == (2, 0.41)
+    assert best_state == "epoch2_state"
