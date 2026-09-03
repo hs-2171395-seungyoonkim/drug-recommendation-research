@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from safedrug_cluster_gap import (
+    _figure_group_labels,
     adjusted_group_means,
     cluster_robust_ols,
     gap_statistics,
@@ -200,3 +201,29 @@ def test_write_report_renders_adjusted_means_section(tmp_path):
     assert "0.4000" in report
     assert "공변량 계수" in report
     assert "log_n_dx" in report
+
+
+def test_figure_group_labels_normalizes_float_formatted_group_ids():
+    # Fix-round-2 regression test. table_group_summary.csv's "group" column mixes
+    # integer cluster ids (long_k10/short_k10/concise_k10/long_k25) with CCS
+    # group-name strings (ccs_group) in the same column; attach_labels' left join
+    # puts NaN into the numeric label columns for unlabeled visits, which forces
+    # pandas to upcast those columns to float64 -- so a numeric group id is a float
+    # (6.0) by the time it is written to CSV, and because the column overall also
+    # holds non-numeric CCS strings, it round-trips through pd.read_csv as the
+    # literal *string* '6.0', not the float 6.0. The original _figure_group_labels()
+    # called bare int(g), which raises ValueError on that string -- this is exactly
+    # the crash seen running the real pipeline (out/safedrug_eval/gap_stderr.log).
+    # This test fails against that code (int('6.0') raises) and passes once group
+    # ids are normalized before the theme-dict lookup.
+    labels = _figure_group_labels("long_k10", ["6.0", 6, "기타(소규모)"])
+
+    # '6.0' (string, as read back from CSV) and 6 (a clean int) must resolve to the
+    # identical themed label -- not two different values, and not the str(g) fallback.
+    assert labels[0] == labels[1]
+    assert labels[0] != "6.0"
+    assert " / " in labels[0]  # themed label format is "{빈도1} / {top_lift}"
+
+    # A genuine (non-numeric) CCS group name is not in the long_k10 theme dict and
+    # must pass through unchanged, exactly like the pre-fix str(g) fallback did.
+    assert labels[2] == "기타(소규모)"

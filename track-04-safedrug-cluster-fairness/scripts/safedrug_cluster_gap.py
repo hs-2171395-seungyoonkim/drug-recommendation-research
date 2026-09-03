@@ -320,7 +320,45 @@ def group_summary_table(df: pd.DataFrame, partition: str, scope: str) -> pd.Data
 
 
 # ============================================================= D8: figures
-def _load_long_k10_theme_labels() -> dict[int, str]:
+def _normalize_group_id(g):
+    """Fix-round-2: normalize a group id read back from a table_*.csv round
+    trip to a stable, comparable key.
+
+    table_group_summary.csv/table_adjusted_means.csv's "group" column mixes
+    integer cluster ids (long_k10/short_k10/concise_k10/long_k25) with CCS
+    group-name strings (ccs_group) in the same column. Upstream,
+    attach_labels' left join puts NaN into the numeric label columns for the
+    ~590 visits with no dxtext label, which forces pandas to upcast those
+    otherwise-integer columns to float64 (there is no missing-value-safe
+    plain int dtype) -- so numeric group ids are float (e.g. 6.0) by the
+    time they reach these tables, and to_csv writes them as "6.0". On
+    read-back, because the column as a whole also holds non-numeric CCS
+    strings, pandas cannot infer it as numeric and keeps every entry as a
+    literal object/string -- so a numeric group id round-trips as the
+    *string* '6.0', not the float 6.0. A bare int(g) raises ValueError on
+    that string.
+
+    Anything that looks like a whole number -- a Python/numpy int, a
+    Python/numpy float, or a numeric string including a float-formatted one
+    like '6.0' -- normalizes to a plain int. Anything else (a CCS group
+    name, or any other non-numeric string) passes through unchanged as a
+    string. NaN passes through unchanged (there is no integer it could be).
+    """
+    if isinstance(g, (int, np.integer)):
+        return int(g)
+    if isinstance(g, (float, np.floating)):
+        return g if pd.isna(g) else int(g)
+    s = str(g)
+    try:
+        f = float(s)
+    except (TypeError, ValueError):
+        return s
+    if pd.isna(f):
+        return s
+    return int(f) if f.is_integer() else s
+
+
+def _load_long_k10_theme_labels() -> dict:
     """빈도1 + first lift_top5 entry, for the long_k10 partition's figure
     labels only (design D8 -- not extended to short_k10/concise_k10 even
     though out/dxtext_topdx_k5_k10.csv has k=10 rows for them too)."""
@@ -329,14 +367,14 @@ def _load_long_k10_theme_labels() -> dict[int, str]:
     labels = {}
     for row in topdx.itertuples(index=False):
         top_lift = str(row.lift_top5).split("|")[0].strip()
-        labels[int(row.cluster)] = f"{row.빈도1} / {top_lift}"
+        labels[_normalize_group_id(row.cluster)] = f"{row.빈도1} / {top_lift}"
     return labels
 
 
 def _figure_group_labels(partition: str, groups: list) -> list[str]:
     if partition == "long_k10":
         theme = _load_long_k10_theme_labels()
-        return [theme.get(int(g), str(g)) for g in groups]
+        return [theme.get(_normalize_group_id(g), str(g)) for g in groups]
     return [str(g) for g in groups]
 
 
