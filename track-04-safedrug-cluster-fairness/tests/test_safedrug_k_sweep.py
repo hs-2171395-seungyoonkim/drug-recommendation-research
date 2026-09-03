@@ -152,3 +152,114 @@ def test_run_sweep_reference_rows_have_nan_selection_corrected_p():
     table = run_sweep({"seed0": df}, [], ["long_k10"], quality, n_perm=50, seed=0)
     ref = table[table["is_reference"]].iloc[0]
     assert np.isnan(ref["p_selcorr_range_adj"])
+
+
+def test_run_sweep_reference_row_k_matches_partition_own_k():
+    """D-D5: reference rows report the partition's own k (long_k10/short_k10/
+    concise_k10 -> 10, long_k25 -> 25), NaN only for ccs_group."""
+    df = _fake_df(n_groups=2, per_group=40)
+    df = df.rename(columns={"cfg": "long_k10"})
+    df["long_k25"] = df["long_k10"]
+    df["short_k10"] = df["long_k10"]
+    df["concise_k10"] = df["long_k10"]
+    df["ccs_group"] = df["long_k10"].map({0: "A", 1: "B"})
+    quality = pd.DataFrame({"변형": [], "k": [], "실루엣": [], "ARI_시드간": [],
+                            "최소군집": [], "평균순위": []})
+    partitions = ["long_k10", "short_k10", "concise_k10", "long_k25", "ccs_group"]
+    table = run_sweep({"seed0": df}, [], partitions, quality, n_perm=20, seed=0)
+    ref = table[table["is_reference"]].set_index("variant")
+    assert ref.loc["long_k10", "k"] == 10
+    assert ref.loc["short_k10", "k"] == 10
+    assert ref.loc["concise_k10", "k"] == 10
+    assert ref.loc["long_k25", "k"] == 25
+    assert np.isnan(ref.loc["ccs_group", "k"])
+
+
+def test_attach_variant_label_raises_on_length_mismatch(tmp_path):
+    """Same positional-alignment invariant as
+    safedrug_percluster/metrics.py::attach_labels: dxtext_csv and
+    labels_npz[key] must have equal length, since the mapping is built by
+    zipping them positionally. A silent length mismatch would mis-map
+    HADM_IDs to the wrong labels rather than raising."""
+    dxtext = pd.DataFrame({"HADM_ID": [1, 2, 3, 4, 5]})
+    dxtext_path = tmp_path / "dxtext.csv"
+    dxtext.to_csv(dxtext_path, index=False, encoding="utf-8-sig")
+
+    labels_path = tmp_path / "labels.npz"
+    # Planted mismatch: only 4 labels for 5 dxtext rows.
+    np.savez(labels_path, long_k5=np.array([0, 1, 2, 0], dtype=np.int32))
+
+    df = pd.DataFrame({"HADM_ID": [1, 2, 3]})
+    with pytest.raises(ValueError):
+        attach_variant_label(df, dxtext_path, labels_path, "long_k5")
+
+
+def test_run_sweep_z_standardized_selection_correction_recovers_dominated_small_k_signal(tmp_path):
+    """Controller ruling (Task D fix round 1): the raw max-statistic
+    correction is dominated by high-k configs (range grows with k under the
+    null too, since more groups means smaller, noisier per-group means), so
+    a real small-k effect can be swamped by a noisy large-k config's null.
+    Standardizing each config's null to its own mean/sd before taking the
+    cross-config max removes that scale dependence.
+
+    Deterministic construction (fixed seeds): a genuine, modest 2-group
+    effect ("small", gap=0.15 against a sigma=0.8 noise floor) vs. a
+    pure-noise 20-group config ("large", label unrelated to jaccard) whose
+    own null -- inflated by splitting the same N into far more, smaller
+    groups -- sits at or above "small"'s real observed range on almost every
+    permutation round. That swamps the raw max-statistic correction
+    (p_selcorr_range_raw -> ~1.0) while the per-config standardized
+    correction (p_selcorr_z_range_raw) recovers "small"'s real significance.
+    """
+    N = 900
+    dxtext = pd.DataFrame({"HADM_ID": list(range(N))})
+    dxtext_path = tmp_path / "dxtext.csv"
+    dxtext.to_csv(dxtext_path, index=False, encoding="utf-8-sig")
+
+    K_LARGE = 20
+    rng = np.random.default_rng(7)
+    small_labels = np.array([0] * (N // 2) + [1] * (N - N // 2), dtype=np.int32)
+    large_labels = rng.integers(0, K_LARGE, N).astype(np.int32)
+    labels_path = tmp_path / "labels.npz"
+    np.savez(labels_path, small_k2=small_labels, large_klarge=large_labels)
+
+    import safedrug_k_sweep as sks
+    backup = sks.DXTEXT_CSV, sks.LABELS_NPZ
+    sks.DXTEXT_CSV, sks.LABELS_NPZ = dxtext_path, labels_path
+    try:
+        small_gap, sigma, mid = 0.15, 0.8, 0.5
+        jaccard = np.concatenate([
+            rng.normal(mid - small_gap / 2, sigma, N // 2),
+            rng.normal(mid + small_gap / 2, sigma, N - N // 2),
+        ])
+        df = pd.DataFrame({
+            "HADM_ID": range(N), "SUBJECT_ID": np.arange(N) // 2,
+            "n_dx": rng.integers(3, 15, N), "n_med_gt": rng.integers(1, 20, N),
+            "visit_index": rng.integers(0, 4, N), "jaccard": jaccard,
+        })
+        configs = [("small", 2, "small_k2"), ("large", K_LARGE, "large_klarge")]
+        quality = pd.DataFrame({"변형": [], "k": [], "실루엣": [], "ARI_시드간": [],
+                                "최소군집": [], "평균순위": []})
+        table = run_sweep({"seed0": df}, configs, [], quality, n_perm=300, seed=0)
+    finally:
+        sks.DXTEXT_CSV, sks.LABELS_NPZ = backup
+
+    small = table[table["variant"] == "small"].iloc[0]
+    # Raw max-statistic correction is swamped by "large"'s inflated null.
+    assert small["p_selcorr_range_raw"] > 0.9
+    # The z-standardized correction recovers "small"'s real signal.
+    assert small["p_selcorr_z_range_raw"] < 0.05
+    assert small["p_selcorr_z_range_raw"] <= small["p_selcorr_range_raw"]
+
+    # p_selcorr_z >= p_raw by construction, for every (non-reference) config
+    # and every stat: the standardized cross-config max (which includes that
+    # config's own standardized null) can only be >= that config's own
+    # standardized value -- same logic as the existing raw
+    # p_selcorr >= p_raw property, one level up on the standardized scale.
+    dx = table[~table["is_reference"]]
+    for _, row in dx.iterrows():
+        for name in ["range_raw", "wsd_raw", "range_adj", "wsd_adj"]:
+            p_raw = row[f"p_raw_{name}"]
+            p_sel_z = row[f"p_selcorr_z_{name}"]
+            if not np.isnan(p_raw) and not np.isnan(p_sel_z):
+                assert p_sel_z >= p_raw - 1e-9

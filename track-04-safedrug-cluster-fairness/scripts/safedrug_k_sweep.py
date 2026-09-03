@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import sys
 import time
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -50,6 +51,11 @@ REFERENCE_QUALITY_KEY = {
 def attach_variant_label(df: pd.DataFrame, dxtext_csv, labels_npz, key: str) -> pd.Series:
     dxtext = pd.read_csv(dxtext_csv, encoding="utf-8-sig")
     labels = np.load(labels_npz)
+    if len(labels[key]) != len(dxtext):
+        raise ValueError(
+            f"{labels_npz}[{key!r}] has {len(labels[key])} rows but {dxtext_csv} has "
+            f"{len(dxtext)} rows -- positional alignment broken"
+        )
     lookup = dict(zip(dxtext["HADM_ID"], labels[key]))
     return df["HADM_ID"].map(lookup)
 
@@ -167,6 +173,43 @@ def _stat_p_values(obs, null_col, null_max_col=None):
     return p_raw, p_sel
 
 
+def _null_zscore_max(null: np.ndarray):
+    """Controller ruling (Task D fix round 1): the raw max-statistic
+    correction (`null_max` / `p_selcorr_*`) is dominated by the large-k
+    configs, since `gap_statistics`'s range/weighted-SD grow with the number
+    of groups even under the null -- so a small-k config's real effect can
+    never look extreme relative to a null pool full of large-k noise, and
+    `p_selcorr_*` is ~1.0 almost everywhere.
+
+    This standardizes each config's null distribution to *its own* mean/sd
+    (over all n_perm permutations of that config) before taking the
+    cross-config max per round, removing the scale dependence on k while
+    still selecting over all swept configs each round -- same purpose as
+    `null_max`/`_stat_p_values`'s `p_sel` branch, on a standardized scale.
+
+    null: (n_perm, n_configs, 4) array from `_run_permutation_pool`.
+    Returns (null_mean, null_sd, null_z, null_z_max): null_mean/null_sd have
+    shape (n_configs, 4) (each config's own null moments, per stat); null_z is
+    `null` standardized per-config/per-stat; null_z_max has shape (n_perm, 4)
+    (max standardized null value across configs, per stat, per round). A
+    config with zero null variance for a stat gets NaN sd (and NaN z) for
+    that stat -- standardization is undefined, not zero.
+    """
+    n_perm, n_configs, n_stats = null.shape
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        null_mean = np.nanmean(null, axis=0)
+        null_sd = np.nanstd(null, axis=0, ddof=0)
+        null_sd = np.where(null_sd == 0, np.nan, null_sd)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            null_z = (null - null_mean[None, :, :]) / null_sd[None, :, :]
+        if n_configs:
+            null_z_max = np.nanmax(null_z, axis=1)
+        else:
+            null_z_max = np.full((n_perm, n_stats), np.nan)
+    return null_mean, null_sd, null_z, null_z_max
+
+
 def run_sweep(source_dfs: dict, configs: list, reference_partitions: list,
               quality: pd.DataFrame, n_perm: int = N_PERM_DEFAULT, seed: int = SWEEP_SEED) -> pd.DataFrame:
     all_rows = []
@@ -181,6 +224,7 @@ def run_sweep(source_dfs: dict, configs: list, reference_partitions: list,
 
         null = _run_permutation_pool(preps, n_perm, seed) if preps else np.zeros((n_perm, 0, 4))
         null_max = np.nanmax(null, axis=1) if preps else np.full((n_perm, 4), np.nan)
+        null_mean, null_sd, null_z, null_z_max = _null_zscore_max(null)
 
         for i, p in enumerate(preps):
             row = {
@@ -196,6 +240,10 @@ def run_sweep(source_dfs: dict, configs: list, reference_partitions: list,
                 p_raw, p_sel = _stat_p_values(p["obs"][j], null[:, i, j], null_max[:, j])
                 row[f"p_raw_{name}"] = p_raw
                 row[f"p_selcorr_{name}"] = p_sel
+
+                obs_z = (p["obs"][j] - null_mean[i, j]) / null_sd[i, j]
+                _, p_sel_z = _stat_p_values(obs_z, null_z[:, i, j], null_z_max[:, j])
+                row[f"p_selcorr_z_{name}"] = p_sel_z
             all_rows.append(row)
 
         for partition in reference_partitions:
@@ -205,8 +253,11 @@ def run_sweep(source_dfs: dict, configs: list, reference_partitions: list,
             ref_prep = _prep_config(partition, float("nan"), work, partition)
             ref_null = _run_permutation_pool([ref_prep], n_perm, seed)[:, 0, :]
 
+            # D-D5: k = the partition's own k (long_k10/short_k10/concise_k10 -> 10,
+            # long_k25 -> 25); NaN only for ccs_group (no k to report).
+            partition_k = REFERENCE_QUALITY_KEY.get(partition, (None, float("nan")))[1]
             row = {
-                "source": source_name, "variant": partition, "k": float("nan"), "is_reference": True,
+                "source": source_name, "variant": partition, "k": partition_k, "is_reference": True,
                 "n_groups_total": ref_prep["stats"]["n_groups_total"],
                 "min_group_size": ref_prep["stats"]["min_group_size"],
                 "raw_range": ref_prep["stats"]["raw_range"], "raw_wsd": ref_prep["stats"]["raw_wsd"],
@@ -218,6 +269,7 @@ def run_sweep(source_dfs: dict, configs: list, reference_partitions: list,
                 p_raw, _ = _stat_p_values(ref_prep["obs"][j], ref_null[:, j], None)
                 row[f"p_raw_{name}"] = p_raw
                 row[f"p_selcorr_{name}"] = float("nan")
+                row[f"p_selcorr_z_{name}"] = float("nan")
             all_rows.append(row)
 
     table = pd.DataFrame(all_rows)
@@ -247,6 +299,19 @@ def run_sweep(source_dfs: dict, configs: list, reference_partitions: list,
     table["qualifies"] = (
         (~table["is_reference"]) & table["meets_min_group"].fillna(False)
         & table["meets_ari"].fillna(False) & table["meets_significance"].fillna(False)
+    )
+
+    # Controller ruling (Task D fix round 1): standardized-scale counterpart of
+    # `meets_significance`/`qualifies`, using the z-standardized selection
+    # correction (p_selcorr_z_*) instead of the raw one, since the raw
+    # max-statistic pool is dominated by large-k configs (see
+    # `_null_zscore_max`). `qualifies` itself is left untouched.
+    table["meets_significance_z"] = (
+        (table["p_selcorr_z_range_adj"] < 0.05) | (table["p_selcorr_z_wsd_adj"] < 0.05)
+    )
+    table["qualifies_z"] = (
+        (~table["is_reference"]) & table["meets_min_group"].fillna(False)
+        & table["meets_ari"].fillna(False) & table["meets_significance_z"].fillna(False)
     )
     return table
 
