@@ -226,6 +226,11 @@ FIGURE_TEXT: dict[str, dict[str, str]] = {
         "ko": "시드 간 ARI",
     },
     "ksweep_ylabel_range": {"en": "adjusted Jaccard range", "ko": "보정 Jaccard 범위"},
+    "ksweep_ari_criterion": {"en": "ARI 0.85 criterion", "ko": "ARI 0.85 기준"},
+    "ksweep_sig_ring_legend": {
+        "en": "ring = selection-corrected p<0.05",
+        "ko": "테두리 = 선택 보정 p<0.05",
+    },
 }
 
 

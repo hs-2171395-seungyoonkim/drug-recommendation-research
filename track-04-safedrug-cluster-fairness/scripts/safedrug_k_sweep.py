@@ -43,6 +43,23 @@ K_GRID = [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50]
 N_PERM_DEFAULT = 2000
 SWEEP_SEED = 0
 ARI_MIN = 0.85
+
+# Follow-up fix (both figure panels): K_GRID's full 14 values render as
+# dense, unreadable x tick marks -- this coarser subset (still exact k values
+# actually swept) is what make_ksweep_figure ticks instead. K_SWEEP_REF_K
+# (10) is long_k10/short_k10/concise_k10's shared reference k, marked with a
+# light vertical guide on both panels.
+K_SWEEP_XTICKS = [2, 5, 10, 15, 20, 25, 30, 40, 50]
+K_SWEEP_REF_K = 10
+
+# Fixed per-variant color (rather than letting matplotlib's axes color cycle
+# assign one implicitly): make_ksweep_figure plots each variant on both
+# panels, and the left panel also plots an unlabeled significance-ring
+# overlay for some variants -- an implicit cycle color would desync the two
+# panels' colors for later variants once that extra overlay plot consumes a
+# cycle slot on the left panel only. An explicit fixed color removes that
+# dependency entirely and is what lets the two panels' legend colors match.
+VARIANT_COLORS = {"short": "#2471a3", "long": "#c0392b", "concise": "#27ae60"}
 REFERENCE_QUALITY_KEY = {
     "long_k10": ("long", 10), "short_k10": ("short", 10),
     "concise_k10": ("concise", 10), "long_k25": ("long", 25),
@@ -334,6 +351,7 @@ def make_ksweep_figure(table: pd.DataFrame, figs_dir: Path, lang: str = "en") ->
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
     percluster_labels.apply_korean_font()
     ft = percluster_labels.figure_text
@@ -344,19 +362,40 @@ def make_ksweep_figure(table: pd.DataFrame, figs_dir: Path, lang: str = "en") ->
         ls = styles.get(source_name, "-")
         for variant, sub in sub_s.groupby("variant"):
             sub = sub.sort_values("k")
+            color = VARIANT_COLORS.get(variant)
+            label = f"{variant} ({source_name})"
             axes[0].plot(sub["k"], sub["adj_range"], ls, marker="o", ms=4,
-                         label=f"{variant} ({source_name})")
+                         color=color, label=label)
             sig = sub[sub["meets_significance"] == True]  # noqa: E712
             if not sig.empty:
-                axes[0].plot(sig["k"], sig["adj_range"], "o", ms=7, mfc="none", mec="black")
+                # No `label` here -- the meaning of this ring overlay is
+                # explained once via the sig_proxy legend handle below, not
+                # per-variant/source. `color=color` (not left to the axes'
+                # color cycle) keeps this overlay from consuming an extra
+                # cycle slot that would desync this panel's colors from the
+                # right panel's for later variants -- see VARIANT_COLORS.
+                axes[0].plot(sig["k"], sig["adj_range"], "o", ms=7, mfc="none",
+                             mec="black", color=color)
             axes[1].plot(sub["k"], sub["ARI_시드간"], ls, marker="s", ms=4,
-                         label=f"{variant} ({source_name})")
-    axes[1].axhline(ARI_MIN, color="grey", ls=":", lw=1)
+                         color=color, label=label)
+
+    for ax in axes:
+        ax.set_xticks(K_SWEEP_XTICKS)
+        ax.axvline(K_SWEEP_REF_K, color="grey", ls="--", lw=0.8, alpha=0.4, zorder=0)
+
+    axes[1].axhline(ARI_MIN, color="grey", ls=":", lw=1, label=ft("ksweep_ari_criterion", lang))
+
     axes[0].set_xlabel("k"); axes[0].set_ylabel(ft("ksweep_ylabel_range", lang))
     axes[0].set_title(ft("ksweep_panel0_title", lang))
     axes[1].set_xlabel("k"); axes[1].set_ylabel("ARI (시드간)")
     axes[1].set_title(ft("ksweep_panel1_title", lang))
-    axes[0].legend(fontsize=7, frameon=False)
+
+    sig_proxy = Line2D([0], [0], marker="o", linestyle="none", mfc="none", mec="black",
+                        ms=7, label=ft("ksweep_sig_ring_legend", lang))
+    handles0, _ = axes[0].get_legend_handles_labels()
+    axes[0].legend(handles=handles0 + [sig_proxy], fontsize=7, frameon=False)
+    axes[1].legend(fontsize=7, frameon=False)
+
     fig.tight_layout()
     fig.savefig(
         figs_dir / f"fig_k_sweep{percluster_labels.fig_suffix(lang)}.png",
