@@ -1,0 +1,40 @@
+# ---------------------------------------------------------------------------
+# PhysioNet / MIMIC restricted data — never commit.
+# Raw tables and any row-level derived artifact fall under the credentialed
+# Data Use Agreement and must stay on the local machine.
+# ---------------------------------------------------------------------------
+*.csv
+*.csv.gz
+*.tsv
+*.jsonl
+*.pkl
+*.pt
+*.pth
+*.npy
+*.npz
+*.h5
+*.model
+*.ckpt
+*.bin
+*.log
+
+# Aggregate result tables published with the reports are the only exception.
+!track-04-safedrug-cluster-fairness/results/tables/*.csv
+
+# Local run outputs
+out/
+outputs/
+saved/**/*.model
+data/**/*.csv
+data/**/*.pkl
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+.venv/
+
+# Editors / local tooling
+.vscode/
+.idea/
