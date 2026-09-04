@@ -37,6 +37,14 @@ DEFAULT_EVAL_DIRS = [
     "out/safedrug_eval/seed_3",
 ]
 
+# Follow-up readability redesign of make_seed_figure: one marker shape per
+# seed (in seed order, cycling if there were ever more than 4) plus an
+# Okabe-Ito colorblind-safe qualitative palette subset (blue/orange/green/
+# reddish-purple) -- distinguishable both by shape and by color.
+SEED_MARKERS = ["o", "s", "^", "D"]
+SEED_COLORS = ["#0072B2", "#E69F00", "#009E73", "#CC79A7"]
+SEED_JITTER = 0.12  # +/- row units, so up to 4 seed markers at one group never overlap
+
 POOLED_METRIC_COLUMNS = [
     "jaccard", "precision", "recall", "f1", "prauc", "ddi_rate_visit",
     "n_med_pred", "n_med_gt", "n_dx",
@@ -247,10 +255,29 @@ def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, fig
     join, exactly like safedrug_cluster_gap.make_figures does for its own
     group ids.
 
+    Readability follow-up: the original figure packed small (s=22), mostly
+    opaque, unjittered scatter points on top of a thin errorbar, with a solid
+    black pooled diamond drawn last (i.e. on top, burying whichever seed
+    point happened to land under it) -- overlapping seed points at the same
+    group were indistinguishable from each other. This redesign draws, per
+    group row, the mean+/-SD bar first (thick, dark gray, zorder=2), then the
+    per-seed points on top (zorder=3, each seed a fixed marker shape + color
+    from SEED_MARKERS/SEED_COLORS, small vertical jitter from SEED_JITTER so
+    up to 4 seeds at one row never sit exactly on top of each other, white
+    marker edges so a point is visible even against the dark gray bar), then
+    the pooled value as a large *hollow* diamond (zorder=4, no fill, so it
+    marks a position without hiding the points it sits among) plus its exact
+    value as a right-margin text column. Every marker is still drawn via
+    ax.scatter (not ax.plot) -- Line2D markers do not register as
+    Axes.collections, and the existing collections-based smoke-test
+    assertions (this function's caller inspects the returned Figure) depend
+    on scatter's PathCollection.
+
     Returns the closed Figure (for tests to inspect its axes/artists) --
     main()'s caller ignores the return value.
     """
     import matplotlib
+    import matplotlib.transforms as mtransforms
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -268,35 +295,80 @@ def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, fig
     seed_long["group"] = seed_long["group"].map(scg._normalize_group_id)
     seed_long = seed_long[seed_long["group"].isin(group_pos)]
 
-    fig, ax = plt.subplots(figsize=(9, 6.5))
-    seed_label = percluster_labels.figure_text("seed_legend_seed", lang)
-    for seed, sub in seed_long.groupby("seed"):
-        y = [group_pos[g] for g in sub["group"]]
-        ax.scatter(sub["adjusted_mean"], y, s=22, alpha=0.7, zorder=2,
-                   label=seed_label.format(seed=seed))
-
     agg = aggregate_seed_groups(seed_long)
-    agg = agg[agg["group"].isin(group_pos)]
-    agg_y = [group_pos[g] for g in agg["group"]]
+    agg = agg[agg["group"].isin(group_pos)].copy()
+    agg["y"] = agg["group"].map(group_pos)
+
+    fig, ax = plt.subplots(figsize=(11, 7), dpi=200)
+    ax.set_axisbelow(True)
+    ax.grid(axis="y", color="#dddddd", linewidth=0.8)
+
+    # 1) seed mean +/- SD: a thick dark-gray bar, drawn first so the points
+    # below land on top of it, not the other way around.
     ax.errorbar(
-        agg["mean_adjusted"], agg_y, xerr=agg["sd_adjusted"],
-        fmt="s", color="#e67e22", ecolor="#e67e22", elinewidth=1.5, capsize=4,
-        markersize=6, linestyle="none", zorder=3,
-        label=percluster_labels.figure_text("seed_legend_mean_sd", lang),
+        agg["mean_adjusted"], agg["y"], xerr=agg["sd_adjusted"],
+        fmt="none", ecolor="#4d4d4d", elinewidth=3, capsize=6, capthick=3,
+        zorder=2, label=percluster_labels.figure_text("seed_legend_mean_sd", lang),
     )
 
-    ax.scatter(pooled_long["adjusted_mean_jaccard"], [group_pos[g] for g in order],
-               marker="D", color="#0b0b0b", s=40, zorder=4,
-               label=percluster_labels.figure_text("seed_legend_pooled", lang))
+    # 2) per-seed points: fixed marker + color per seed, small vertical
+    # jitter so up to 4 seeds at one group row are all individually visible.
+    seeds_sorted = sorted(seed_long["seed"].unique())
+    n_seeds = len(seeds_sorted)
+    jitter = np.linspace(-SEED_JITTER, SEED_JITTER, n_seeds) if n_seeds > 1 else np.array([0.0])
+    seed_label = percluster_labels.figure_text("seed_legend_seed", lang)
+    for i, seed in enumerate(seeds_sorted):
+        sub = seed_long[seed_long["seed"] == seed]
+        y = np.array([group_pos[g] for g in sub["group"]], dtype=float) + jitter[i]
+        ax.scatter(
+            sub["adjusted_mean"], y,
+            marker=SEED_MARKERS[i % len(SEED_MARKERS)],
+            color=SEED_COLORS[i % len(SEED_COLORS)],
+            s=80, edgecolors="white", linewidths=1, zorder=3,
+            label=seed_label.format(seed=seed),
+        )
+
+    # 3) pooled value: a large *hollow* black diamond -- marks the row
+    # without burying whichever seed point happens to land near it.
+    pooled_y = [group_pos[g] for g in order]
+    ax.scatter(
+        pooled_long["adjusted_mean_jaccard"], pooled_y, marker="D", s=170,
+        facecolors="none", edgecolors="black", linewidths=2, zorder=4,
+        label=percluster_labels.figure_text("seed_legend_pooled", lang),
+    )
+
+    # 4) the pooled value as text, one column aligned along the right margin
+    # (axes-fraction x, data y) -- "to the right of each row" as a readable
+    # column, rather than jammed right next to a variable-x marker.
+    text_transform = mtransforms.blended_transform_factory(ax.transAxes, ax.transData)
+    for g in order:
+        val = pooled_long.loc[pooled_long["group"] == g, "adjusted_mean_jaccard"].iloc[0]
+        ax.text(
+            1.02, group_pos[g], f"{val:.3f}", transform=text_transform,
+            va="center", ha="left", fontsize=10, color="#0b0b0b", clip_on=False,
+        )
+
+    all_vals = pd.concat([
+        seed_long["adjusted_mean"],
+        agg["mean_adjusted"] - agg["sd_adjusted"],
+        agg["mean_adjusted"] + agg["sd_adjusted"],
+        pooled_long["adjusted_mean_jaccard"],
+    ])
+    ax.set_xlim(all_vals.min() - 0.01, all_vals.max() + 0.01)
+
     ax.set_yticks(range(len(order)))
-    ax.set_yticklabels([short_group_label("long_k10", g, lang=lang) for g in order], fontsize=8)
+    ax.set_yticklabels([short_group_label("long_k10", g, lang=lang) for g in order], fontsize=11)
+    ax.tick_params(axis="x", labelsize=11)
     ax.set_xlabel(percluster_labels.figure_text("seed_figure_xlabel", lang))
     ax.set_title(percluster_labels.figure_text("seed_figure_title", lang))
-    ax.legend(fontsize=8, frameon=False)
+    ax.legend(
+        loc="upper center", bbox_to_anchor=(0.5, -0.09), ncol=3,
+        frameon=False, fontsize=10,
+    )
     fig.tight_layout()
     fig.savefig(
         figs_dir / f"fig_seed_long_k10{percluster_labels.fig_suffix(lang)}.png",
-        dpi=160, bbox_inches="tight",
+        dpi=200, bbox_inches="tight",
     )
     plt.close(fig)
     return fig
