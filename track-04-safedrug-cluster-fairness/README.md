@@ -1,32 +1,55 @@
-# SafeDrug visit-principal-condition audit
+# 트랙 04 — SafeDrug 군집별 공정성 감사
 
-This private repository contains source code, tests, and design documents only.
-It intentionally excludes MIMIC-III source data, derived row-level clinical data,
-model outputs, and credentials.
+SafeDrug의 평균 정확도(Jaccard 0.51)는 알려져 있지만, **그 정확도가 모든 환자군에서
+같은지**는 따로 보고되지 않습니다. 이 트랙은 방문을 진단 프로필로 군집화한 뒤
+군집별 정확도를 재고, 그 격차가 통계적으로 실재하는지 검정합니다.
 
-## Local data required
+## 결과 요지
 
-Place the following files in the repository root after obtaining or securely
-transferring them under the applicable PhysioNet credentialed-data agreement:
+- **재현**: MIMIC-III SafeDrug 코호트(6,350명 / 15,032방문)로 직접 학습, test Jaccard
+  0.508 / 0.512 / 0.515 / 0.510 (시드 0~3). 원 논문 기준값 0.511.
+- **격차**: 진단 수·약물 수·방문 순서를 보정한 뒤에도 long k=10 군집 간 Jaccard 격차가
+  시드별 0.052~0.068, Bonferroni 보정 p 모두 < 0.05. 풀링 0.061 (p 0.003).
+  시드 쌍 순위상관 0.90~0.98.
+- **어디가 낮은가**: 호흡부전·폐렴·패혈증(0.488), 심부전+당뇨 PAD(0.494),
+  심부전+CKD(0.497). 높은 쪽은 안면외상·뇌동맥류(0.554), CAD·MI(0.548), 전이암(0.539).
+- **기전**: precision 격차(0.132, p 0.0002)가 recall 격차(0.069)의 두 배.
+  정답 처방 약물의 학습셋 빈도와 군집 정확도의 상관 +0.71이고, 희귀도를 보정하면
+  격차가 0.061 → 0.049로 줄어듭니다. 즉 드문 약을 쓰는 환자군을 더 못 맞힙니다.
+- **k 선택**: k를 결과 보고 고르지 않도록 사전 규칙을 정해 두고 최대통계량 선택 보정을
+  적용했습니다. long k=4~10, concise k=4~12가 기준을 통과합니다.
 
-- `ADMISSIONS.csv`
-- `DIAGNOSES_ICD.csv`
-- `D_ICD_DIAGNOSES.csv`
-- `NOTEEVENTS.csv`
+자세한 표·그림·보고서는 [`results/`](results/), 방법론 전달물은
+[`docs/ICD진단텍스트_군집화_전달물.md`](docs/ICD진단텍스트_군집화_전달물.md)에 있습니다.
+
+## 파이프라인
+
+`scripts/`는 번호 순서대로 실행되는 분석 단계(`01_profile.py` … `60_external_fig.py`)와,
+그 뒤에 붙은 SafeDrug 평가 모듈로 나뉩니다.
+
+| 구간 | 내용 |
+|---|---|
+| `01`~`16` | 코호트 프로파일링, 사전 게이트, BHC 텍스트 군집화, 순열 검정 |
+| `17`~`31` | ICD 코드 기반 분할, 희귀도 트랙, 매칭 쌍, 만성질환 군집 |
+| `32`~`43` | HPI / chief complaint / 진단 제목 텍스트 임베딩과 군집화 |
+| `45`, `51`, `52` | 트랙 비교, 제목 변형별 표, 전달물(§1·§2) 생성 |
+| `53`~`60` | k 스윕, 최적 분할 선택, CCS 트랙, 외부 검증 |
+| `safedrug_*.py`, `safedrug_percluster/` | SafeDrug 학습·방문별 덤프, 군집별 격차, 시드 강건성, 기전 분해, k 스윕 |
+
+## 로컬에 필요한 데이터
+
+PhysioNet 인증 데이터 이용약관에 따라 직접 확보해 트랙 루트에 두어야 합니다.
+
+- `ADMISSIONS.csv`, `DIAGNOSES_ICD.csv`, `D_ICD_DIAGNOSES.csv`, `NOTEEVENTS.csv`
 - `data4LLM_with_note.csv`
 - `umls_kb_2022ab.jsonl`
 
-Generated row-level artifacts belong under `out/` and must not be committed.
+생성되는 행 단위 산출물은 `out/` 아래에 두며 커밋하지 않습니다.
+`results/`에 공개하는 것은 군집 수준으로 집계된 표·그림·보고서뿐입니다
+(가장 작은 군집도 방문 16건 이상).
 
-## Environment check
+## 실행 확인
 
-The current development environment uses Python 3.12.
-
-```powershell
+```bash
 py -3.12 -m pytest tests -q
-py -3.12 --version
 ```
-
-The current implementation plan is
-`docs/plans/2026-08-24-visit-principal-condition-clustering.md`.
-
