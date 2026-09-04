@@ -1,0 +1,28 @@
+{
+  "git_commit_sha": "bd1b8b587f425fd259a664b91f9153bb83440183",
+  "generated_at_utc": "2026-07-31T08:27:31.745238+00:00",
+  "elapsed_seconds": 43.9,
+  "inputs": {
+    "diagnoses_icd_rows": 4568092,
+    "procedures_icd_rows": 742619,
+    "medications_rows": 4428851,
+    "diag_top_k": 2000,
+    "proc_top_k": null
+  },
+  "outputs": {
+    "n_patients": 46528,
+    "n_visits": 155569,
+    "avg_visits_per_patient": 3.3436,
+    "avg_diag_per_visit": 11.7801,
+    "avg_proc_per_visit": 2.7584,
+    "avg_med_per_visit": 12.7543,
+    "diag_voc_size": 1991,
+    "pro_voc_size": 10824,
+    "med_voc_size": 154,
+    "ddi_adj_shape": [
+      154,
+      154
+    ],
+    "ddi_known_pairs": 470
+  }
+}

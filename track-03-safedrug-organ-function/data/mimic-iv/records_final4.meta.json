@@ -1,0 +1,51 @@
+{
+  "git_commit_sha": "d23b0f66ffb2e2e4f4a849ca167932fedbad92b8",
+  "generated_at_utc": "2026-07-31T10:35:08.581213+00:00",
+  "elapsed_seconds": 41.9,
+  "inputs": {
+    "diagnoses_icd_rows": 4568092,
+    "procedures_icd_rows": 742619,
+    "medications_rows": 4428851,
+    "diag_top_k": 2000,
+    "proc_top_k": null,
+    "files": {
+      "diagnoses_icd.csv": {
+        "sha256": "a1842b4723b6bc4c5bdbffd2ef5ff84651a4672f36722f1e92dea4c3c592df4c",
+        "bytes": 149455168
+      },
+      "procedures_icd.csv": {
+        "sha256": "649818299ff514af58687fd6919b806953a95c1211b9637d577cb440d79e83b9",
+        "bytes": 30650001
+      },
+      "prescriptions.csv": {
+        "sha256": "957a3e2728a07824b9968025cb21a5e6336b2809216c269f87ee8542c424f8c1",
+        "bytes": 2386072616
+      },
+      "admissions.csv.gz": {
+        "sha256": "de09f32fb7260cfb1d8f3123af003fe2b2071e3e580e89fd41dc4b5453726f9b",
+        "bytes": 17208966
+      }
+    }
+  },
+  "temporal_ordering": {
+    "rule": "subject_id, admittime, hadm_id",
+    "unmatched_complete_admissions": 0,
+    "missing_admittime": 0
+  },
+  "outputs": {
+    "n_patients": 46528,
+    "n_visits": 155569,
+    "avg_visits_per_patient": 3.3436,
+    "avg_diag_per_visit": 11.7801,
+    "avg_proc_per_visit": 2.7584,
+    "avg_med_per_visit": 12.7543,
+    "diag_voc_size": 1991,
+    "pro_voc_size": 10824,
+    "med_voc_size": 154,
+    "ddi_adj_shape": [
+      154,
+      154
+    ],
+    "ddi_known_pairs": 470
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "dataset": "final4",
+  "run_id": "organ-gpu-smoke-20260731",
+  "organ_function": true,
+  "seeds": {
+    "torch": 1203,
+    "numpy": 2048
+  },
+  "hyperparameters": {
+    "epochs": 1,
+    "lr": 0.0005,
+    "dim": 64,
+    "smoke_patients": 4
+  },
+  "inputs": {
+    "records": "data/mimic-iv/records_final4.pkl",
+    "vocabulary": "data/mimic-iv/voc_final4.pkl",
+    "ddi": "data/mimic-iv/ddi_A_final4.pkl",
+    "ddi_mask": "data/safedrug/final4/ddi_mask_H_final4.pkl",
+    "molecule": "data/safedrug/final4/molecule_final4.pkl",
+    "organ_features": "data/mimic-iv/organ_function_features_final4.pkl"
+  }
+}

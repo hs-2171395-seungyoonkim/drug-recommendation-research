@@ -1,0 +1,19 @@
+# --- PhysioNet/MIMIC raw & derived data: never commit (Data Use Agreement) ---
+*.csv
+*.csv.gz
+*.pkl
+*.pt
+*.model
+
+# logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Local editor settings
+.vscode/
+
+# local scratch workspace (not tracked)
+scratch/
