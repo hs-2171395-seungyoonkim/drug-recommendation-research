@@ -1,0 +1,58 @@
+{
+  "args": {
+    "epochs": 50,
+    "smoke": false,
+    "out_dir": "C:\\Users\\Administrator\\Desktop\\unfair\\.worktrees\\admission-driver-consensus\\out\\safedrug_eval"
+  },
+  "seeds": {
+    "torch_manual_seed": 1203,
+    "numpy_seed": 2048,
+    "python_random_seed": 1203,
+    "cudnn_deterministic": true
+  },
+  "torch_version": "2.13.0+cu130",
+  "torch_cuda_version": "13.0",
+  "device": "cuda:0",
+  "data_files_sha256": {
+    "records_final": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f",
+    "voc_final": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5",
+    "ddi_A_final": "8b27353d99db2b9717ea52d54bafc8be69a708c6952b4cfe390903ead84bedea",
+    "ddi_mask_H": "5551a84a7cf29d82a52c84cb1fad0b4c7c9d75c4fa482920bac467985792b764",
+    "atc3toSMILES": "382099546c4f37065fc5ae8c1fe9e17d44392cc48a4c016866a108a934caf9ab"
+  },
+  "best_epoch": 32,
+  "best_eval_jaccard": 0.512886381881528,
+  "official_metrics": {
+    "test": {
+      "ddi_rate": 0.06185410529286261,
+      "ja": 0.5080252617142657,
+      "prauc": 0.7630148713260549,
+      "avg_p": 0.6724791296715503,
+      "avg_r": 0.6874291337131659,
+      "avg_f1": 0.6652728702361732,
+      "avg_med": 20.19213780918728
+    },
+    "eval": {
+      "ddi_rate": 0.06231915695036554,
+      "ja": 0.512886381881528,
+      "prauc": 0.7673126993571763,
+      "avg_p": 0.678380576053741,
+      "avg_r": 0.6894869662382227,
+      "avg_f1": 0.6697097006771037,
+      "avg_med": 20.13953488372093
+    }
+  },
+  "hyperparameters": {
+    "emb_dim": 64,
+    "lr": 0.0005,
+    "target_ddi": 0.06,
+    "kp": 0.05
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "eval_len": 1058,
+    "train_patients": 4233,
+    "test_patients": 1058,
+    "eval_patients": 1059
+  }
+}

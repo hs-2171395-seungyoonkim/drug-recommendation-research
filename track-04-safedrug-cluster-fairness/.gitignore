@@ -13,6 +13,14 @@
 !docs/
 !docs/**
 
+# Curated, aggregate-only results published with the reports.
+!results/
+!results/**/
+!results/**/*.md
+!results/**/*.png
+!results/**/*.csv
+!results/**/*.json
+
 # Never track generated/runtime files even inside allowlisted directories.
 **/__pycache__/
 **/*.pyc
