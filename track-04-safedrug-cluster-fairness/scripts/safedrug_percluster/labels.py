@@ -45,7 +45,7 @@ LONG_K10_LABELS_KO = {
     1: "호흡부전·폐렴·패혈증",
     2: "심부전+만성신질환",
     3: "고혈압+정신·약물",
-    4: "심부전+당뇨 말초혈관(긴 목록)",
+    4: "심부전+당뇨병성 말초혈관질환",
     5: "약물중독·긴 진단목록",
     6: "알코올성 간질환",
     7: "안면외상·뇌동맥류",
@@ -197,7 +197,7 @@ FIGURE_TEXT: dict[str, dict[str, str]] = {
     # safedrug_mechanism.make_mechanism_figure (3 panels)
     "mech_panel0_title": {
         "en": "long_k10 - recall vs precision per group",
-        "ko": "precision vs recall (군집별)",
+        "ko": "군집별 정밀도(precision) vs 재현율(recall)",
     },
     "mech_panel1_title": {
         "en": "train representation vs performance",

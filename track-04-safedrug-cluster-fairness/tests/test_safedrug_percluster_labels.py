@@ -182,7 +182,7 @@ def test_figure_text_korean_lookup_covers_every_figure():
     assert figure_text("seed_legend_seed", "ko").format(seed=2) == "시드 2"
     assert figure_text("seed_legend_pooled", "ko") == "풀링"
     assert figure_text("seed_legend_mean_sd", "ko") == "시드 평균±SD"
-    assert figure_text("mech_panel0_title", "ko") == "precision vs recall (군집별)"
+    assert figure_text("mech_panel0_title", "ko") == "군집별 정밀도(precision) vs 재현율(recall)"
     assert figure_text("mech_panel1_title", "ko") == "학습셋 비중 vs 보정 Jaccard"
     assert figure_text("mech_panel2_title", "ko") == "실제 약물의 학습셋 빈도 vs 보정 Jaccard"
     assert figure_text("ksweep_panel0_title", "ko") == "k별 보정 Jaccard 격차 (범위)"
