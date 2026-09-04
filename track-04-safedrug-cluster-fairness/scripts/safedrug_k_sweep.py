@@ -36,6 +36,7 @@ from safedrug_cluster_gap import (
     gap_statistics,
     largest_remainder,
 )
+from safedrug_percluster import labels as percluster_labels
 
 VARIANTS = ["short", "long", "concise"]
 K_GRID = [2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50]
@@ -328,13 +329,14 @@ def _load_source_dfs(eval_dir: Path, pooled_csv: Path) -> dict:
     return sources
 
 
-def make_ksweep_figure(table: pd.DataFrame, figs_dir: Path) -> None:
+def make_ksweep_figure(table: pd.DataFrame, figs_dir: Path, lang: str = "en") -> None:
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    matplotlib.rcParams.update({"font.family": "Malgun Gothic", "axes.unicode_minus": False})
+    percluster_labels.apply_korean_font()
+    ft = percluster_labels.figure_text
     dx = table[~table["is_reference"]]
     fig, axes = plt.subplots(1, 2, figsize=(13, 4.8))
     styles = {"seed0": "-", "pooled": "--"}
@@ -350,13 +352,16 @@ def make_ksweep_figure(table: pd.DataFrame, figs_dir: Path) -> None:
             axes[1].plot(sub["k"], sub["ARI_시드간"], ls, marker="s", ms=4,
                          label=f"{variant} ({source_name})")
     axes[1].axhline(ARI_MIN, color="grey", ls=":", lw=1)
-    axes[0].set_xlabel("k"); axes[0].set_ylabel("adjusted Jaccard range")
-    axes[0].set_title("adjusted gap vs k (open circle = selection-corrected p<0.05)")
+    axes[0].set_xlabel("k"); axes[0].set_ylabel(ft("ksweep_ylabel_range", lang))
+    axes[0].set_title(ft("ksweep_panel0_title", lang))
     axes[1].set_xlabel("k"); axes[1].set_ylabel("ARI (시드간)")
-    axes[1].set_title("reproducibility vs k")
+    axes[1].set_title(ft("ksweep_panel1_title", lang))
     axes[0].legend(fontsize=7, frameon=False)
     fig.tight_layout()
-    fig.savefig(figs_dir / "fig_k_sweep.png", dpi=160, bbox_inches="tight")
+    fig.savefig(
+        figs_dir / f"fig_k_sweep{percluster_labels.fig_suffix(lang)}.png",
+        dpi=160, bbox_inches="tight",
+    )
     plt.close(fig)
 
 
@@ -369,17 +374,34 @@ def parse_args(argv=None):
     parser.add_argument("--n-perm", type=int, default=N_PERM_DEFAULT)
     parser.add_argument("--seed", type=int, default=SWEEP_SEED)
     parser.add_argument("--out-dir", type=str, default="out/safedrug_eval/ksweep")
+    parser.add_argument(
+        "--lang", choices=["en", "ko"], default="en",
+        help="figure language. ko implies --figures-only.",
+    )
+    parser.add_argument(
+        "--figures-only", action="store_true",
+        help="skip the sweep computation; regenerate the k-sweep figure only, "
+        "from table_k_sweep.csv already written to --out-dir.",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv=None) -> None:
     args = parse_args(argv)
-    eval_dir = ROOT / args.eval_dir
-    pooled_csv = ROOT / args.pooled_csv
-    quality = pd.read_csv(ROOT / args.partition_quality, encoding="utf-8-sig")
     out_dir = ROOT / args.out_dir
     figs_dir = out_dir / "figs"
     figs_dir.mkdir(parents=True, exist_ok=True)
+    figures_only = args.figures_only or args.lang != "en"
+
+    if figures_only:
+        table = pd.read_csv(out_dir / "table_k_sweep.csv")
+        make_ksweep_figure(table, figs_dir, lang=args.lang)
+        print(f"[+] wrote k-sweep figures ({args.lang}) to {figs_dir}", flush=True)
+        return
+
+    eval_dir = ROOT / args.eval_dir
+    pooled_csv = ROOT / args.pooled_csv
+    quality = pd.read_csv(ROOT / args.partition_quality, encoding="utf-8-sig")
 
     sources = _load_source_dfs(eval_dir, pooled_csv)
     configs = [(v, k, f"{v}_k{k}") for v in VARIANTS for k in K_GRID]
@@ -394,7 +416,7 @@ def main(argv=None) -> None:
         print(f"[=] Spearman(quality rank, adjusted gap) over 42 dxtext configs (seed0) = "
               f"{rho:.3f}", flush=True)
 
-    make_ksweep_figure(table, figs_dir)
+    make_ksweep_figure(table, figs_dir, lang=args.lang)
     print(f"[+] wrote k-sweep table to {out_dir}", flush=True)
 
 

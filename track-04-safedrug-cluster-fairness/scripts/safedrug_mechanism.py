@@ -29,6 +29,7 @@ from safedrug_cluster_gap import (
     gap_statistics,
     permutation_p,
 )
+from safedrug_percluster import labels as percluster_labels
 from safedrug_percluster.metrics import attach_labels, patient_bootstrap_ci
 
 COHORT_DIR_DEFAULT = ROOT / "out" / "acute_driver_audit" / "safedrug_mimic3_cohort"
@@ -258,31 +259,37 @@ def _group_over_under_and_rarity(scope_df, partition):
     return rarity_group, mean_n_med_gt
 
 
-def make_mechanism_figure(groups_df: pd.DataFrame, figs_dir: Path) -> None:
+def make_mechanism_figure(groups_df: pd.DataFrame, figs_dir: Path, lang: str = "en") -> None:
     import matplotlib
 
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    matplotlib.rcParams.update({"font.family": "Malgun Gothic", "axes.unicode_minus": False})
+    percluster_labels.apply_korean_font()
+    ft = percluster_labels.figure_text
 
     g = groups_df
     fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
     axes[0].scatter(g["mean_precision"], g["mean_recall"], s=np.clip(g["n_visits"] / 5, 8, 80))
-    axes[0].set_xlabel("precision"); axes[0].set_ylabel("recall")
-    axes[0].set_title("long_k10 - recall vs precision per group")
+    axes[0].set_xlabel(ft("mech_xlabel_precision", lang))
+    axes[0].set_ylabel(ft("mech_ylabel_recall", lang))
+    axes[0].set_title(ft("mech_panel0_title", lang))
 
     axes[1].scatter(g["train_share"], g["adjusted_mean_jaccard"], s=30)
-    axes[1].set_xlabel("train share"); axes[1].set_ylabel("adjusted mean Jaccard")
-    axes[1].set_title("train representation vs performance")
+    axes[1].set_xlabel(ft("mech_xlabel_train_share", lang))
+    axes[1].set_ylabel(ft("mech_ylabel_adj_jaccard", lang))
+    axes[1].set_title(ft("mech_panel1_title", lang))
 
     axes[2].scatter(g["mean_gt_freq"], g["adjusted_mean_jaccard"], s=30)
-    axes[2].set_xlabel("mean ground-truth drug training frequency")
-    axes[2].set_ylabel("adjusted mean Jaccard")
-    axes[2].set_title("drug rarity vs performance")
+    axes[2].set_xlabel(ft("mech_xlabel_gt_freq", lang))
+    axes[2].set_ylabel(ft("mech_ylabel_adj_jaccard", lang))
+    axes[2].set_title(ft("mech_panel2_title", lang))
 
     fig.tight_layout()
-    fig.savefig(figs_dir / "fig_mechanism_long_k10.png", dpi=160, bbox_inches="tight")
+    fig.savefig(
+        figs_dir / f"fig_mechanism_long_k10{percluster_labels.fig_suffix(lang)}.png",
+        dpi=160, bbox_inches="tight",
+    )
     plt.close(fig)
 
 
@@ -293,6 +300,15 @@ def parse_args(argv=None):
                          default="out/safedrug_eval/seeds/per_visit_pooled.csv")
     parser.add_argument("--cohort-dir", type=str, default=str(COHORT_DIR_DEFAULT))
     parser.add_argument("--out-dir", type=str, default="out/safedrug_eval/mechanism")
+    parser.add_argument(
+        "--lang", choices=["en", "ko"], default="en",
+        help="figure language. ko implies --figures-only.",
+    )
+    parser.add_argument(
+        "--figures-only", action="store_true",
+        help="skip every table computation; regenerate the mechanism figure only, "
+        "from table_mechanism_groups.csv already written to --out-dir.",
+    )
     return parser.parse_args(argv)
 
 
@@ -304,6 +320,18 @@ def main(argv=None) -> None:
     out_dir = ROOT / args.out_dir
     figs_dir = out_dir / "figs"
     figs_dir.mkdir(parents=True, exist_ok=True)
+    figures_only = args.figures_only or args.lang != "en"
+
+    if figures_only:
+        table_groups = pd.read_csv(out_dir / "table_mechanism_groups.csv")
+        fig_source = "pooled" if "pooled" in set(table_groups["source"]) else "seed0"
+        fig_df = table_groups[
+            (table_groups["source"] == fig_source) & (table_groups["partition"] == "long_k10")
+        ]
+        if not fig_df.empty:
+            make_mechanism_figure(fig_df, figs_dir, lang=args.lang)
+        print(f"[+] wrote mechanism figures ({args.lang}) to {figs_dir}", flush=True)
+        return
 
     sources = _load_source_frames(eval_dir, pooled_csv)
     gt_lookup = _gt_lookup(eval_dir)
@@ -382,7 +410,7 @@ def main(argv=None) -> None:
     fig_df = table_groups[(table_groups["source"] == fig_source)
                            & (table_groups["partition"] == "long_k10")]
     if not fig_df.empty:
-        make_mechanism_figure(fig_df, figs_dir)
+        make_mechanism_figure(fig_df, figs_dir, lang=args.lang)
 
     print(f"[+] wrote mechanism tables to {out_dir}", flush=True)
 

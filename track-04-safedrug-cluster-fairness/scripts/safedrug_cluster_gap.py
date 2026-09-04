@@ -30,6 +30,7 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from safedrug_percluster import labels as percluster_labels
 from safedrug_percluster.labels import short_group_label
 from safedrug_percluster.metrics import attach_labels, patient_bootstrap_ci, visit_metrics
 
@@ -379,7 +380,7 @@ def _figure_group_labels(partition: str, groups: list) -> list[str]:
     return [str(g) for g in groups]
 
 
-def make_figures(eval_dir: Path, figs_dir: Path) -> None:
+def make_figures(eval_dir: Path, figs_dir: Path, lang: str = "en") -> None:
     # Imported locally, not at module scope: matplotlib is not installed under
     # py -3.12 (verified) -- this keeps every other function in this module,
     # and this whole module's own unit tests, independent of that dependency.
@@ -388,7 +389,8 @@ def make_figures(eval_dir: Path, figs_dir: Path) -> None:
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    matplotlib.rcParams.update({"font.family": "Malgun Gothic", "axes.unicode_minus": False})
+    percluster_labels.apply_korean_font()
+    suffix = percluster_labels.fig_suffix(lang)
 
     summary = pd.read_csv(eval_dir / "table_group_summary.csv")
     adjusted = pd.read_csv(eval_dir / "table_adjusted_means.csv")
@@ -403,7 +405,8 @@ def make_figures(eval_dir: Path, figs_dir: Path) -> None:
         if part_summary.empty:
             continue
         merged = part_summary.merge(part_adjusted, on="group", how="left").sort_values("mean_jaccard")
-        labels = [short_group_label(partition, g) for g in merged["group"].tolist()]
+        group_labels = [short_group_label(partition, g, lang=lang) for g in merged["group"].tolist()]
+        partition_title = percluster_labels.partition_label(partition, lang)
 
         # Height grows with the number of groups (ccs_group has 22, long_k25
         # has 25) so the y tick labels never overlap; width is unaffected by
@@ -420,33 +423,35 @@ def make_figures(eval_dir: Path, figs_dir: Path) -> None:
             fmt="o", color="#2471a3",
         )
         axes[0].set_yticks(y_pos)
-        axes[0].set_yticklabels(labels, fontsize=8)
-        axes[0].set_title(f"{partition} - raw mean Jaccard (95% CI)")
+        axes[0].set_yticklabels(group_labels, fontsize=8)
+        axes[0].set_title(f"{partition_title} - {percluster_labels.figure_text('raw_panel_suffix', lang)}")
 
         axes[1].plot(merged["adjusted_mean"], y_pos, "o", color="#c0392b")
         axes[1].set_yticks(y_pos)
-        axes[1].set_yticklabels(labels, fontsize=8)
-        axes[1].set_title(f"{partition} - adjusted mean Jaccard")
+        axes[1].set_yticklabels(group_labels, fontsize=8)
+        axes[1].set_title(
+            f"{partition_title} - {percluster_labels.figure_text('adjusted_panel_suffix', lang)}"
+        )
 
         fig.tight_layout()
-        fig.savefig(figs_dir / f"fig_{partition}_raw_vs_adjusted.png", dpi=160, bbox_inches="tight")
+        fig.savefig(figs_dir / f"fig_{partition}_raw_vs_adjusted{suffix}.png", dpi=160, bbox_inches="tight")
         plt.close(fig)
 
     primary = summary[(summary["partition"] == "long_k10") & (summary["scope"] == "test")].sort_values("group")
     if not primary.empty:
-        labels = [short_group_label("long_k10", g) for g in primary["group"].tolist()]
+        group_labels = [short_group_label("long_k10", g, lang=lang) for g in primary["group"].tolist()]
         fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
         x_pos = np.arange(len(primary))
         axes[0].bar(x_pos, primary["mean_ddi_rate_visit"], color="#7d3c98")
         axes[0].set_xticks(x_pos)
-        axes[0].set_xticklabels(labels, rotation=60, ha="right", fontsize=7)
-        axes[0].set_title("long_k10 - mean DDI rate per group")
+        axes[0].set_xticklabels(group_labels, rotation=60, ha="right", fontsize=7)
+        axes[0].set_title(percluster_labels.figure_text("ddi_panel_title", lang))
         axes[1].bar(x_pos, primary["mean_n_med_pred"], color="#2471a3")
         axes[1].set_xticks(x_pos)
-        axes[1].set_xticklabels(labels, rotation=60, ha="right", fontsize=7)
-        axes[1].set_title("long_k10 - mean predicted #meds per group")
+        axes[1].set_xticklabels(group_labels, rotation=60, ha="right", fontsize=7)
+        axes[1].set_title(percluster_labels.figure_text("nmed_panel_title", lang))
         fig.tight_layout()
-        fig.savefig(figs_dir / "fig_long_k10_ddi_nmed.png", dpi=160, bbox_inches="tight")
+        fig.savefig(figs_dir / f"fig_long_k10_ddi_nmed{suffix}.png", dpi=160, bbox_inches="tight")
         plt.close(fig)
 
     train_log = pd.read_csv(eval_dir / "train_log.csv")
@@ -455,10 +460,13 @@ def make_figures(eval_dir: Path, figs_dir: Path) -> None:
     ax.plot(train_log["epoch"], train_log["eval_ja"], "o-", color="#2471a3", label="eval Jaccard")
     ax2.plot(train_log["epoch"], train_log["eval_ddi_rate"], "o-", color="#c0392b", label="eval DDI rate")
     ax.set_xlabel("epoch")
-    ax.set_ylabel("eval Jaccard", color="#2471a3")
-    ax2.set_ylabel("eval DDI rate", color="#c0392b")
+    ax.set_ylabel(percluster_labels.figure_text("train_log_ylabel_jaccard", lang), color="#2471a3")
+    ax2.set_ylabel(percluster_labels.figure_text("train_log_ylabel_ddi", lang), color="#c0392b")
+    train_log_title = percluster_labels.figure_text("train_log_title", lang)
+    if train_log_title:
+        fig.suptitle(train_log_title)
     fig.tight_layout()
-    fig.savefig(figs_dir / "fig_train_log.png", dpi=160, bbox_inches="tight")
+    fig.savefig(figs_dir / f"fig_train_log{suffix}.png", dpi=160, bbox_inches="tight")
     plt.close(fig)
 
 
@@ -609,6 +617,17 @@ def write_report(eval_dir: Path) -> None:
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="SafeDrug per-cluster gap analysis")
     parser.add_argument("--eval-dir", type=str, default="out/safedrug_eval")
+    parser.add_argument(
+        "--lang", choices=["en", "ko"], default="en",
+        help="figure language (titles/axis labels/group labels). ko implies "
+        "--figures-only: tables and REPORT_SAFEDRUG_CLUSTER_KO.md are always "
+        "Korean already and are never recomputed or re-language'd here.",
+    )
+    parser.add_argument(
+        "--figures-only", action="store_true",
+        help="skip table/permutation/report computation; regenerate figures only, "
+        "from the table_*.csv / train_log.csv already written to --eval-dir.",
+    )
     return parser.parse_args(argv)
 
 
@@ -617,6 +636,11 @@ def main(argv=None) -> None:
     eval_dir = ROOT / args.eval_dir
     figs_dir = eval_dir / "figs"
     figs_dir.mkdir(parents=True, exist_ok=True)
+    figures_only = args.figures_only or args.lang != "en"
+
+    if figures_only:
+        make_figures(eval_dir, figs_dir, lang=args.lang)
+        return
 
     df = load_per_visit_metrics(eval_dir)
     df.to_csv(eval_dir / "per_visit_metrics.csv", index=False)
@@ -688,7 +712,7 @@ def main(argv=None) -> None:
     pd.DataFrame(adjusted_rows).to_csv(eval_dir / "table_adjusted_means.csv", index=False)
     pd.concat(coef_frames, ignore_index=True).to_csv(eval_dir / "table_ols_coefficients.csv", index=False)
 
-    make_figures(eval_dir, figs_dir)
+    make_figures(eval_dir, figs_dir, lang=args.lang)
     write_report(eval_dir)
 
 

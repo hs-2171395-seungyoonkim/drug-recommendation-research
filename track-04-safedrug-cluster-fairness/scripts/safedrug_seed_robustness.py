@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import safedrug_cluster_gap as scg
 from safedrug_cluster_gap import ADJUSTED_OUTCOMES, PARTITIONS
+from safedrug_percluster import labels as percluster_labels
 from safedrug_percluster.labels import short_group_label
 
 DEFAULT_EVAL_DIRS = [
@@ -226,7 +227,8 @@ def pooled_group_tables(pooled_df: pd.DataFrame, n_perm: int = None):
     return table_pooled_groups, table_pooled_permutation
 
 
-def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, figs_dir: Path):
+def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, figs_dir: Path,
+                      lang: str = "en"):
     """long_k10/jaccard by seed: per-seed points, a mean +/- SD error bar
     across seeds, and the pooled (per-visit-mean) marker, groups ordered by
     the pooled adjusted mean, short curated y-axis labels.
@@ -253,7 +255,7 @@ def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, fig
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    matplotlib.rcParams.update({"font.family": "Malgun Gothic", "axes.unicode_minus": False})
+    percluster_labels.apply_korean_font()
 
     pooled_long = pooled_groups[pooled_groups["partition"] == "long_k10"].copy()
     pooled_long["group"] = pooled_long["group"].map(scg._normalize_group_id)
@@ -267,9 +269,11 @@ def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, fig
     seed_long = seed_long[seed_long["group"].isin(group_pos)]
 
     fig, ax = plt.subplots(figsize=(9, 6.5))
+    seed_label = percluster_labels.figure_text("seed_legend_seed", lang)
     for seed, sub in seed_long.groupby("seed"):
         y = [group_pos[g] for g in sub["group"]]
-        ax.scatter(sub["adjusted_mean"], y, s=22, alpha=0.7, zorder=2, label=f"seed {seed}")
+        ax.scatter(sub["adjusted_mean"], y, s=22, alpha=0.7, zorder=2,
+                   label=seed_label.format(seed=seed))
 
     agg = aggregate_seed_groups(seed_long)
     agg = agg[agg["group"].isin(group_pos)]
@@ -277,18 +281,23 @@ def make_seed_figure(pooled_groups: pd.DataFrame, seed_groups: pd.DataFrame, fig
     ax.errorbar(
         agg["mean_adjusted"], agg_y, xerr=agg["sd_adjusted"],
         fmt="s", color="#e67e22", ecolor="#e67e22", elinewidth=1.5, capsize=4,
-        markersize=6, linestyle="none", zorder=3, label="mean ± SD (seeds)",
+        markersize=6, linestyle="none", zorder=3,
+        label=percluster_labels.figure_text("seed_legend_mean_sd", lang),
     )
 
     ax.scatter(pooled_long["adjusted_mean_jaccard"], [group_pos[g] for g in order],
-               marker="D", color="#0b0b0b", s=40, zorder=4, label="pooled")
+               marker="D", color="#0b0b0b", s=40, zorder=4,
+               label=percluster_labels.figure_text("seed_legend_pooled", lang))
     ax.set_yticks(range(len(order)))
-    ax.set_yticklabels([short_group_label("long_k10", g) for g in order], fontsize=8)
-    ax.set_xlabel("adjusted mean Jaccard")
-    ax.set_title("long_k10 - adjusted mean Jaccard by seed (pooled = diamond)")
+    ax.set_yticklabels([short_group_label("long_k10", g, lang=lang) for g in order], fontsize=8)
+    ax.set_xlabel(percluster_labels.figure_text("seed_figure_xlabel", lang))
+    ax.set_title(percluster_labels.figure_text("seed_figure_title", lang))
     ax.legend(fontsize=8, frameon=False)
     fig.tight_layout()
-    fig.savefig(figs_dir / "fig_seed_long_k10.png", dpi=160, bbox_inches="tight")
+    fig.savefig(
+        figs_dir / f"fig_seed_long_k10{percluster_labels.fig_suffix(lang)}.png",
+        dpi=160, bbox_inches="tight",
+    )
     plt.close(fig)
     return fig
 
@@ -297,6 +306,16 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description="SafeDrug seed robustness")
     parser.add_argument("--eval-dirs", nargs="+", default=DEFAULT_EVAL_DIRS)
     parser.add_argument("--out-dir", type=str, default="out/safedrug_eval/seeds")
+    parser.add_argument(
+        "--lang", choices=["en", "ko"], default="en",
+        help="figure language. ko implies --figures-only.",
+    )
+    parser.add_argument(
+        "--figures-only", action="store_true",
+        help="skip every table computation; regenerate the seed figure only, "
+        "from table_pooled_groups.csv / table_seed_groups.csv already written "
+        "to --out-dir.",
+    )
     return parser.parse_args(argv)
 
 
@@ -306,6 +325,14 @@ def main(argv=None) -> None:
     out_dir = ROOT / args.out_dir
     figs_dir = out_dir / "figs"
     figs_dir.mkdir(parents=True, exist_ok=True)
+    figures_only = args.figures_only or args.lang != "en"
+
+    if figures_only:
+        pooled_groups = pd.read_csv(out_dir / "table_pooled_groups.csv")
+        seed_groups = pd.read_csv(out_dir / "table_seed_groups.csv")
+        make_seed_figure(pooled_groups, seed_groups, figs_dir, lang=args.lang)
+        print(f"[+] wrote seed robustness figures ({args.lang}) to {figs_dir}", flush=True)
+        return
 
     load_seed_official(eval_dirs).to_csv(out_dir / "table_seed_official.csv", index=False)
 
@@ -323,7 +350,7 @@ def main(argv=None) -> None:
     pooled_groups.to_csv(out_dir / "table_pooled_groups.csv", index=False)
     pooled_perm.to_csv(out_dir / "table_pooled_permutation.csv", index=False)
 
-    make_seed_figure(pooled_groups, seed_groups, figs_dir)
+    make_seed_figure(pooled_groups, seed_groups, figs_dir, lang=args.lang)
     print(f"[+] wrote seed robustness tables to {out_dir}", flush=True)
 
 

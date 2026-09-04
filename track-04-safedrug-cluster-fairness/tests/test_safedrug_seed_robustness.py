@@ -299,6 +299,48 @@ def test_make_seed_figure_smoke_shows_per_seed_points_and_error_bars(tmp_path):
     assert "CAD / MI" in yticklabels
 
 
+def test_make_seed_figure_smoke_lang_ko_writes_ko_suffixed_png(tmp_path):
+    # Task G item 3: same fixture as
+    # test_make_seed_figure_smoke_shows_per_seed_points_and_error_bars, run
+    # with lang="ko" -- checks the _ko-suffixed file is written, the plain
+    # (English-filename) file is not, group y-tick labels use the curated
+    # Korean long_k10 mapping, and the legend uses the Korean seed/pooled/
+    # mean±SD text.
+    pooled_groups = pd.DataFrame(
+        [
+            {"partition": "long_k10", "group": 0.0, "adjusted_mean_jaccard": 0.50},
+            {"partition": "long_k10", "group": 1.0, "adjusted_mean_jaccard": 0.55},
+            {"partition": "long_k10", "group": 2.0, "adjusted_mean_jaccard": 0.45},
+        ]
+    )
+    rows = []
+    for seed in (0, 1, 2):
+        for g_str, base in [("0.0", 0.50), ("1.0", 0.55), ("2.0", 0.45)]:
+            rows.append({"seed": seed, "partition": "long_k10", "outcome": "jaccard",
+                         "group": g_str, "adjusted_mean": base + 0.01 * seed,
+                         "raw_mean": base - 0.02})
+    seed_groups = pd.DataFrame(rows)
+
+    figs_dir = tmp_path / "figs"
+    figs_dir.mkdir()
+    fig = make_seed_figure(pooled_groups, seed_groups, figs_dir, lang="ko")
+
+    assert (figs_dir / "fig_seed_long_k10_ko.png").exists()
+    assert not (figs_dir / "fig_seed_long_k10.png").exists()
+
+    ax = fig.axes[0]
+    n_seed_points = sum(
+        len(coll.get_offsets()) for coll in ax.collections
+        if coll.get_label().startswith("시드 ")
+    )
+    assert n_seed_points == 9  # 3 groups x 3 seeds
+    assert any(c.get_label() == "시드 평균±SD" for c in ax.containers)
+
+    yticklabels = [t.get_text() for t in ax.get_yticklabels()]
+    assert "0.0" not in yticklabels
+    assert "관상동맥질환·심근경색" in yticklabels  # curated Korean long_k10 label for group 0
+
+
 def test_pooled_group_tables_smoke():
     # n_perm=200 is passed explicitly (not via monkeypatching
     # safedrug_cluster_gap.N_PERM) because permutation_p's own n_perm=N_PERM

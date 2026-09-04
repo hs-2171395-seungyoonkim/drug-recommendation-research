@@ -12,6 +12,7 @@ from safedrug_k_sweep import (
     _build_permutation_target,
     attach_variant_label,
     config_gap_stats,
+    make_ksweep_figure,
     run_sweep,
 )
 
@@ -263,3 +264,28 @@ def test_run_sweep_z_standardized_selection_correction_recovers_dominated_small_
             p_sel_z = row[f"p_selcorr_z_{name}"]
             if not np.isnan(p_raw) and not np.isnan(p_sel_z):
                 assert p_sel_z >= p_raw - 1e-9
+
+
+def test_make_ksweep_figure_smoke_lang_ko_writes_ko_suffixed_png(tmp_path):
+    # Task G item 3: tiny synthetic sweep table with every column
+    # make_ksweep_figure reads (built directly, not via run_sweep, to keep
+    # this fast and independent of the permutation machinery), lang="ko" --
+    # checks the _ko-suffixed file is written and the plain (English
+    # filename) file is not.
+    table = pd.DataFrame(
+        {
+            "source": ["seed0", "seed0", "seed0", "seed0"],
+            "variant": ["short", "short", "long", "long"],
+            "k": [2, 4, 2, 4],
+            "is_reference": [False, False, False, False],
+            "adj_range": [0.10, 0.12, 0.15, 0.18],
+            "meets_significance": [False, True, False, True],
+            "ARI_시드간": [0.9, 0.88, 0.92, 0.86],
+        }
+    )
+    figs_dir = tmp_path / "figs"
+    figs_dir.mkdir()
+    make_ksweep_figure(table, figs_dir, lang="ko")
+
+    assert (figs_dir / "fig_k_sweep_ko.png").exists()
+    assert not (figs_dir / "fig_k_sweep.png").exists()

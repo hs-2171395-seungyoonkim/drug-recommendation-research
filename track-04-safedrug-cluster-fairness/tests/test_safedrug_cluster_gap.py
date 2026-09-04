@@ -275,3 +275,50 @@ def test_make_figures_smoke_writes_pngs_with_short_labels(tmp_path):
     # Other partitions (short_k10/concise_k10/long_k25/ccs_group) have no
     # rows in this tiny fixture -- make_figures must skip them, not crash.
     assert not (figs_dir / "fig_ccs_group_raw_vs_adjusted.png").exists()
+
+
+def test_make_figures_smoke_lang_ko_writes_ko_suffixed_pngs(tmp_path):
+    # Task G item 3: lang="ko" smoke test on the same tiny synthetic fixture
+    # as test_make_figures_smoke_writes_pngs_with_short_labels above. Only
+    # checks the _ko-suffixed files get written (and that the plain
+    # English-suffix files are NOT also written by this call) -- matplotlib
+    # never raises for a missing font family, so this passes even on a
+    # machine without Malgun Gothic installed.
+    eval_dir = tmp_path
+    groups = [0, 1, 2]
+
+    summary_rows = [
+        {
+            "partition": "long_k10", "scope": "test", "group": g,
+            "mean_jaccard": 0.40 + 0.05 * g,
+            "ci_low_jaccard": 0.35 + 0.05 * g,
+            "ci_high_jaccard": 0.45 + 0.05 * g,
+            "mean_ddi_rate_visit": 0.05 + 0.01 * g,
+            "mean_n_med_pred": 15 + g,
+        }
+        for g in groups
+    ]
+    pd.DataFrame(summary_rows).to_csv(eval_dir / "table_group_summary.csv", index=False)
+
+    adjusted_rows = [
+        {"partition": "long_k10", "scope": "test", "group": g, "outcome": "jaccard",
+         "adjusted_mean": 0.42 + 0.03 * g}
+        for g in groups
+    ]
+    pd.DataFrame(adjusted_rows).to_csv(eval_dir / "table_adjusted_means.csv", index=False)
+
+    pd.DataFrame(
+        {"epoch": [0, 1, 2], "eval_ja": [0.40, 0.45, 0.50], "eval_ddi_rate": [0.07, 0.065, 0.06]}
+    ).to_csv(eval_dir / "train_log.csv", index=False)
+
+    figs_dir = tmp_path / "figs"
+    figs_dir.mkdir()
+    make_figures(eval_dir, figs_dir, lang="ko")
+
+    assert (figs_dir / "fig_long_k10_raw_vs_adjusted_ko.png").exists()
+    assert (figs_dir / "fig_long_k10_ddi_nmed_ko.png").exists()
+    assert (figs_dir / "fig_train_log_ko.png").exists()
+    # lang="ko" must not also write the plain (English-filename) figures.
+    assert not (figs_dir / "fig_long_k10_raw_vs_adjusted.png").exists()
+    assert not (figs_dir / "fig_long_k10_ddi_nmed.png").exists()
+    assert not (figs_dir / "fig_train_log.png").exists()

@@ -13,6 +13,7 @@ from safedrug_mechanism import (
     adjusted_group_means_v2,
     covariate_only_residuals_v2,
     drug_training_frequency,
+    make_mechanism_figure,
     mechanism_correlations,
     precision_recall_gap_table,
     precision_recall_permutation,
@@ -226,3 +227,29 @@ def test_covariate_only_residuals_v2_shrinks_gap_when_effect_is_mediated():
     range_v2, _, _ = gap_statistics(gc_v2, resid_v2.to_numpy(), len(groups))
 
     assert range_v2 < range_v1 * 0.3
+
+
+def test_make_mechanism_figure_smoke_lang_ko_writes_ko_suffixed_png(tmp_path):
+    # Task G item 3: tiny synthetic groups_df with every column
+    # make_mechanism_figure reads, lang="ko" -- checks the _ko-suffixed file
+    # is written and the plain (English-filename) file is not. Only checks
+    # the PNG gets written, not its pixel content (matplotlib 3.11 under
+    # py -3.12; a missing Korean font on the test machine renders tofu boxes
+    # but does not raise).
+    groups_df = pd.DataFrame(
+        {
+            "group": [0, 1, 2],
+            "n_visits": [40, 35, 50],
+            "mean_precision": [0.6, 0.65, 0.55],
+            "mean_recall": [0.5, 0.55, 0.45],
+            "train_share": [0.3, 0.4, 0.2],
+            "adjusted_mean_jaccard": [0.45, 0.50, 0.40],
+            "mean_gt_freq": [0.1, 0.2, 0.05],
+        }
+    )
+    figs_dir = tmp_path / "figs"
+    figs_dir.mkdir()
+    make_mechanism_figure(groups_df, figs_dir, lang="ko")
+
+    assert (figs_dir / "fig_mechanism_long_k10_ko.png").exists()
+    assert not (figs_dir / "fig_mechanism_long_k10.png").exists()
