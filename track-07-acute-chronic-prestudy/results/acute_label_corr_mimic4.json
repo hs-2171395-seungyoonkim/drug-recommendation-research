@@ -1,0 +1,1459 @@
+{
+  "meta": {
+    "records": "C:\\Users\\Administrator\\Desktop\\ServerityMed\\data\\mimic-iv\\records_final5.pkl",
+    "visit_order": "chronological (records order, verified)",
+    "n_patients": 46524,
+    "n_visits": 155556,
+    "principal_source": "C:\\Users\\Administrator\\Desktop\\ServerityMed\\data\\raw_mimic_iv\\diagnoses_icd.csv",
+    "principal_coverage": 3.349989714315102,
+    "generated_at_utc": "2026-09-16T13:48:29.852518+00:00",
+    "dataset": "mimic4",
+    "n_boot": 200,
+    "label_sources": {
+      "cci9": "C:\\Python314\\Lib\\site-packages\\icdmappings\\data_files\\cci2015.csv",
+      "ccir10": "C:\\Python314\\Lib\\site-packages\\icdmappings\\data_files\\CCIR_v2023-1.csv",
+      "ccs9": "C:\\Users\\Administrator\\Desktop\\unfair\\ref\\ccs_dxref_2015.csv",
+      "ccsr10": "C:\\Python314\\Lib\\site-packages\\icdmappings\\data_files\\ICD10_CM_CCSR\\dx_cat1_mapping.json"
+    }
+  },
+  "results": {
+    "coverage": {
+      "n_transitions": 109032,
+      "n_patients": 46524,
+      "mean_n_dx": 12.741048499523076,
+      "dx_code_share_labelled": 0.8741158465917352,
+      "dx_code_share_acute_among_labelled": 0.39461552524651944,
+      "status_code_share_of_acute": 0.23318391265150756,
+      "share_visits_any_new_acute_excl_status_prev": 0.8094412649497396,
+      "mean_n_new_acute_excl_status_prev": 2.833067356372441,
+      "share_visits_any_new_acute_prev": 0.8651221659696235,
+      "share_visits_any_new_chronic_prev": 0.8753118350575978,
+      "share_visits_any_new_acute_hist": 0.836534228483381,
+      "mean_n_new_acute_prev": 3.4383392031697118,
+      "mean_n_new_chronic_prev": 3.7134786117836964,
+      "mean_n_new_prev": 8.322318218504659,
+      "mean_n_added": 4.574097512656834,
+      "median_n_added": 4.0,
+      "mean_n_stopped": 5.060385941741874,
+      "mean_change_mag": 0.5576187222837231,
+      "share_emergency": 0.5751063907843569,
+      "median_gap_days": 114.74548611111112,
+      "principal_labelled_share": 0.9578197226502311
+    },
+    "correlations": [
+      {
+        "feature": "n_new_acute_prev",
+        "rho_n_added": 0.36133191840112944,
+        "rho_n_stopped": -0.0008776317577939758,
+        "rho_change_mag": 0.04628592307399047,
+        "rho_n_added_ci": [
+          0.35672681135318707,
+          0.3679130150704965
+        ]
+      },
+      {
+        "feature": "n_new_acute_excl_status_prev",
+        "rho_n_added": 0.3382720048517576,
+        "rho_n_stopped": -0.017089657562697723,
+        "rho_change_mag": 0.07353472566507793,
+        "rho_n_added_ci": [
+          0.3332764846365109,
+          0.34441078038132217
+        ]
+      },
+      {
+        "feature": "n_new_status_prev",
+        "rho_n_added": 0.13743320773368564,
+        "rho_n_stopped": 0.11792880027556618,
+        "rho_change_mag": 0.11379115751367466,
+        "rho_n_added_ci": [
+          0.13202817228828465,
+          0.14467133568167984
+        ]
+      },
+      {
+        "feature": "n_new_chronic_prev",
+        "rho_n_added": 0.2764168662721971,
+        "rho_n_stopped": 0.13130968014587976,
+        "rho_change_mag": 0.11714321089428367,
+        "rho_n_added_ci": [
+          0.2710074871585376,
+          0.2823492877263799
+        ]
+      },
+      {
+        "feature": "n_new_unknown_prev",
+        "rho_n_added": 0.03343265454877897,
+        "rho_n_stopped": 0.04872220423882047,
+        "rho_change_mag": 0.204376827725272
+      },
+      {
+        "feature": "n_new_prev",
+        "rho_n_added": 0.35183911121146444,
+        "rho_n_stopped": 0.09266377872705776,
+        "rho_change_mag": 0.15008547772067282,
+        "rho_n_added_ci": [
+          0.34652012420258116,
+          0.3576652548246169
+        ]
+      },
+      {
+        "feature": "n_new_acute_hist",
+        "rho_n_added": 0.3587034441497845,
+        "rho_n_stopped": 0.024824649524430968,
+        "rho_change_mag": 0.10010537365241919,
+        "rho_n_added_ci": [
+          0.35381265810890944,
+          0.36490321222978483
+        ]
+      },
+      {
+        "feature": "n_new_acute_excl_status_hist",
+        "rho_n_added": 0.3368970838490389,
+        "rho_n_stopped": 0.005152329079494713,
+        "rho_change_mag": 0.11577809658813941
+      },
+      {
+        "feature": "n_new_chronic_hist",
+        "rho_n_added": 0.2746442085723267,
+        "rho_n_stopped": 0.16438613601194027,
+        "rho_change_mag": 0.20077847158855197
+      },
+      {
+        "feature": "n_new_hist",
+        "rho_n_added": 0.34540751132066994,
+        "rho_n_stopped": 0.12780295492455285,
+        "rho_change_mag": 0.2292312827498529
+      },
+      {
+        "feature": "n_acute",
+        "rho_n_added": 0.3216517199650576,
+        "rho_n_stopped": -0.02415616051431706,
+        "rho_change_mag": -0.05339473669416722
+      },
+      {
+        "feature": "n_chronic",
+        "rho_n_added": 0.23062130984709645,
+        "rho_n_stopped": 0.06739122260090462,
+        "rho_change_mag": -0.07340328099429885
+      },
+      {
+        "feature": "n_dx",
+        "rho_n_added": 0.2976099895572922,
+        "rho_n_stopped": 0.039549290539948594,
+        "rho_change_mag": -0.01971482373317649,
+        "rho_n_added_ci": [
+          0.29119307901051605,
+          0.30445541835152745
+        ]
+      },
+      {
+        "feature": "n_dropped_prev",
+        "rho_n_added": -0.02780675751712093,
+        "rho_n_stopped": 0.3643498951634334,
+        "rho_change_mag": 0.06095284606646034
+      },
+      {
+        "feature": "n_prev_meds",
+        "rho_n_added": -0.08254117048978003,
+        "rho_n_stopped": 0.6288626737387065,
+        "rho_change_mag": -0.24906801171809784,
+        "rho_n_added_ci": [
+          -0.08934126094415973,
+          -0.0734061895394486
+        ]
+      },
+      {
+        "feature": "gap_days",
+        "rho_n_added": 0.015396509671984747,
+        "rho_n_stopped": 0.25284834180744414,
+        "rho_change_mag": 0.3219900647981897
+      },
+      {
+        "feature": "emergency",
+        "rho_n_added": 0.11954852064703123,
+        "rho_n_stopped": -0.014290584432212922,
+        "rho_change_mag": -0.13384492045660537
+      }
+    ],
+    "group_2x2": [
+      {
+        "any_new_acute": false,
+        "any_new_chronic": false,
+        "n": 3221,
+        "mean_n_added": 2.5954672461968333,
+        "mean_n_stopped": 3.7538031667184106,
+        "mean_change_mag": 0.5084272643644248,
+        "mean_n_new_prev": 0.5585221980751319
+      },
+      {
+        "any_new_acute": false,
+        "any_new_chronic": true,
+        "n": 11485,
+        "mean_n_added": 3.14044405746626,
+        "mean_n_stopped": 5.304397039616892,
+        "mean_change_mag": 0.5651532460949082,
+        "mean_n_new_prev": 4.230474531998259
+      },
+      {
+        "any_new_acute": true,
+        "any_new_chronic": false,
+        "n": 10374,
+        "mean_n_added": 3.001542317331791,
+        "mean_n_stopped": 4.139386928860613,
+        "mean_change_mag": 0.5256890352625836,
+        "mean_n_new_prev": 3.2205513784461153
+      },
+      {
+        "any_new_acute": true,
+        "any_new_chronic": true,
+        "n": 83952,
+        "mean_n_added": 5.0404635982466175,
+        "mean_n_stopped": 5.1909424433009335,
+        "mean_change_mag": 0.5624208741460243,
+        "mean_n_new_prev": 9.8104035639413
+      }
+    ],
+    "principal": [
+      {
+        "principal_chronic": "acute",
+        "principal_new": "new",
+        "n": 46697,
+        "mean_n_added": 4.455039938325802,
+        "mean_n_stopped": 5.2299505321541,
+        "mean_change_mag": 0.5650066217036337
+      },
+      {
+        "principal_chronic": "acute",
+        "principal_new": "seen",
+        "n": 6643,
+        "mean_n_added": 3.8100255908475087,
+        "mean_n_stopped": 4.805208490139997,
+        "mean_change_mag": 0.4910330203022021
+      },
+      {
+        "principal_chronic": "chronic",
+        "principal_new": "new",
+        "n": 36171,
+        "mean_n_added": 5.0230018523126265,
+        "mean_n_stopped": 5.383815764009842,
+        "mean_change_mag": 0.590285725429096
+      },
+      {
+        "principal_chronic": "chronic",
+        "principal_new": "seen",
+        "n": 14922,
+        "mean_n_added": 4.769668945181611,
+        "mean_n_stopped": 4.141267926551401,
+        "mean_change_mag": 0.4939486399681996
+      },
+      {
+        "principal_chronic": "unknown",
+        "principal_new": "new",
+        "n": 3295,
+        "mean_n_added": 3.186039453717754,
+        "mean_n_stopped": 5.0701062215478,
+        "mean_change_mag": 0.5921215469916548
+      },
+      {
+        "principal_chronic": "unknown",
+        "principal_new": "seen",
+        "n": 1304,
+        "mean_n_added": 1.5475460122699387,
+        "mean_n_stopped": 1.8098159509202454,
+        "mean_change_mag": 0.36753902073465494
+      }
+    ],
+    "nested_r2": {
+      "M0 base (n_dx, n_prev_meds, log gap, emergency)": {
+        "n_added": 0.14016191465681838,
+        "n_stopped": 0.5903312022661442,
+        "change_mag": 0.14438417727239794
+      },
+      "M1 = M0 + n_new_prev": {
+        "n_added": 0.18286829924230918,
+        "n_stopped": 0.5956983801547782,
+        "change_mag": 0.182171087621807
+      },
+      "M2 = M0 + new acute/chronic/unknown split": {
+        "n_added": 0.24052238315869767,
+        "n_stopped": 0.6107565924406348,
+        "change_mag": 0.18453938117502133
+      },
+      "M3 = M2 + n_dropped_prev": {
+        "n_added": 0.2476790047461388,
+        "n_stopped": 0.6245568898509566,
+        "change_mag": 0.1967487140888985
+      },
+      "M2h = M0 + new-vs-history acute/chronic split": {
+        "n_added": 0.23022641690213852,
+        "n_stopped": 0.5946145130466274,
+        "change_mag": 0.1801464244681984
+      },
+      "M4 = M0 + acute(excl. status)/status/chronic/unknown split": {
+        "n_added": 0.2410506017520636,
+        "n_stopped": 0.6107760200008405,
+        "change_mag": 0.18502493062636582
+      }
+    },
+    "ols_M3_n_added": [
+      {
+        "feature": "n_dx",
+        "beta_std": -0.0375763642786897,
+        "ci_low": -0.049720009206875075,
+        "ci_high": -0.025622591487212847
+      },
+      {
+        "feature": "n_prev_meds",
+        "beta_std": -0.14926023151014073,
+        "ci_low": -0.15505350046126026,
+        "ci_high": -0.14299606240642523
+      },
+      {
+        "feature": "gap_days",
+        "beta_std": -0.04331445787672991,
+        "ci_low": -0.05007603420986722,
+        "ci_high": -0.03792380516965963
+      },
+      {
+        "feature": "emergency",
+        "beta_std": 0.0181696761811397,
+        "ci_low": 0.012300540831121668,
+        "ci_high": 0.024266621957601202
+      },
+      {
+        "feature": "n_new_acute_excl_status_prev",
+        "beta_std": 0.40933136160503397,
+        "ci_low": 0.3998335016889179,
+        "ci_high": 0.4181659407321521
+      },
+      {
+        "feature": "n_new_status_prev",
+        "beta_std": 0.08454779281592535,
+        "ci_low": 0.078160658589435,
+        "ci_high": 0.09330386244506773
+      },
+      {
+        "feature": "n_new_chronic_prev",
+        "beta_std": 0.2293147630037419,
+        "ci_low": 0.21957742290981758,
+        "ci_high": 0.2377261520625491
+      },
+      {
+        "feature": "n_new_unknown_prev",
+        "beta_std": -0.14056298792599559,
+        "ci_low": -0.147428343240913,
+        "ci_high": -0.1329736646577294
+      },
+      {
+        "feature": "n_dropped_prev",
+        "beta_std": -0.11180180115019757,
+        "ci_low": -0.1176590839193103,
+        "ci_high": -0.10576341689900093
+      }
+    ],
+    "acute_types_by_category": [
+      {
+        "label": "CCS 55 Fluid/elc dx",
+        "n_transitions": 13327,
+        "n_occurrences": 17245,
+        "mean_n_added": 7.458857639895622,
+        "top_added_by_lift": [
+          {
+            "atc3": "C01C",
+            "lift": 3.28,
+            "share": 0.147
+          },
+          {
+            "atc3": "D01A",
+            "lift": 3.07,
+            "share": 0.067
+          },
+          {
+            "atc3": "B02B",
+            "lift": 2.77,
+            "share": 0.111
+          }
+        ]
+      },
+      {
+        "label": "CCSR END011",
+        "n_transitions": 9953,
+        "n_occurrences": 14426,
+        "mean_n_added": 5.987591848052128,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 4.37,
+            "share": 0.08
+          },
+          {
+            "atc3": "N01A",
+            "lift": 2.92,
+            "share": 0.187
+          },
+          {
+            "atc3": "A07D",
+            "lift": 2.61,
+            "share": 0.084
+          }
+        ]
+      },
+      {
+        "label": "CCS 238 Complic proc",
+        "n_transitions": 8586,
+        "n_occurrences": 10756,
+        "mean_n_added": 7.487820751208628,
+        "top_added_by_lift": [
+          {
+            "atc3": "N07A",
+            "lift": 4.86,
+            "share": 0.067
+          },
+          {
+            "atc3": "C01C",
+            "lift": 3.84,
+            "share": 0.172
+          },
+          {
+            "atc3": "D01A",
+            "lift": 2.95,
+            "share": 0.064
+          }
+        ]
+      },
+      {
+        "label": "CCS 155 Other GI dx",
+        "n_transitions": 7850,
+        "n_occurrences": 8516,
+        "mean_n_added": 6.634452794739314,
+        "top_added_by_lift": [
+          {
+            "atc3": "A07D",
+            "lift": 3.14,
+            "share": 0.102
+          },
+          {
+            "atc3": "D01A",
+            "lift": 3.03,
+            "share": 0.066
+          },
+          {
+            "atc3": "R01A",
+            "lift": 1.88,
+            "share": 0.108
+          }
+        ]
+      },
+      {
+        "label": "CCS 59 Anemia",
+        "n_transitions": 8144,
+        "n_occurrences": 8182,
+        "mean_n_added": 5.711317526277194,
+        "top_added_by_lift": [
+          {
+            "atc3": "C01C",
+            "lift": 1.98,
+            "share": 0.089
+          },
+          {
+            "atc3": "R01A",
+            "lift": 1.67,
+            "share": 0.096
+          },
+          {
+            "atc3": "B03B",
+            "lift": 1.57,
+            "share": 0.057
+          }
+        ]
+      },
+      {
+        "label": "CCS 2 Septicemia",
+        "n_transitions": 5271,
+        "n_occurrences": 8071,
+        "mean_n_added": 8.53289555197621,
+        "top_added_by_lift": [
+          {
+            "atc3": "M03A",
+            "lift": 7.32,
+            "share": 0.064
+          },
+          {
+            "atc3": "J01X",
+            "lift": 6.03,
+            "share": 0.137
+          },
+          {
+            "atc3": "J02A",
+            "lift": 5.65,
+            "share": 0.075
+          }
+        ]
+      },
+      {
+        "label": "CCS 3 Oth bact inf",
+        "n_transitions": 6778,
+        "n_occurrences": 7935,
+        "mean_n_added": 6.920604914933837,
+        "top_added_by_lift": [
+          {
+            "atc3": "J01X",
+            "lift": 5.87,
+            "share": 0.133
+          },
+          {
+            "atc3": "D01A",
+            "lift": 3.4,
+            "share": 0.074
+          },
+          {
+            "atc3": "J01C",
+            "lift": 3.0,
+            "share": 0.202
+          }
+        ]
+      },
+      {
+        "label": "CCS 157 Ac renl fail",
+        "n_transitions": 7218,
+        "n_occurrences": 7253,
+        "mean_n_added": 7.924445057217703,
+        "top_added_by_lift": [
+          {
+            "atc3": "C01C",
+            "lift": 3.8,
+            "share": 0.17
+          },
+          {
+            "atc3": "C03B",
+            "lift": 3.6,
+            "share": 0.06
+          },
+          {
+            "atc3": "B02B",
+            "lift": 3.12,
+            "share": 0.125
+          }
+        ]
+      },
+      {
+        "label": "CCSR GEN002",
+        "n_transitions": 6014,
+        "n_occurrences": 6048,
+        "mean_n_added": 5.98478835978836,
+        "top_added_by_lift": [
+          {
+            "atc3": "C03B",
+            "lift": 3.88,
+            "share": 0.064
+          },
+          {
+            "atc3": "A11D",
+            "lift": 3.41,
+            "share": 0.062
+          },
+          {
+            "atc3": "N01A",
+            "lift": 2.85,
+            "share": 0.182
+          }
+        ]
+      },
+      {
+        "label": "CCSR INF003",
+        "n_transitions": 4677,
+        "n_occurrences": 5551,
+        "mean_n_added": 5.179427130246802,
+        "top_added_by_lift": [
+          {
+            "atc3": "A07D",
+            "lift": 2.2,
+            "share": 0.071
+          },
+          {
+            "atc3": "A07A",
+            "lift": 2.07,
+            "share": 0.331
+          },
+          {
+            "atc3": "N01A",
+            "lift": 1.76,
+            "share": 0.113
+          }
+        ]
+      },
+      {
+        "label": "CCS 259 Unclassified",
+        "n_transitions": 4390,
+        "n_occurrences": 4628,
+        "mean_n_added": 5.97191011235955,
+        "top_added_by_lift": [
+          {
+            "atc3": "B02B",
+            "lift": 3.16,
+            "share": 0.126
+          },
+          {
+            "atc3": "N05C",
+            "lift": 1.85,
+            "share": 0.1
+          },
+          {
+            "atc3": "R01A",
+            "lift": 1.72,
+            "share": 0.099
+          }
+        ]
+      },
+      {
+        "label": "CCS 159 UTI",
+        "n_transitions": 4585,
+        "n_occurrences": 4586,
+        "mean_n_added": 7.348015699956389,
+        "top_added_by_lift": [
+          {
+            "atc3": "J01X",
+            "lift": 5.1,
+            "share": 0.115
+          },
+          {
+            "atc3": "J01M",
+            "lift": 3.53,
+            "share": 0.382
+          },
+          {
+            "atc3": "J01E",
+            "lift": 3.2,
+            "share": 0.128
+          }
+        ]
+      },
+      {
+        "label": "CCS 237 Complic devi",
+        "n_transitions": 4364,
+        "n_occurrences": 4580,
+        "mean_n_added": 6.216157205240175,
+        "top_added_by_lift": [
+          {
+            "atc3": "J02A",
+            "lift": 4.33,
+            "share": 0.058
+          },
+          {
+            "atc3": "J01X",
+            "lift": 4.02,
+            "share": 0.091
+          },
+          {
+            "atc3": "D01A",
+            "lift": 3.18,
+            "share": 0.069
+          }
+        ]
+      },
+      {
+        "label": "CCSR SYM017",
+        "n_transitions": 4134,
+        "n_occurrences": 4519,
+        "mean_n_added": 4.813896879840673,
+        "top_added_by_lift": [
+          {
+            "atc3": "A07D",
+            "lift": 2.19,
+            "share": 0.071
+          },
+          {
+            "atc3": "A07E",
+            "lift": 1.92,
+            "share": 0.082
+          },
+          {
+            "atc3": "B02B",
+            "lift": 1.8,
+            "share": 0.072
+          }
+        ]
+      },
+      {
+        "label": "CCSR INJ028",
+        "n_transitions": 4075,
+        "n_occurrences": 4517,
+        "mean_n_added": 5.294221828647332,
+        "top_added_by_lift": [
+          {
+            "atc3": "A07D",
+            "lift": 3.07,
+            "share": 0.099
+          },
+          {
+            "atc3": "A07E",
+            "lift": 2.52,
+            "share": 0.108
+          },
+          {
+            "atc3": "J01E",
+            "lift": 1.93,
+            "share": 0.077
+          }
+        ]
+      },
+      {
+        "label": "CCSR INF002",
+        "n_transitions": 2995,
+        "n_occurrences": 4396,
+        "mean_n_added": 7.1073703366697,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 6.81,
+            "share": 0.124
+          },
+          {
+            "atc3": "J02A",
+            "lift": 6.67,
+            "share": 0.089
+          },
+          {
+            "atc3": "N01A",
+            "lift": 4.73,
+            "share": 0.303
+          }
+        ]
+      },
+      {
+        "label": "CCS 151 Oth liver dx",
+        "n_transitions": 3773,
+        "n_occurrences": 4189,
+        "mean_n_added": 7.405586058725233,
+        "top_added_by_lift": [
+          {
+            "atc3": "H01C",
+            "lift": 5.39,
+            "share": 0.062
+          },
+          {
+            "atc3": "J02A",
+            "lift": 4.52,
+            "share": 0.06
+          },
+          {
+            "atc3": "C03D",
+            "lift": 4.29,
+            "share": 0.081
+          }
+        ]
+      },
+      {
+        "label": "CCSR CIR031",
+        "n_transitions": 3846,
+        "n_occurrences": 3893,
+        "mean_n_added": 5.014127921911123,
+        "top_added_by_lift": [
+          {
+            "atc3": "N01A",
+            "lift": 2.49,
+            "share": 0.159
+          },
+          {
+            "atc3": "C07A",
+            "lift": 1.87,
+            "share": 0.148
+          },
+          {
+            "atc3": "C01D",
+            "lift": 1.73,
+            "share": 0.089
+          }
+        ]
+      },
+      {
+        "label": "CCS 163 Other GU dx",
+        "n_transitions": 3617,
+        "n_occurrences": 3830,
+        "mean_n_added": 6.619321148825065,
+        "top_added_by_lift": [
+          {
+            "atc3": "G04C",
+            "lift": 8.61,
+            "share": 0.125
+          },
+          {
+            "atc3": "C01B",
+            "lift": 2.65,
+            "share": 0.264
+          },
+          {
+            "atc3": "D01A",
+            "lift": 2.46,
+            "share": 0.054
+          }
+        ]
+      },
+      {
+        "label": "CCSR BLD004",
+        "n_transitions": 3706,
+        "n_occurrences": 3706,
+        "mean_n_added": 6.08041014570966,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11G",
+            "lift": 5.78,
+            "share": 0.114
+          },
+          {
+            "atc3": "N01A",
+            "lift": 4.66,
+            "share": 0.298
+          },
+          {
+            "atc3": "A11D",
+            "lift": 2.93,
+            "share": 0.053
+          }
+        ]
+      },
+      {
+        "label": "CCSR BLD006",
+        "n_transitions": 3557,
+        "n_occurrences": 3568,
+        "mean_n_added": 5.854260089686099,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 3.83,
+            "share": 0.07
+          },
+          {
+            "atc3": "N01A",
+            "lift": 3.17,
+            "share": 0.203
+          },
+          {
+            "atc3": "B02B",
+            "lift": 2.62,
+            "share": 0.105
+          }
+        ]
+      },
+      {
+        "label": "CCS 130 Pleurisy",
+        "n_transitions": 3124,
+        "n_occurrences": 3468,
+        "mean_n_added": 8.156862745098039,
+        "top_added_by_lift": [
+          {
+            "atc3": "R01A",
+            "lift": 3.81,
+            "share": 0.219
+          },
+          {
+            "atc3": "D01A",
+            "lift": 3.59,
+            "share": 0.078
+          },
+          {
+            "atc3": "C01C",
+            "lift": 3.58,
+            "share": 0.16
+          }
+        ]
+      },
+      {
+        "label": "CCSR DIG025",
+        "n_transitions": 3231,
+        "n_occurrences": 3276,
+        "mean_n_added": 4.636752136752137,
+        "top_added_by_lift": [
+          {
+            "atc3": "C05B",
+            "lift": 3.17,
+            "share": 0.055
+          },
+          {
+            "atc3": "A07E",
+            "lift": 1.41,
+            "share": 0.06
+          },
+          {
+            "atc3": "A02B",
+            "lift": 1.37,
+            "share": 0.17
+          }
+        ]
+      },
+      {
+        "label": "CCS 95 Oth nerv dx",
+        "n_transitions": 3097,
+        "n_occurrences": 3269,
+        "mean_n_added": 6.19577852554298,
+        "top_added_by_lift": [
+          {
+            "atc3": "M03B",
+            "lift": 2.27,
+            "share": 0.05
+          },
+          {
+            "atc3": "N03A",
+            "lift": 2.16,
+            "share": 0.116
+          },
+          {
+            "atc3": "N05A",
+            "lift": 1.97,
+            "share": 0.166
+          }
+        ]
+      },
+      {
+        "label": "CCS 205 Back problem",
+        "n_transitions": 3079,
+        "n_occurrences": 3262,
+        "mean_n_added": 5.353770692826487,
+        "top_added_by_lift": [
+          {
+            "atc3": "M03B",
+            "lift": 3.53,
+            "share": 0.078
+          },
+          {
+            "atc3": "N03A",
+            "lift": 1.76,
+            "share": 0.094
+          },
+          {
+            "atc3": "C01B",
+            "lift": 1.59,
+            "share": 0.158
+          }
+        ]
+      }
+    ],
+    "acute_types_by_code": [
+      {
+        "label": "2859 (v9) ANEMIA NOS",
+        "n_transitions": 6092,
+        "n_occurrences": 6092,
+        "mean_n_added": 5.7048588312541035,
+        "top_added_by_lift": [
+          {
+            "atc3": "C01C",
+            "lift": 2.14,
+            "share": 0.096
+          },
+          {
+            "atc3": "R01A",
+            "lift": 1.71,
+            "share": 0.098
+          },
+          {
+            "atc3": "D06A",
+            "lift": 1.6,
+            "share": 0.056
+          }
+        ],
+        "code": "2859"
+      },
+      {
+        "label": "5849 (v9) ACUTE RENAL FAILURE NOS",
+        "n_transitions": 5952,
+        "n_occurrences": 5952,
+        "mean_n_added": 7.195396505376344,
+        "top_added_by_lift": [
+          {
+            "atc3": "C01C",
+            "lift": 2.96,
+            "share": 0.132
+          },
+          {
+            "atc3": "R01A",
+            "lift": 2.66,
+            "share": 0.153
+          },
+          {
+            "atc3": "B02B",
+            "lift": 2.61,
+            "share": 0.104
+          }
+        ],
+        "code": "5849"
+      },
+      {
+        "label": "N179 (v10) Acute kidney failure, unspecified",
+        "n_transitions": 5010,
+        "n_occurrences": 5010,
+        "mean_n_added": 5.339920159680639,
+        "top_added_by_lift": [
+          {
+            "atc3": "C03B",
+            "lift": 3.12,
+            "share": 0.052
+          },
+          {
+            "atc3": "N01A",
+            "lift": 2.22,
+            "share": 0.142
+          },
+          {
+            "atc3": "B02B",
+            "lift": 1.98,
+            "share": 0.079
+          }
+        ],
+        "code": "N179"
+      },
+      {
+        "label": "5990 (v9) URIN TRACT INFECTION NOS",
+        "n_transitions": 4245,
+        "n_occurrences": 4245,
+        "mean_n_added": 7.477974087161367,
+        "top_added_by_lift": [
+          {
+            "atc3": "J01X",
+            "lift": 5.25,
+            "share": 0.119
+          },
+          {
+            "atc3": "J01M",
+            "lift": 3.62,
+            "share": 0.393
+          },
+          {
+            "atc3": "J01E",
+            "lift": 3.36,
+            "share": 0.135
+          }
+        ],
+        "code": "5990"
+      },
+      {
+        "label": "D62 (v10) Acute posthemorrhagic anemia",
+        "n_transitions": 3706,
+        "n_occurrences": 3706,
+        "mean_n_added": 6.08041014570966,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11G",
+            "lift": 5.78,
+            "share": 0.114
+          },
+          {
+            "atc3": "N01A",
+            "lift": 4.66,
+            "share": 0.298
+          },
+          {
+            "atc3": "A11D",
+            "lift": 2.93,
+            "share": 0.053
+          }
+        ],
+        "code": "D62"
+      },
+      {
+        "label": "2761 (v9) HYPOSMOLALITY",
+        "n_transitions": 3290,
+        "n_occurrences": 3290,
+        "mean_n_added": 7.326443768996961,
+        "top_added_by_lift": [
+          {
+            "atc3": "B02B",
+            "lift": 2.97,
+            "share": 0.119
+          },
+          {
+            "atc3": "D01A",
+            "lift": 2.96,
+            "share": 0.064
+          },
+          {
+            "atc3": "C01C",
+            "lift": 2.79,
+            "share": 0.125
+          }
+        ],
+        "code": "2761"
+      },
+      {
+        "label": "2851 (v9) AC POSTHEMORRHAG ANEMIA",
+        "n_transitions": 3205,
+        "n_occurrences": 3205,
+        "mean_n_added": 7.156630265210609,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11G",
+            "lift": 4.76,
+            "share": 0.094
+          },
+          {
+            "atc3": "N07A",
+            "lift": 4.35,
+            "share": 0.06
+          },
+          {
+            "atc3": "C01C",
+            "lift": 3.32,
+            "share": 0.149
+          }
+        ],
+        "code": "2851"
+      },
+      {
+        "label": "2762 (v9) ACIDOSIS",
+        "n_transitions": 2848,
+        "n_occurrences": 2848,
+        "mean_n_added": 8.478932584269662,
+        "top_added_by_lift": [
+          {
+            "atc3": "M03A",
+            "lift": 7.23,
+            "share": 0.064
+          },
+          {
+            "atc3": "C01C",
+            "lift": 5.4,
+            "share": 0.242
+          },
+          {
+            "atc3": "J02A",
+            "lift": 4.02,
+            "share": 0.054
+          }
+        ],
+        "code": "2762"
+      },
+      {
+        "label": "486 (v9) PNEUMONIA ORGANISM NOS",
+        "n_transitions": 2718,
+        "n_occurrences": 2718,
+        "mean_n_added": 8.653789551140544,
+        "top_added_by_lift": [
+          {
+            "atc3": "J01F",
+            "lift": 9.92,
+            "share": 0.161
+          },
+          {
+            "atc3": "R01A",
+            "lift": 4.91,
+            "share": 0.282
+          },
+          {
+            "atc3": "R05D",
+            "lift": 4.24,
+            "share": 0.136
+          }
+        ],
+        "code": "486"
+      },
+      {
+        "label": "E872 (v10) Acidosis",
+        "n_transitions": 2636,
+        "n_occurrences": 2636,
+        "mean_n_added": 6.607359635811836,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 6.16,
+            "share": 0.112
+          },
+          {
+            "atc3": "J02A",
+            "lift": 4.34,
+            "share": 0.058
+          },
+          {
+            "atc3": "N01A",
+            "lift": 4.0,
+            "share": 0.256
+          }
+        ],
+        "code": "E872"
+      },
+      {
+        "label": "E871 (v10) Hypo-osmolality and hyponatremia",
+        "n_transitions": 2625,
+        "n_occurrences": 2625,
+        "mean_n_added": 5.905523809523809,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 3.49,
+            "share": 0.064
+          },
+          {
+            "atc3": "C03B",
+            "lift": 3.1,
+            "share": 0.051
+          },
+          {
+            "atc3": "B02B",
+            "lift": 2.67,
+            "share": 0.107
+          }
+        ],
+        "code": "E871"
+      },
+      {
+        "label": "N390 (v10) Urinary tract infection, site not specified",
+        "n_transitions": 2558,
+        "n_occurrences": 2558,
+        "mean_n_added": 5.708756841282252,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 3.07,
+            "share": 0.056
+          },
+          {
+            "atc3": "J01X",
+            "lift": 2.87,
+            "share": 0.065
+          },
+          {
+            "atc3": "J01E",
+            "lift": 2.33,
+            "share": 0.093
+          }
+        ],
+        "code": "N390"
+      },
+      {
+        "label": "2767 (v9) HYPERPOTASSEMIA",
+        "n_transitions": 2553,
+        "n_occurrences": 2553,
+        "mean_n_added": 6.802193497845672,
+        "top_added_by_lift": [
+          {
+            "atc3": "V03A",
+            "lift": 4.85,
+            "share": 0.08
+          },
+          {
+            "atc3": "C01C",
+            "lift": 2.98,
+            "share": 0.134
+          },
+          {
+            "atc3": "D01A",
+            "lift": 2.57,
+            "share": 0.056
+          }
+        ],
+        "code": "2767"
+      },
+      {
+        "label": "56400 (v9) UNSPECIFIED CONSTIPATION (Begin 2001)",
+        "n_transitions": 2346,
+        "n_occurrences": 2346,
+        "mean_n_added": 6.045609548167093,
+        "top_added_by_lift": [
+          {
+            "atc3": "C01B",
+            "lift": 1.93,
+            "share": 0.192
+          },
+          {
+            "atc3": "N05A",
+            "lift": 1.74,
+            "share": 0.147
+          },
+          {
+            "atc3": "A04A",
+            "lift": 1.68,
+            "share": 0.194
+          }
+        ],
+        "code": "56400"
+      },
+      {
+        "label": "51881 (v9) RESPIRATORY FAILURE (Begin 1987)",
+        "n_transitions": 2287,
+        "n_occurrences": 2287,
+        "mean_n_added": 10.780498469610844,
+        "top_added_by_lift": [
+          {
+            "atc3": "M03A",
+            "lift": 15.63,
+            "share": 0.137
+          },
+          {
+            "atc3": "N05C",
+            "lift": 8.02,
+            "share": 0.432
+          },
+          {
+            "atc3": "C01C",
+            "lift": 7.95,
+            "share": 0.356
+          }
+        ],
+        "code": "51881"
+      },
+      {
+        "label": "78791 (v9) DIARRHEA (Begin 1995)",
+        "n_transitions": 2281,
+        "n_occurrences": 2281,
+        "mean_n_added": 7.089872862779482,
+        "top_added_by_lift": [
+          {
+            "atc3": "L01A",
+            "lift": 16.39,
+            "share": 0.053
+          },
+          {
+            "atc3": "A05A",
+            "lift": 9.13,
+            "share": 0.068
+          },
+          {
+            "atc3": "A07D",
+            "lift": 7.8,
+            "share": 0.252
+          }
+        ],
+        "code": "78791"
+      },
+      {
+        "label": "99592 (v9) SYS INFLAM / INFECTI W ORGAN DYSFUNCTI (Begin 2002)",
+        "n_transitions": 2173,
+        "n_occurrences": 2173,
+        "mean_n_added": 9.784629544408652,
+        "top_added_by_lift": [
+          {
+            "atc3": "M03A",
+            "lift": 12.26,
+            "share": 0.108
+          },
+          {
+            "atc3": "C01C",
+            "lift": 8.52,
+            "share": 0.382
+          },
+          {
+            "atc3": "J02A",
+            "lift": 7.13,
+            "share": 0.095
+          }
+        ],
+        "code": "99592"
+      },
+      {
+        "label": "E875 (v10) Hyperkalemia",
+        "n_transitions": 2080,
+        "n_occurrences": 2080,
+        "mean_n_added": 5.9125,
+        "top_added_by_lift": [
+          {
+            "atc3": "V03A",
+            "lift": 3.88,
+            "share": 0.064
+          },
+          {
+            "atc3": "D06A",
+            "lift": 3.28,
+            "share": 0.115
+          },
+          {
+            "atc3": "A11D",
+            "lift": 3.19,
+            "share": 0.058
+          }
+        ],
+        "code": "E875"
+      },
+      {
+        "label": "D696 (v10) Thrombocytopenia, unspecified",
+        "n_transitions": 2034,
+        "n_occurrences": 2034,
+        "mean_n_added": 5.948869223205507,
+        "top_added_by_lift": [
+          {
+            "atc3": "A11D",
+            "lift": 3.83,
+            "share": 0.07
+          },
+          {
+            "atc3": "N01A",
+            "lift": 3.41,
+            "share": 0.218
+          },
+          {
+            "atc3": "B02B",
+            "lift": 2.5,
+            "share": 0.1
+          }
+        ],
+        "code": "D696"
+      },
+      {
+        "label": "J9601 (v10) Acute respiratory failure with hypoxia",
+        "n_transitions": 2018,
+        "n_occurrences": 2018,
+        "mean_n_added": 7.612487611496531,
+        "top_added_by_lift": [
+          {
+            "atc3": "N01A",
+            "lift": 6.35,
+            "share": 0.407
+          },
+          {
+            "atc3": "A11D",
+            "lift": 6.17,
+            "share": 0.112
+          },
+          {
+            "atc3": "M03A",
+            "lift": 6.09,
+            "share": 0.054
+          }
+        ],
+        "code": "J9601"
+      }
+    ],
+    "overall_mean_n_added": 4.574097512656834,
+    "labs": {
+      "lab_absdelta_creatinine": {
+        "n": 96950,
+        "rho_with_n_new_acute_prev": 0.14260003389541692,
+        "rho_with_n_added": 0.04707693616179948,
+        "rho_with_change_mag": 0.026153558241365834
+      },
+      "lab_absdelta_bun": {
+        "n": 96133,
+        "rho_with_n_new_acute_prev": 0.11058268965707241,
+        "rho_with_n_added": 0.036933550004545936,
+        "rho_with_change_mag": 0.02679832891362432
+      },
+      "lab_absdelta_alt": {
+        "n": 80340,
+        "rho_with_n_new_acute_prev": 0.10503133505369573,
+        "rho_with_n_added": 0.029737280947138657,
+        "rho_with_change_mag": 0.10406983409294487
+      },
+      "lab_absdelta_ast": {
+        "n": 79398,
+        "rho_with_n_new_acute_prev": 0.11518770343073813,
+        "rho_with_n_added": 0.03278947723371968,
+        "rho_with_change_mag": 0.0966167849998961
+      },
+      "lab_absdelta_bilirubin_total": {
+        "n": 74895,
+        "rho_with_n_new_acute_prev": 0.10754134341092092,
+        "rho_with_n_added": 0.03394513978609214,
+        "rho_with_change_mag": 0.09382204821399671
+      },
+      "lab_absdelta_albumin": {
+        "n": 70280,
+        "rho_with_n_new_acute_prev": 0.13917783117624882,
+        "rho_with_n_added": 0.02723029753561556,
+        "rho_with_change_mag": 0.0854044318873663
+      },
+      "nested_r2_n_added": {
+        "M3": 0.24961256843032287,
+        "M3 + |lab log-ratio delta| (+missing flags)": 0.2505001206221631,
+        "M0 + labs only": 0.14225569439077468
+      }
+    }
+  }
+}

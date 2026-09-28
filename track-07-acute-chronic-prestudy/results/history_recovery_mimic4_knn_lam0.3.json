@@ -1,0 +1,467 @@
+{
+  "generated_at_utc": "2026-09-20T04:09:51.240929+00:00",
+  "dataset": "mimic4",
+  "label_sd": "SafeDrug baseline (5 seed)",
+  "label_gn": "kNN lam=0.3",
+  "gamenet_dumps": [
+    "out\\mimic4_knn\\knn_k50_lam0.3\\per_visit_predictions.npz"
+  ],
+  "safedrug_dumps": [
+    "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic4\\baseline-seed-1203.npz",
+    "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic4\\baseline-seed-2207.npz",
+    "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic4\\baseline-seed-3319.npz",
+    "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic4\\baseline-seed-4423.npz",
+    "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic4\\baseline-seed-5527.npz"
+  ],
+  "rarity_edges": [
+    0.013013032296593108,
+    0.06147237018272185
+  ],
+  "official_sd": {
+    "baseline-seed-1203": {
+      "best_epoch": 14
+    },
+    "baseline-seed-2207": {
+      "best_epoch": 17
+    },
+    "baseline-seed-3319": {
+      "best_epoch": 5
+    },
+    "baseline-seed-4423": {
+      "best_epoch": 15
+    },
+    "baseline-seed-5527": {
+      "best_epoch": 14
+    }
+  },
+  "official_gn": {
+    "knn_k50_lam0.3": {
+      "best_epoch": null,
+      "ja": 0.4868920297823001,
+      "ddi_rate": null,
+      "avg_med": 14.893199399607436
+    }
+  },
+  "safedrug": {
+    "n_transitions": 18229,
+    "n_seeds": 5,
+    "jaccard": 0.4398146034486496,
+    "n_pred": 13.910044434691976,
+    "n_cur": 12.030555707937902,
+    "fp_stale": 2.0675187887432114,
+    "fp_novel": 3.86772724779198,
+    "fn_added": 2.160897471062593,
+    "fn_cont": 1.8948598387185256,
+    "j_fix_stale": 0.5036031533978991,
+    "j_fix_novel": 0.5654010833490299,
+    "j_fix_fn_added": 0.55222487241779,
+    "j_fix_fn_cont": 0.5386963869077912,
+    "stale_keep_rate": 0.44532045125925973,
+    "cont_drop_rate": 0.22950908201306877,
+    "added_miss_pooled": 0.4777851901267512,
+    "stop_auc": 0.7435870262998558,
+    "keep_rate_stopped": 0.41249001302411104,
+    "keep_rate_continued": 0.7476150811047786,
+    "cont_keep_by_rarity": {
+      "rare": 0.04966592427616927,
+      "mid": 0.2008230452674897,
+      "common": 0.8016187972817028
+    },
+    "cont_keep_n_by_rarity": {
+      "rare": 4490,
+      "mid": 55890,
+      "common": 623920
+    },
+    "stopped_keep_by_rarity": {
+      "rare": 0.0032869785082174463,
+      "mid": 0.054936338968900024,
+      "common": 0.48921950831410616
+    },
+    "stopped_keep_n_by_rarity": {
+      "rare": 7910,
+      "mid": 71865,
+      "common": 377070
+    },
+    "added_hit_by_rarity": {
+      "rare": 0.04864864864864865,
+      "mid": 0.13466413662239088,
+      "common": 0.6075692570805137
+    },
+    "added_hit_n_by_rarity": {
+      "rare": 7215,
+      "mid": 65875,
+      "common": 339135
+    }
+  },
+  "gamenet": {
+    "n_transitions": 18229,
+    "n_seeds": 1,
+    "jaccard": 0.48855631896622503,
+    "n_pred": 16.66855011245817,
+    "n_cur": 12.030555707937902,
+    "fp_stale": 5.012288112348456,
+    "fp_novel": 2.184650831093313,
+    "fn_added": 2.558944538921499,
+    "fn_cont": 0.0,
+    "j_fix_stale": 0.6657601629222129,
+    "j_fix_novel": 0.5600926231041619,
+    "j_fix_fn_added": 0.6155028639967544,
+    "j_fix_fn_cont": 0.48855631896622503,
+    "stale_keep_rate": 1.0,
+    "cont_drop_rate": 0.0,
+    "added_miss_pooled": 0.5657953787373401,
+    "stop_auc": 0.7604314003644951,
+    "keep_rate_stopped": 1.0,
+    "keep_rate_continued": 1.0,
+    "cont_keep_by_rarity": {
+      "rare": 1.0,
+      "mid": 1.0,
+      "common": 1.0
+    },
+    "cont_keep_n_by_rarity": {
+      "rare": 898,
+      "mid": 11178,
+      "common": 124784
+    },
+    "stopped_keep_by_rarity": {
+      "rare": 1.0,
+      "mid": 1.0,
+      "common": 1.0
+    },
+    "stopped_keep_n_by_rarity": {
+      "rare": 1582,
+      "mid": 14373,
+      "common": 75414
+    },
+    "added_hit_by_rarity": {
+      "rare": 0.06652806652806653,
+      "mid": 0.13874762808349145,
+      "common": 0.499417636044643
+    },
+    "added_hit_n_by_rarity": {
+      "rare": 1443,
+      "mid": 13175,
+      "common": 67827
+    }
+  },
+  "paired": {
+    "jaccard": {
+      "delta": 0.048741715517575376,
+      "ci_low": 0.04627344708785699,
+      "ci_high": 0.051585634386369615
+    },
+    "fp_stale": {
+      "delta": 2.9447693236052443,
+      "ci_low": 2.9041274038502,
+      "ci_high": 2.992947200676354
+    },
+    "fp_novel": {
+      "delta": -1.683076416698667,
+      "ci_low": -1.7273535948701624,
+      "ci_high": -1.6424466092876011
+    },
+    "fn_added": {
+      "delta": 0.39804706785890615,
+      "ci_low": 0.3818053862745775,
+      "ci_high": 0.4150833201298801
+    },
+    "fn_cont": {
+      "delta": -1.8948598387185256,
+      "ci_low": -1.9487502814073574,
+      "ci_high": -1.8486897575822308
+    },
+    "n": 18229
+  },
+  "by_n_prev": [
+    {
+      "lo": 1,
+      "hi": 8,
+      "n": 4807,
+      "jaccard_sd": 0.42646444066406675,
+      "jaccard_gn": 0.4652351836124395,
+      "added_miss_sd": 0.4052937927518375,
+      "added_miss_gn": 0.4900369630794069,
+      "stale_sd": 1.2098606199292699,
+      "stale_gn": 2.344081547742875,
+      "novel_sd": 4.404826294986478,
+      "novel_gn": 2.5209070106095277,
+      "fn_cont_sd": 0.6880798835032246,
+      "fn_cont_gn": 0.0
+    },
+    {
+      "lo": 9,
+      "hi": 10,
+      "n": 2678,
+      "jaccard_sd": 0.4377815328727716,
+      "jaccard_gn": 0.4875836678048444,
+      "added_miss_sd": 0.44363258453913185,
+      "added_miss_gn": 0.535614357662483,
+      "stale_sd": 1.6608663181478713,
+      "stale_gn": 3.585138162808066,
+      "novel_sd": 4.193801344286781,
+      "novel_gn": 2.3379387602688575,
+      "fn_cont_sd": 1.2926064227035101,
+      "fn_cont_gn": 0.0
+    },
+    {
+      "lo": 11,
+      "hi": 13,
+      "n": 3890,
+      "jaccard_sd": 0.4389204581566874,
+      "jaccard_gn": 0.49695070897368343,
+      "added_miss_sd": 0.48026554013277,
+      "added_miss_gn": 0.57118560377462,
+      "stale_sd": 2.008586118251928,
+      "stale_gn": 4.5028277634961436,
+      "novel_sd": 3.9930591259640105,
+      "novel_gn": 2.279948586118252,
+      "fn_cont_sd": 1.838560411311054,
+      "fn_cont_gn": 0.0
+    },
+    {
+      "lo": 14,
+      "hi": 17,
+      "n": 3675,
+      "jaccard_sd": 0.4495411243318266,
+      "jaccard_gn": 0.5125032698210227,
+      "added_miss_sd": 0.5214073400060661,
+      "added_miss_gn": 0.6123142250530785,
+      "stale_sd": 2.38291156462585,
+      "stale_gn": 5.77469387755102,
+      "novel_sd": 3.6862040816326527,
+      "novel_gn": 2.0955102040816325,
+      "fn_cont_sd": 2.5514013605442183,
+      "fn_cont_gn": 0.0
+    },
+    {
+      "lo": 18,
+      "hi": 49,
+      "n": 3179,
+      "jaccard_sd": 0.45156422799968726,
+      "jaccard_gn": 0.4866847354290842,
+      "added_miss_sd": 0.5949345426542312,
+      "added_miss_gn": 0.6766492684179002,
+      "stale_sd": 3.4144699591066376,
+      "stale_gn": 9.991192198804656,
+      "novel_sd": 2.837370242214533,
+      "novel_gn": 1.5335011009751494,
+      "fn_cont_sd": 3.536898395721925,
+      "fn_cont_gn": 0.0
+    }
+  ],
+  "oracle": {
+    "safedrug": {
+      "n_transitions": 18229,
+      "n_seeds": 5,
+      "jaccard": 0.45821591993715577,
+      "n_pred": 12.030555707937902,
+      "n_cur": 12.030555707937902,
+      "fp_stale": 1.568928630204619,
+      "fp_novel": 2.77525920236985,
+      "fn_added": 2.2339129957759614,
+      "fn_cont": 2.110274836798508,
+      "j_fix_stale": 0.5097801992743117,
+      "j_fix_novel": 0.5439774573346884,
+      "j_fix_fn_added": 0.594189777007061,
+      "j_fix_fn_cont": 0.5931341028986725,
+      "stale_keep_rate": 0.35674456712821173,
+      "cont_drop_rate": 0.29014467731230503,
+      "added_miss_pooled": 0.49392928619079385,
+      "stop_auc": 0.7435870262998558,
+      "keep_rate_stopped": 0.31301644978056015,
+      "keep_rate_continued": 0.7189229869940085,
+      "cont_keep_by_rarity": {
+        "rare": 0.051002227171492207,
+        "mid": 0.1937555913401324,
+        "common": 0.7707734966021285
+      },
+      "cont_keep_n_by_rarity": {
+        "rare": 4490,
+        "mid": 55890,
+        "common": 623920
+      },
+      "stopped_keep_by_rarity": {
+        "rare": 0.002781289506953224,
+        "mid": 0.0414248938982815,
+        "common": 0.37128649852812473
+      },
+      "stopped_keep_n_by_rarity": {
+        "rare": 7910,
+        "mid": 71865,
+        "common": 377070
+      },
+      "added_hit_by_rarity": {
+        "rare": 0.061122661122661126,
+        "mid": 0.1576166982922201,
+        "common": 0.5832220207292081
+      },
+      "added_hit_n_by_rarity": {
+        "rare": 7215,
+        "mid": 65875,
+        "common": 339135
+      }
+    },
+    "gamenet": {
+      "n_transitions": 18229,
+      "n_seeds": 1,
+      "jaccard": 0.5195342515581699,
+      "n_pred": 12.030555707937902,
+      "n_cur": 12.030555707937902,
+      "fp_stale": 2.6536288331779034,
+      "fp_novel": 1.013110977014647,
+      "fn_added": 2.869987382741785,
+      "fn_cont": 0.7967524274507652,
+      "j_fix_stale": 0.6230781269046286,
+      "j_fix_novel": 0.5529718761287848,
+      "j_fix_fn_added": 0.6977411186368627,
+      "j_fix_fn_cont": 0.5815602587003921,
+      "stale_keep_rate": 0.6559457969720994,
+      "cont_drop_rate": 0.11851774979095629,
+      "added_miss_pooled": 0.6345685002122627,
+      "stop_auc": 0.7604314003644951,
+      "keep_rate_stopped": 0.5294246407424837,
+      "keep_rate_continued": 0.893876954552097,
+      "cont_keep_by_rarity": {
+        "rare": 0.44988864142538976,
+        "mid": 0.6186258722490606,
+        "common": 0.9217287472752917
+      },
+      "cont_keep_n_by_rarity": {
+        "rare": 898,
+        "mid": 11178,
+        "common": 124784
+      },
+      "stopped_keep_by_rarity": {
+        "rare": 0.16308470290771176,
+        "mid": 0.26424546023794615,
+        "common": 0.5876495080489034
+      },
+      "stopped_keep_n_by_rarity": {
+        "rare": 1582,
+        "mid": 14373,
+        "common": 75414
+      },
+      "added_hit_by_rarity": {
+        "rare": 0.062370062370062374,
+        "mid": 0.12409867172675522,
+        "common": 0.4187565423798782
+      },
+      "added_hit_n_by_rarity": {
+        "rare": 1443,
+        "mid": 13175,
+        "common": 67827
+      }
+    },
+    "paired": {
+      "jaccard": {
+        "delta": 0.06131833162101413,
+        "ci_low": 0.058992056085014864,
+        "ci_high": 0.06378008640224223
+      },
+      "fp_stale": {
+        "delta": 1.0847002029732844,
+        "ci_low": 1.0659340180084425,
+        "ci_high": 1.103373928618502
+      },
+      "fp_novel": {
+        "delta": -1.7621482253552032,
+        "ci_low": -1.7974519709545773,
+        "ci_high": -1.7342531353519457
+      },
+      "fn_added": {
+        "delta": 0.6360743869658236,
+        "ci_low": 0.6208654847264429,
+        "ci_high": 0.6516244667135347
+      },
+      "fn_cont": {
+        "delta": -1.3135224093477427,
+        "ci_low": -1.3444102488926037,
+        "ci_high": -1.2869951875929342
+      },
+      "n": 18229
+    },
+    "by_n_prev": [
+      {
+        "lo": 1,
+        "hi": 8,
+        "n": 4807,
+        "jaccard_sd": 0.4527650982495913,
+        "jaccard_gn": 0.4998802496501581,
+        "added_miss_sd": 0.4615541487870162,
+        "added_miss_gn": 0.5361770828907677,
+        "stale_sd": 0.7733305596005824,
+        "stale_gn": 1.5169544414395673,
+        "novel_sd": 2.465612648221344,
+        "novel_gn": 1.3580195548158935,
+        "fn_cont_sd": 0.9789889744123154,
+        "fn_cont_gn": 0.24963594757645102
+      },
+      {
+        "lo": 9,
+        "hi": 10,
+        "n": 2678,
+        "jaccard_sd": 0.4531288004931898,
+        "jaccard_gn": 0.5170564573010707,
+        "added_miss_sd": 0.4781837077304341,
+        "added_miss_gn": 0.6035654328883204,
+        "stale_sd": 1.1560119492158327,
+        "stale_gn": 2.1631814787154595,
+        "novel_sd": 2.733831217326363,
+        "novel_gn": 1.1292008961911875,
+        "fn_cont_sd": 1.6562359970126959,
+        "fn_cont_gn": 0.4731142643764003
+      },
+      {
+        "lo": 11,
+        "hi": 13,
+        "n": 3890,
+        "jaccard_sd": 0.45479386331784843,
+        "jaccard_gn": 0.5235611399978549,
+        "added_miss_sd": 0.48804520765896736,
+        "added_miss_gn": 0.6359247270532726,
+        "stale_sd": 1.4725449871465297,
+        "stale_gn": 2.622365038560411,
+        "novel_sd": 2.9452442159383034,
+        "novel_gn": 1.0496143958868895,
+        "fn_cont_sd": 2.1310025706940876,
+        "fn_cont_gn": 0.6922879177377892
+      },
+      {
+        "lo": 14,
+        "hi": 17,
+        "n": 3675,
+        "jaccard_sd": 0.4646340029729884,
+        "jaccard_gn": 0.5362334825099103,
+        "added_miss_sd": 0.5082195935699121,
+        "added_miss_gn": 0.6895359417652411,
+        "stale_sd": 1.894857142857143,
+        "stale_gn": 3.213877551020408,
+        "novel_sd": 3.0948571428571436,
+        "novel_gn": 0.8737414965986394,
+        "fn_cont_sd": 2.7099863945578235,
+        "fn_cont_gn": 0.9945578231292517
+      },
+      {
+        "lo": 18,
+        "hi": 49,
+        "n": 3179,
+        "jaccard_sd": 0.46751153202129636,
+        "jaccard_gn": 0.5271083473160506,
+        "added_miss_sd": 0.565003850432104,
+        "added_miss_gn": 0.7862582356464448,
+        "stale_sd": 2.8609625668449197,
+        "stale_gn": 4.176156023906889,
+        "novel_sd": 2.700912236552375,
+        "novel_gn": 0.5102233406731677,
+        "fn_cont_sd": 3.4847436300723498,
+        "fn_cont_gn": 1.7958477508650519
+      }
+    ]
+  },
+  "interpretation": [
+    "- Jaccard 0.4398 → 0.4886 (Δ 0.0487 [0.0463, 0.0516]).",
+    "- 오류 갈래별 변화(전이당): stale FP 2.07 → 5.01, novel FP 3.87 → 2.18, added 누락 2.16 → 2.56, 유지 누락 1.89 → 0.00.",
+    "- 유지된 드문 약물 예측률 0.050 → 1.000 (mid 0.201 → 1.000); 중단 판단 AUC 0.744 → 0.760; added 누락 0.478 → 0.566.",
+    "- **크기를 맞추면(oracle size)** Jaccard 0.4582 → 0.5195 (Δ 0.0613 [0.0590, 0.0638]); stale FP 1.57 → 2.65, novel FP 2.78 → 1.01, added 누락 2.23 → 2.87, 유지 누락 2.11 → 0.80; 유지된 드문 약물 0.051 → 0.450, added 누락 0.494 → 0.635."
+  ]
+}

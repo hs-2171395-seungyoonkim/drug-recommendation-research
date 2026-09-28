@@ -9,7 +9,7 @@ name -- both overlap badly once a figure has more than a handful of groups
 (ccs_group has 22, long_k25 has 25). short_group_label() gives every
 partition a short, fixed-format label instead.
 
-See docs/plans/2026-09-04-safedrug-seeds-mechanism-ksweep.md
+See docs/superpowers/plans/2026-09-04-safedrug-seeds-mechanism-ksweep.md
 (Task F) for the contract.
 
 Task G extends this module with a `lang` axis (en/ko) for a Korean-language

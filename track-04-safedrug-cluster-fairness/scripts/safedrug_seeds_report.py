@@ -4,7 +4,7 @@ re-derive any statistic) plus the base run_manifest.json for the seed-0
 headline numbers already in REPORT_SAFEDRUG_CLUSTER_KO.md (cross-referenced,
 not duplicated).
 
-See docs/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
+See docs/superpowers/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
 ("D-E2") for the full contract.
 """
 

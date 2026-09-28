@@ -1,0 +1,39 @@
+{
+  "control_predictor": {
+    "variant": "thresh_050_K11",
+    "description": "every drug with training prevalence >= 0.5 (K=11)",
+    "input_used": "none (constant / oracle-size frequency prior)",
+    "train_visits": 10489,
+    "mean_train_set_size": 19.24930879969492,
+    "K": 11,
+    "source_records": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\records_final.pkl",
+    "row_identity_source": "C:\\Users\\Administrator\\Desktop\\SafeDrug_\uad70\uc9d1\ubcc4\ud3c9\uac00_20260904\\\uc804\uccb4\uc0b0\ucd9c\ubb3c\\per_visit_predictions.npz"
+  },
+  "best_epoch": 0,
+  "best_eval_jaccard": 0.37106647763299877,
+  "official_metrics": {
+    "test": {
+      "ja": 0.36784759540137124,
+      "prauc": 0.6915805286991799,
+      "avg_f1": 0.5322934545496701,
+      "ddi_rate": 0.03636363636363636,
+      "avg_med": 11.0,
+      "avg_p": NaN,
+      "avg_r": NaN
+    },
+    "eval": {
+      "ja": 0.37106647763299877,
+      "prauc": 0.6936282269334839,
+      "avg_f1": 0.535480277580228,
+      "ddi_rate": 0.03636363636363636,
+      "avg_med": 11.0,
+      "avg_p": NaN,
+      "avg_r": NaN
+    }
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "test_visits": 2264,
+    "eval_visits": 2279
+  }
+}

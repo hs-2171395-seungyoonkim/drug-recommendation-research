@@ -1,0 +1,2 @@
+epoch,train_loss_mean,eval_ja,eval_prauc,eval_avg_p,eval_avg_r,eval_f1,eval_ddi_rate,eval_avg_med,epoch_seconds
+0,,0.37106647763299877,0.6936282269334839,,,0.535480277580228,0.03636363636363636,11.0,0.0

@@ -1,0 +1,70 @@
+{
+  "args": {
+    "variant": "S1",
+    "epochs": 2,
+    "smoke": true,
+    "out_dir": "C:\\Users\\Administrator\\Desktop\\SafeDrug_\uae09\uc131attention_20260907\\S1\\smoke_check\\smoke",
+    "features_dir": "C:/Users/Administrator/Desktop/SafeDrug_\uae09\uc131attention_20260907/features"
+  },
+  "variant": "S1",
+  "features_dir": "C:/Users/Administrator/Desktop/SafeDrug_\uae09\uc131attention_20260907/features",
+  "feature_file_sha256": {
+    "text_query.npz": "7469864deeef7fd09e2106d7fe57faa3b53fb51c7d0bd0a3278f8a2bdab8d5ba",
+    "novelty.pkl": "89f8a50a5248df7d1c91911edbf8ded449cec5bb0baef053b094736d40029900",
+    "lab_query.npz": "dcead14866b80b27f11e7d3b0bead07dd5454b7f11bff2bfbfe68c6095fc07f6"
+  },
+  "text_coverage": 1.0,
+  "n_parameters": 420266,
+  "seeds": {
+    "torch_manual_seed": 1203,
+    "numpy_seed": 2048,
+    "python_random_seed": 1203,
+    "cudnn_deterministic": true,
+    "seed_override": null
+  },
+  "torch_version": "2.13.0+cu130",
+  "torch_cuda_version": "13.0",
+  "device": "cuda:0",
+  "data_files_sha256": {
+    "records_final": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f",
+    "voc_final": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5",
+    "ddi_A_final": "8b27353d99db2b9717ea52d54bafc8be69a708c6952b4cfe390903ead84bedea",
+    "ddi_mask_H": "5551a84a7cf29d82a52c84cb1fad0b4c7c9d75c4fa482920bac467985792b764",
+    "atc3toSMILES": "382099546c4f37065fc5ae8c1fe9e17d44392cc48a4c016866a108a934caf9ab"
+  },
+  "best_epoch": 1,
+  "best_eval_jaccard": 0.4134550526741806,
+  "official_metrics": {
+    "test": {
+      "ddi_rate": 0.05194805194805195,
+      "ja": 0.41060275099148846,
+      "prauc": 0.6820336008569909,
+      "avg_p": 0.5612619343479456,
+      "avg_r": 0.6310592187861015,
+      "avg_f1": 0.5737572083431681,
+      "avg_med": 22.0
+    },
+    "eval": {
+      "ddi_rate": 0.05194805194805195,
+      "ja": 0.4134550526741806,
+      "prauc": 0.6856782745618071,
+      "avg_p": 0.5648141990209979,
+      "avg_r": 0.6308920239367407,
+      "avg_f1": 0.5766596470961641,
+      "avg_med": 22.0
+    }
+  },
+  "hyperparameters": {
+    "emb_dim": 64,
+    "lr": 0.0005,
+    "target_ddi": 0.06,
+    "kp": 0.05
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "eval_len": 1058,
+    "train_patients": 200,
+    "test_patients": 1058,
+    "eval_patients": 1059
+  }
+}

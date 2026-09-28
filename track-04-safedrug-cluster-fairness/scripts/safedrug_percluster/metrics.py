@@ -6,7 +6,7 @@ inner helper functions of multi_label_metric()) as row-wise functions over a bat
 of already-decided (thresholded) prediction rows, plus the label-attachment and
 patient-level bootstrap-CI helpers scripts/safedrug_cluster_gap.py builds on.
 
-See docs/specs/2026-09-04-safedrug-per-cluster-eval-design.md
+See docs/superpowers/specs/2026-09-04-safedrug-per-cluster-eval-design.md
 ("D3. Per-visit metrics") for the full contract, including the footnote on why
 this module's jaccard() does not reproduce util.py's unreachable
 `0 if union == 0` dead-code guard (a set is never == 0, so the original raises

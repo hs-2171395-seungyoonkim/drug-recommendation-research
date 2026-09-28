@@ -1,0 +1,7 @@
+source,partition,predictor,n_groups,spearman_r
+seed0,long_k10,train_share,10,-0.1515151515151515
+seed0,long_k10,mean_gt_freq,10,0.49090909090909085
+seed0,long_k10,mean_n_med_gt,10,-0.10303030303030303
+seed0,ccs_group,train_share,20,0.4054155984334719
+seed0,ccs_group,mean_gt_freq,20,-0.11428571428571428
+seed0,ccs_group,mean_n_med_gt,20,0.5157894736842105

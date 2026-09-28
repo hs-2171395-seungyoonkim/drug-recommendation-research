@@ -1,0 +1,1360 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-09-16T13:22:26.511055+00:00",
+    "dataset": "mimic3",
+    "splits": [
+      "test",
+      "eval"
+    ],
+    "seeds": [
+      "seed0",
+      "seed1",
+      "seed2",
+      "seed3"
+    ],
+    "constant_k": 15,
+    "records": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\records_final.pkl",
+    "n_boot": 2000,
+    "inputs": {
+      "seed0": {
+        "path": "C:\\Users\\Administrator\\Desktop\\SafeDrug_군집별평가_20260904\\개입실험\\B_thresholds\\seed0\\global_0.5\\per_visit_predictions.npz",
+        "n_rows": 4543
+      },
+      "seed1": {
+        "path": "C:\\Users\\Administrator\\Desktop\\SafeDrug_군집별평가_20260904\\개입실험\\B_thresholds\\seed1\\global_0.5\\per_visit_predictions.npz",
+        "n_rows": 4543
+      },
+      "seed2": {
+        "path": "C:\\Users\\Administrator\\Desktop\\SafeDrug_군집별평가_20260904\\개입실험\\B_thresholds\\seed2\\global_0.5\\per_visit_predictions.npz",
+        "n_rows": 4543
+      },
+      "seed3": {
+        "path": "C:\\Users\\Administrator\\Desktop\\SafeDrug_군집별평가_20260904\\개입실험\\B_thresholds\\seed3\\global_0.5\\per_visit_predictions.npz",
+        "n_rows": 4543
+      }
+    }
+  },
+  "pooled_over_seeds": {
+    "n_transitions": 2426,
+    "n_patients": 1735,
+    "change_share": 1.0,
+    "strata": {
+      "all_transitions": {
+        "n_transitions": 2426,
+        "n_patients": 1735,
+        "mean_n_cur": 20.598516075845012,
+        "mean_n_added": 7.448474855729596,
+        "mean_n_stopped": 7.1945589447650455,
+        "mean_n_pred": 20.63221352019786,
+        "model_jaccard": 0.5151740687692631,
+        "copy_previous_jaccard": 0.4743524199673677,
+        "constant_jaccard": 0.40643279957745354,
+        "model_f1": 0.6720336852972107,
+        "copy_previous_f1": 0.6325496845366966,
+        "constant_f1": 0.5720911306911349,
+        "model_added_jaccard": 0.2984920452575185,
+        "model_stopped_jaccard": 0.4175614346946828,
+        "model_minus_copy": {
+          "n": 2426,
+          "n_clusters": 1735,
+          "resample_unit": "cluster",
+          "mean": 0.04082164880189547,
+          "se": 0.0034883214268880904,
+          "ci_low": 0.03394103992643251,
+          "ci_high": 0.04751320635274694,
+          "p_two_sided": 0.0
+        }
+      },
+      "continuation": {
+        "n_transitions": 0,
+        "n_patients": 0,
+        "mean_n_cur": NaN,
+        "mean_n_added": NaN,
+        "mean_n_stopped": NaN,
+        "mean_n_pred": NaN,
+        "model_jaccard": NaN,
+        "copy_previous_jaccard": NaN,
+        "constant_jaccard": NaN,
+        "model_f1": NaN,
+        "copy_previous_f1": NaN,
+        "constant_f1": NaN,
+        "model_added_jaccard": NaN,
+        "model_stopped_jaccard": NaN
+      },
+      "change": {
+        "n_transitions": 2426,
+        "n_patients": 1735,
+        "mean_n_cur": 20.598516075845012,
+        "mean_n_added": 7.448474855729596,
+        "mean_n_stopped": 7.1945589447650455,
+        "mean_n_pred": 20.63221352019786,
+        "model_jaccard": 0.5151740687692631,
+        "copy_previous_jaccard": 0.4743524199673677,
+        "constant_jaccard": 0.40643279957745354,
+        "model_f1": 0.6720336852972107,
+        "copy_previous_f1": 0.6325496845366966,
+        "constant_f1": 0.5720911306911349,
+        "model_added_jaccard": 0.2984920452575185,
+        "model_stopped_jaccard": 0.4175614346946828,
+        "model_minus_copy": {
+          "n": 2426,
+          "n_clusters": 1735,
+          "resample_unit": "cluster",
+          "mean": 0.04082164880189547,
+          "se": 0.0034883214268880904,
+          "ci_low": 0.03394103992643251,
+          "ci_high": 0.04751320635274694,
+          "p_two_sided": 0.0
+        }
+      },
+      "bin:continuation (J=1)": {
+        "n_transitions": 0,
+        "n_patients": 0,
+        "mean_n_cur": NaN,
+        "mean_n_added": NaN,
+        "mean_n_stopped": NaN,
+        "mean_n_pred": NaN,
+        "model_jaccard": NaN,
+        "copy_previous_jaccard": NaN,
+        "constant_jaccard": NaN,
+        "model_f1": NaN,
+        "copy_previous_f1": NaN,
+        "constant_f1": NaN,
+        "model_added_jaccard": NaN,
+        "model_stopped_jaccard": NaN
+      },
+      "bin:minor change [0.8,1)": {
+        "n_transitions": 18,
+        "n_patients": 17,
+        "mean_n_cur": 17.88888888888889,
+        "mean_n_added": 1.5555555555555556,
+        "mean_n_stopped": 1.5,
+        "mean_n_pred": 19.25,
+        "model_jaccard": 0.5053364549255996,
+        "copy_previous_jaccard": 0.8468232342024612,
+        "constant_jaccard": 0.37432791739999977,
+        "model_f1": 0.6634058205703166,
+        "copy_previous_f1": 0.9165149718668716,
+        "constant_f1": 0.5361585723654689,
+        "model_added_jaccard": 0.09491667668751001,
+        "model_stopped_jaccard": 0.08981597106597106,
+        "model_minus_copy": {
+          "n": 18,
+          "n_clusters": 17,
+          "resample_unit": "cluster",
+          "mean": -0.3414867792768615,
+          "se": 0.02743771638882707,
+          "ci_low": -0.39423321584596843,
+          "ci_high": -0.2877400992403916,
+          "p_two_sided": 0.0
+        }
+      },
+      "bin:moderate [0.6,0.8)": {
+        "n_transitions": 398,
+        "n_patients": 352,
+        "mean_n_cur": 21.650753768844222,
+        "mean_n_added": 4.326633165829146,
+        "mean_n_stopped": 4.706030150753769,
+        "mean_n_pred": 20.78391959798995,
+        "model_jaccard": 0.5451334659793623,
+        "copy_previous_jaccard": 0.6587494310997349,
+        "constant_jaccard": 0.41932974294918773,
+        "model_f1": 0.699376133376273,
+        "copy_previous_f1": 0.7933377841038891,
+        "constant_f1": 0.5847347450895779,
+        "model_added_jaccard": 0.22408042594610592,
+        "model_stopped_jaccard": 0.3230779310893426,
+        "model_minus_copy": {
+          "n": 398,
+          "n_clusters": 352,
+          "resample_unit": "cluster",
+          "mean": -0.11361596512037264,
+          "se": 0.0058930979952793675,
+          "ci_low": -0.12514670048216228,
+          "ci_high": -0.1019797299290542,
+          "p_two_sided": 0.0
+        }
+      },
+      "bin:major [0.4,0.6)": {
+        "n_transitions": 1363,
+        "n_patients": 1050,
+        "mean_n_cur": 21.234776228906824,
+        "mean_n_added": 7.248716067498166,
+        "mean_n_stopped": 7.149669845928099,
+        "mean_n_pred": 20.837490829053557,
+        "model_jaccard": 0.5201114556574861,
+        "copy_previous_jaccard": 0.4927360360407886,
+        "constant_jaccard": 0.4138887982321765,
+        "model_f1": 0.6778242801368343,
+        "copy_previous_f1": 0.6583496298513438,
+        "constant_f1": 0.5803975761850046,
+        "model_added_jaccard": 0.2932311768034622,
+        "model_stopped_jaccard": 0.41260626709974585,
+        "model_minus_copy": {
+          "n": 1363,
+          "n_clusters": 1050,
+          "resample_unit": "cluster",
+          "mean": 0.027375419616697427,
+          "se": 0.0031319436781021047,
+          "ci_low": 0.02126736477630015,
+          "ci_high": 0.03349497059633792,
+          "p_two_sided": 0.0
+        }
+      },
+      "bin:overhaul [0,0.4)": {
+        "n_transitions": 647,
+        "n_patients": 574,
+        "mean_n_cur": 18.686244204018546,
+        "mean_n_added": 9.953632148377125,
+        "mean_n_stopped": 8.978361669242659,
+        "mean_n_pred": 20.144899536321482,
+        "model_jaccard": 0.48661700328382046,
+        "copy_previous_jaccard": 0.31183100761035576,
+        "constant_jaccard": 0.38368531619392404,
+        "model_f1": 0.6432553645293754,
+        "copy_previous_f1": 0.4713899252421833,
+        "constant_f1": 0.5478143800128307,
+        "model_added_jaccard": 0.3610125163905651,
+        "model_stopped_jaccard": 0.49523955867017183,
+        "model_minus_copy": {
+          "n": 647,
+          "n_clusters": 574,
+          "resample_unit": "cluster",
+          "mean": 0.17478599567346467,
+          "se": 0.005249331245202013,
+          "ci_low": 0.16484280100355278,
+          "ci_high": 0.18530868309203652,
+          "p_two_sided": 0.0
+        }
+      }
+    }
+  },
+  "per_seed": {
+    "seed0": {
+      "n_transitions": 2426,
+      "n_patients": 1735,
+      "change_share": 1.0,
+      "strata": {
+        "all_transitions": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.24732069249794,
+          "model_jaccard": 0.5127227727305346,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6701852663193323,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.2952133223056177,
+          "model_stopped_jaccard": 0.41530082876302504,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.03837035276316695,
+            "se": 0.0036305949534602092,
+            "ci_low": 0.031341887760470595,
+            "ci_high": 0.04536551793076429,
+            "p_two_sided": 0.0
+          }
+        },
+        "continuation": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "change": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.24732069249794,
+          "model_jaccard": 0.5127227727305346,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6701852663193323,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.2952133223056177,
+          "model_stopped_jaccard": 0.41530082876302504,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.03837035276316695,
+            "se": 0.0036305949534602092,
+            "ci_low": 0.031341887760470595,
+            "ci_high": 0.04536551793076429,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:continuation (J=1)": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "bin:minor change [0.8,1)": {
+          "n_transitions": 18,
+          "n_patients": 17,
+          "mean_n_cur": 17.88888888888889,
+          "mean_n_added": 1.5555555555555556,
+          "mean_n_stopped": 1.5,
+          "mean_n_pred": 18.555555555555557,
+          "model_jaccard": 0.4958689610277172,
+          "copy_previous_jaccard": 0.8468232342024612,
+          "constant_jaccard": 0.37432791739999977,
+          "model_f1": 0.6553591405365873,
+          "copy_previous_f1": 0.9165149718668716,
+          "constant_f1": 0.5361585723654689,
+          "model_added_jaccard": 0.08474426807760142,
+          "model_stopped_jaccard": 0.08227914061247395,
+          "model_minus_copy": {
+            "n": 18,
+            "n_clusters": 17,
+            "resample_unit": "cluster",
+            "mean": -0.35095427317474404,
+            "se": 0.027560668856805772,
+            "ci_low": -0.40210177513268913,
+            "ci_high": -0.2957927104694865,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:moderate [0.6,0.8)": {
+          "n_transitions": 398,
+          "n_patients": 352,
+          "mean_n_cur": 21.650753768844222,
+          "mean_n_added": 4.326633165829146,
+          "mean_n_stopped": 4.706030150753769,
+          "mean_n_pred": 20.51005025125628,
+          "model_jaccard": 0.541000683803133,
+          "copy_previous_jaccard": 0.6587494310997349,
+          "constant_jaccard": 0.41932974294918773,
+          "model_f1": 0.69583827192902,
+          "copy_previous_f1": 0.7933377841038891,
+          "constant_f1": 0.5847347450895779,
+          "model_added_jaccard": 0.22341896698237224,
+          "model_stopped_jaccard": 0.31333653961633257,
+          "model_minus_copy": {
+            "n": 398,
+            "n_clusters": 352,
+            "resample_unit": "cluster",
+            "mean": -0.11774874729660181,
+            "se": 0.006315136043400532,
+            "ci_low": -0.13028113731488458,
+            "ci_high": -0.10534397861425109,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:major [0.4,0.6)": {
+          "n_transitions": 1363,
+          "n_patients": 1050,
+          "mean_n_cur": 21.234776228906824,
+          "mean_n_added": 7.248716067498166,
+          "mean_n_stopped": 7.149669845928099,
+          "mean_n_pred": 20.45267791636097,
+          "model_jaccard": 0.5177723096308823,
+          "copy_previous_jaccard": 0.4927360360407886,
+          "constant_jaccard": 0.4138887982321765,
+          "model_f1": 0.6760998345664435,
+          "copy_previous_f1": 0.6583496298513438,
+          "constant_f1": 0.5803975761850046,
+          "model_added_jaccard": 0.289426956542578,
+          "model_stopped_jaccard": 0.41145733034477816,
+          "model_minus_copy": {
+            "n": 1363,
+            "n_clusters": 1050,
+            "resample_unit": "cluster",
+            "mean": 0.025036273590093656,
+            "se": 0.0033329576599659184,
+            "ci_low": 0.018759891867353152,
+            "ci_high": 0.0316544464886216,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:overhaul [0,0.4)": {
+          "n_transitions": 647,
+          "n_patients": 574,
+          "mean_n_cur": 18.686244204018546,
+          "mean_n_added": 9.953632148377125,
+          "mean_n_stopped": 8.978361669242659,
+          "mean_n_pred": 19.70015455950541,
+          "model_jaccard": 0.48515900334658185,
+          "copy_previous_jaccard": 0.31183100761035576,
+          "constant_jaccard": 0.38368531619392404,
+          "model_f1": 0.6423574726726884,
+          "copy_previous_f1": 0.4713899252421833,
+          "constant_f1": 0.5478143800128307,
+          "model_added_jaccard": 0.3574226158601449,
+          "model_stopped_jaccard": 0.4953856290893993,
+          "model_minus_copy": {
+            "n": 647,
+            "n_clusters": 574,
+            "resample_unit": "cluster",
+            "mean": 0.1733279957362261,
+            "se": 0.005345865180192231,
+            "ci_low": 0.16314505312878863,
+            "ci_high": 0.18391861164080978,
+            "p_two_sided": 0.0
+          }
+        }
+      },
+      "all_visits_model_jaccard": 0.5103535586209151,
+      "all_visits_n": 4543
+    },
+    "seed1": {
+      "n_transitions": 2426,
+      "n_patients": 1735,
+      "change_share": 1.0,
+      "strata": {
+        "all_transitions": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.769579554822755,
+          "model_jaccard": 0.5154428550568968,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6722536844326328,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.29915822401091513,
+          "model_stopped_jaccard": 0.4177224941924445,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.04109043508952923,
+            "se": 0.0036283369084942146,
+            "ci_low": 0.03388727499364491,
+            "ci_high": 0.04797839243655723,
+            "p_two_sided": 0.0
+          }
+        },
+        "continuation": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "change": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.769579554822755,
+          "model_jaccard": 0.5154428550568968,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6722536844326328,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.29915822401091513,
+          "model_stopped_jaccard": 0.4177224941924445,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.04109043508952923,
+            "se": 0.0036283369084942146,
+            "ci_low": 0.03388727499364491,
+            "ci_high": 0.04797839243655723,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:continuation (J=1)": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "bin:minor change [0.8,1)": {
+          "n_transitions": 18,
+          "n_patients": 17,
+          "mean_n_cur": 17.88888888888889,
+          "mean_n_added": 1.5555555555555556,
+          "mean_n_stopped": 1.5,
+          "mean_n_pred": 19.11111111111111,
+          "model_jaccard": 0.5011388025431391,
+          "copy_previous_jaccard": 0.8468232342024612,
+          "constant_jaccard": 0.37432791739999977,
+          "model_f1": 0.6594153195912115,
+          "copy_previous_f1": 0.9165149718668716,
+          "constant_f1": 0.5361585723654689,
+          "model_added_jaccard": 0.10238095238095239,
+          "model_stopped_jaccard": 0.08748196248196248,
+          "model_minus_copy": {
+            "n": 18,
+            "n_clusters": 17,
+            "resample_unit": "cluster",
+            "mean": -0.3456844316593221,
+            "se": 0.02703425074380658,
+            "ci_low": -0.3999753664955369,
+            "ci_high": -0.2951931613955064,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:moderate [0.6,0.8)": {
+          "n_transitions": 398,
+          "n_patients": 352,
+          "mean_n_cur": 21.650753768844222,
+          "mean_n_added": 4.326633165829146,
+          "mean_n_stopped": 4.706030150753769,
+          "mean_n_pred": 20.748743718592966,
+          "model_jaccard": 0.5423625992118777,
+          "copy_previous_jaccard": 0.6587494310997349,
+          "constant_jaccard": 0.41932974294918773,
+          "model_f1": 0.6970682996494948,
+          "copy_previous_f1": 0.7933377841038891,
+          "constant_f1": 0.5847347450895779,
+          "model_added_jaccard": 0.22197571781520942,
+          "model_stopped_jaccard": 0.3249849659992674,
+          "model_minus_copy": {
+            "n": 398,
+            "n_clusters": 352,
+            "resample_unit": "cluster",
+            "mean": -0.11638683188785727,
+            "se": 0.006149078590610035,
+            "ci_low": -0.12861706546637217,
+            "ci_high": -0.10450908599947596,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:major [0.4,0.6)": {
+          "n_transitions": 1363,
+          "n_patients": 1050,
+          "mean_n_cur": 21.234776228906824,
+          "mean_n_added": 7.248716067498166,
+          "mean_n_stopped": 7.149669845928099,
+          "mean_n_pred": 21.02861335289802,
+          "model_jaccard": 0.5207989355782758,
+          "copy_previous_jaccard": 0.4927360360407886,
+          "constant_jaccard": 0.4138887982321765,
+          "model_f1": 0.6785518726124045,
+          "copy_previous_f1": 0.6583496298513438,
+          "constant_f1": 0.5803975761850046,
+          "model_added_jaccard": 0.2936871914809198,
+          "model_stopped_jaccard": 0.4128540094558283,
+          "model_minus_copy": {
+            "n": 1363,
+            "n_clusters": 1050,
+            "resample_unit": "cluster",
+            "mean": 0.028062899537487147,
+            "se": 0.0032690181697287795,
+            "ci_low": 0.02197798953882673,
+            "ci_high": 0.03443334080076514,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:overhaul [0,0.4)": {
+          "n_transitions": 647,
+          "n_patients": 574,
+          "mean_n_cur": 18.686244204018546,
+          "mean_n_added": 9.953632148377125,
+          "mean_n_stopped": 8.978361669242659,
+          "mean_n_pred": 20.282843894899536,
+          "model_jaccard": 0.48799784272447927,
+          "copy_previous_jaccard": 0.31183100761035576,
+          "constant_jaccard": 0.38368531619392404,
+          "model_f1": 0.6440781716378968,
+          "copy_previous_f1": 0.4713899252421833,
+          "constant_f1": 0.5478143800128307,
+          "model_added_jaccard": 0.36363681086348687,
+          "model_stopped_jaccard": 0.49421339139133336,
+          "model_minus_copy": {
+            "n": 647,
+            "n_clusters": 574,
+            "resample_unit": "cluster",
+            "mean": 0.17616683511412354,
+            "se": 0.005629564589391551,
+            "ci_low": 0.16545377662828317,
+            "ci_high": 0.1875643435364085,
+            "p_two_sided": 0.0
+          }
+        }
+      },
+      "all_visits_model_jaccard": 0.5135191956010372,
+      "all_visits_n": 4543
+    },
+    "seed2": {
+      "n_transitions": 2426,
+      "n_patients": 1735,
+      "change_share": 1.0,
+      "strata": {
+        "all_transitions": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.86603462489695,
+          "model_jaccard": 0.5178978365118829,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6743218805208114,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.30292165506293983,
+          "model_stopped_jaccard": 0.41960258785709714,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.043545416544515325,
+            "se": 0.003536742730845505,
+            "ci_low": 0.036675539788915176,
+            "ci_high": 0.0503663973570135,
+            "p_two_sided": 0.0
+          }
+        },
+        "continuation": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "change": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.86603462489695,
+          "model_jaccard": 0.5178978365118829,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6743218805208114,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.30292165506293983,
+          "model_stopped_jaccard": 0.41960258785709714,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.043545416544515325,
+            "se": 0.003536742730845505,
+            "ci_low": 0.036675539788915176,
+            "ci_high": 0.0503663973570135,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:continuation (J=1)": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "bin:minor change [0.8,1)": {
+          "n_transitions": 18,
+          "n_patients": 17,
+          "mean_n_cur": 17.88888888888889,
+          "mean_n_added": 1.5555555555555556,
+          "mean_n_stopped": 1.5,
+          "mean_n_pred": 19.944444444444443,
+          "model_jaccard": 0.5158271105093795,
+          "copy_previous_jaccard": 0.8468232342024612,
+          "constant_jaccard": 0.37432791739999977,
+          "model_f1": 0.6715189550394238,
+          "copy_previous_f1": 0.9165149718668716,
+          "constant_f1": 0.5361585723654689,
+          "model_added_jaccard": 0.09921737213403878,
+          "model_stopped_jaccard": 0.10610331026997694,
+          "model_minus_copy": {
+            "n": 18,
+            "n_clusters": 17,
+            "resample_unit": "cluster",
+            "mean": -0.3309961236930818,
+            "se": 0.03285646777278601,
+            "ci_low": -0.3942153297119999,
+            "ci_high": -0.2666292506630287,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:moderate [0.6,0.8)": {
+          "n_transitions": 398,
+          "n_patients": 352,
+          "mean_n_cur": 21.650753768844222,
+          "mean_n_added": 4.326633165829146,
+          "mean_n_stopped": 4.706030150753769,
+          "mean_n_pred": 21.07788944723618,
+          "model_jaccard": 0.5511070552485644,
+          "copy_previous_jaccard": 0.6587494310997349,
+          "constant_jaccard": 0.41932974294918773,
+          "model_f1": 0.7046354278843406,
+          "copy_previous_f1": 0.7933377841038891,
+          "constant_f1": 0.5847347450895779,
+          "model_added_jaccard": 0.23064123923295946,
+          "model_stopped_jaccard": 0.3262445627101411,
+          "model_minus_copy": {
+            "n": 398,
+            "n_clusters": 352,
+            "resample_unit": "cluster",
+            "mean": -0.10764237585117048,
+            "se": 0.006215059407467423,
+            "ci_low": -0.12003902950063942,
+            "ci_high": -0.0956212866195196,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:major [0.4,0.6)": {
+          "n_transitions": 1363,
+          "n_patients": 1050,
+          "mean_n_cur": 21.234776228906824,
+          "mean_n_added": 7.248716067498166,
+          "mean_n_stopped": 7.149669845928099,
+          "mean_n_pred": 21.076302274394717,
+          "model_jaccard": 0.5225010814206306,
+          "copy_previous_jaccard": 0.4927360360407886,
+          "constant_jaccard": 0.4138887982321765,
+          "model_f1": 0.6797711784972584,
+          "copy_previous_f1": 0.6583496298513438,
+          "constant_f1": 0.5803975761850046,
+          "model_added_jaccard": 0.29712422049552484,
+          "model_stopped_jaccard": 0.41369021100975123,
+          "model_minus_copy": {
+            "n": 1363,
+            "n_clusters": 1050,
+            "resample_unit": "cluster",
+            "mean": 0.02976504537984186,
+            "se": 0.0033054598195929046,
+            "ci_low": 0.023271118274159456,
+            "ci_high": 0.03638055876853245,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:overhaul [0,0.4)": {
+          "n_transitions": 647,
+          "n_patients": 574,
+          "mean_n_cur": 18.686244204018546,
+          "mean_n_added": 9.953632148377125,
+          "mean_n_stopped": 8.978361669242659,
+          "mean_n_pred": 20.31839258114374,
+          "model_jaccard": 0.48782949215364957,
+          "copy_previous_jaccard": 0.31183100761035576,
+          "constant_jaccard": 0.38368531619392404,
+          "model_f1": 0.6442728351824545,
+          "copy_previous_f1": 0.4713899252421833,
+          "constant_f1": 0.5478143800128307,
+          "model_added_jaccard": 0.36526506450411295,
+          "model_stopped_jaccard": 0.49820853939958454,
+          "model_minus_copy": {
+            "n": 647,
+            "n_clusters": 574,
+            "resample_unit": "cluster",
+            "mean": 0.17599848454329375,
+            "se": 0.005502356893942737,
+            "ci_low": 0.16554490567626037,
+            "ci_high": 0.18729061567177785,
+            "p_two_sided": 0.0
+          }
+        }
+      },
+      "all_visits_model_jaccard": 0.5156410125280778,
+      "all_visits_n": 4543
+    },
+    "seed3": {
+      "n_transitions": 2426,
+      "n_patients": 1735,
+      "change_share": 1.0,
+      "strata": {
+        "all_transitions": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.645919208573783,
+          "model_jaccard": 0.514632810777738,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6713739099160665,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.29667497965060147,
+          "model_stopped_jaccard": 0.4176198279661645,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.04028039081037038,
+            "se": 0.003587861849235662,
+            "ci_low": 0.033305973028029505,
+            "ci_high": 0.04719550075559576,
+            "p_two_sided": 0.0
+          }
+        },
+        "continuation": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "change": {
+          "n_transitions": 2426,
+          "n_patients": 1735,
+          "mean_n_cur": 20.598516075845012,
+          "mean_n_added": 7.448474855729596,
+          "mean_n_stopped": 7.1945589447650455,
+          "mean_n_pred": 20.645919208573783,
+          "model_jaccard": 0.514632810777738,
+          "copy_previous_jaccard": 0.4743524199673677,
+          "constant_jaccard": 0.40643279957745354,
+          "model_f1": 0.6713739099160665,
+          "copy_previous_f1": 0.6325496845366966,
+          "constant_f1": 0.5720911306911349,
+          "model_added_jaccard": 0.29667497965060147,
+          "model_stopped_jaccard": 0.4176198279661645,
+          "model_minus_copy": {
+            "n": 2426,
+            "n_clusters": 1735,
+            "resample_unit": "cluster",
+            "mean": 0.04028039081037038,
+            "se": 0.003587861849235662,
+            "ci_low": 0.033305973028029505,
+            "ci_high": 0.04719550075559576,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:continuation (J=1)": {
+          "n_transitions": 0,
+          "n_patients": 0,
+          "mean_n_cur": NaN,
+          "mean_n_added": NaN,
+          "mean_n_stopped": NaN,
+          "mean_n_pred": NaN,
+          "model_jaccard": NaN,
+          "copy_previous_jaccard": NaN,
+          "constant_jaccard": NaN,
+          "model_f1": NaN,
+          "copy_previous_f1": NaN,
+          "constant_f1": NaN,
+          "model_added_jaccard": NaN,
+          "model_stopped_jaccard": NaN
+        },
+        "bin:minor change [0.8,1)": {
+          "n_transitions": 18,
+          "n_patients": 17,
+          "mean_n_cur": 17.88888888888889,
+          "mean_n_added": 1.5555555555555556,
+          "mean_n_stopped": 1.5,
+          "mean_n_pred": 19.38888888888889,
+          "model_jaccard": 0.5085109456221634,
+          "copy_previous_jaccard": 0.8468232342024612,
+          "constant_jaccard": 0.37432791739999977,
+          "model_f1": 0.6673298671140437,
+          "copy_previous_f1": 0.9165149718668716,
+          "constant_f1": 0.5361585723654689,
+          "model_added_jaccard": 0.09332411415744749,
+          "model_stopped_jaccard": 0.0833994708994709,
+          "model_minus_copy": {
+            "n": 18,
+            "n_clusters": 17,
+            "resample_unit": "cluster",
+            "mean": -0.338312288580298,
+            "se": 0.0273104617067933,
+            "ci_low": -0.39066837543024624,
+            "ci_high": -0.28607790088644475,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:moderate [0.6,0.8)": {
+          "n_transitions": 398,
+          "n_patients": 352,
+          "mean_n_cur": 21.650753768844222,
+          "mean_n_added": 4.326633165829146,
+          "mean_n_stopped": 4.706030150753769,
+          "mean_n_pred": 20.798994974874372,
+          "model_jaccard": 0.5460635256538738,
+          "copy_previous_jaccard": 0.6587494310997349,
+          "constant_jaccard": 0.41932974294918773,
+          "model_f1": 0.6999625340422372,
+          "copy_previous_f1": 0.7933377841038891,
+          "constant_f1": 0.5847347450895779,
+          "model_added_jaccard": 0.22028577975388267,
+          "model_stopped_jaccard": 0.3277456560316292,
+          "model_minus_copy": {
+            "n": 398,
+            "n_clusters": 352,
+            "resample_unit": "cluster",
+            "mean": -0.112685905445861,
+            "se": 0.006307056728659426,
+            "ci_low": -0.12550215858213398,
+            "ci_high": -0.10054991743282611,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:major [0.4,0.6)": {
+          "n_transitions": 1363,
+          "n_patients": 1050,
+          "mean_n_cur": 21.234776228906824,
+          "mean_n_added": 7.248716067498166,
+          "mean_n_stopped": 7.149669845928099,
+          "mean_n_pred": 20.792369772560527,
+          "model_jaccard": 0.5193734960001557,
+          "copy_previous_jaccard": 0.4927360360407886,
+          "constant_jaccard": 0.4138887982321765,
+          "model_f1": 0.676874234871231,
+          "copy_previous_f1": 0.6583496298513438,
+          "constant_f1": 0.5803975761850046,
+          "model_added_jaccard": 0.2926863386948263,
+          "model_stopped_jaccard": 0.41242351758862567,
+          "model_minus_copy": {
+            "n": 1363,
+            "n_clusters": 1050,
+            "resample_unit": "cluster",
+            "mean": 0.026637459959367057,
+            "se": 0.00335837389005377,
+            "ci_low": 0.020118915098281724,
+            "ci_high": 0.0332719893718484,
+            "p_two_sided": 0.0
+          }
+        },
+        "bin:overhaul [0,0.4)": {
+          "n_transitions": 647,
+          "n_patients": 574,
+          "mean_n_cur": 18.686244204018546,
+          "mean_n_added": 9.953632148377125,
+          "mean_n_stopped": 8.978361669242659,
+          "mean_n_pred": 20.27820710973725,
+          "model_jaccard": 0.48548167491057104,
+          "copy_previous_jaccard": 0.31183100761035576,
+          "constant_jaccard": 0.38368531619392404,
+          "model_f1": 0.6423129786244615,
+          "copy_previous_f1": 0.4713899252421833,
+          "constant_f1": 0.5478143800128307,
+          "model_added_jaccard": 0.35772557433451585,
+          "model_stopped_jaccard": 0.49315067480036995,
+          "model_minus_copy": {
+            "n": 647,
+            "n_clusters": 574,
+            "resample_unit": "cluster",
+            "mean": 0.17365066730021525,
+            "se": 0.005461133618889212,
+            "ci_low": 0.16295178441909572,
+            "ci_high": 0.1844437434640397,
+            "p_two_sided": 0.0
+          }
+        }
+      },
+      "all_visits_model_jaccard": 0.5120862372919325,
+      "all_visits_n": 4543
+    }
+  },
+  "seed_spread": {
+    "all_transitions": {
+      "model_jaccard": {
+        "mean": 0.5151740687692631,
+        "sd": 0.002144214639989207,
+        "per_seed": [
+          0.5127227727305346,
+          0.5154428550568968,
+          0.5178978365118829,
+          0.514632810777738
+        ]
+      },
+      "model_f1": {
+        "mean": 0.6720336852972107,
+        "sd": 0.0017451068040133196,
+        "per_seed": [
+          0.6701852663193323,
+          0.6722536844326328,
+          0.6743218805208114,
+          0.6713739099160665
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": 0.29849204525751855,
+        "sd": 0.003372288479896294,
+        "per_seed": [
+          0.2952133223056177,
+          0.29915822401091513,
+          0.30292165506293983,
+          0.29667497965060147
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": 0.4175614346946828,
+        "sd": 0.0017612491160777428,
+        "per_seed": [
+          0.41530082876302504,
+          0.4177224941924445,
+          0.41960258785709714,
+          0.4176198279661645
+        ]
+      }
+    },
+    "continuation": {
+      "model_jaccard": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      },
+      "model_f1": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      }
+    },
+    "change": {
+      "model_jaccard": {
+        "mean": 0.5151740687692631,
+        "sd": 0.002144214639989207,
+        "per_seed": [
+          0.5127227727305346,
+          0.5154428550568968,
+          0.5178978365118829,
+          0.514632810777738
+        ]
+      },
+      "model_f1": {
+        "mean": 0.6720336852972107,
+        "sd": 0.0017451068040133196,
+        "per_seed": [
+          0.6701852663193323,
+          0.6722536844326328,
+          0.6743218805208114,
+          0.6713739099160665
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": 0.29849204525751855,
+        "sd": 0.003372288479896294,
+        "per_seed": [
+          0.2952133223056177,
+          0.29915822401091513,
+          0.30292165506293983,
+          0.29667497965060147
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": 0.4175614346946828,
+        "sd": 0.0017612491160777428,
+        "per_seed": [
+          0.41530082876302504,
+          0.4177224941924445,
+          0.41960258785709714,
+          0.4176198279661645
+        ]
+      }
+    },
+    "bin:continuation (J=1)": {
+      "model_jaccard": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      },
+      "model_f1": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": NaN,
+        "sd": NaN,
+        "per_seed": [
+          NaN,
+          NaN,
+          NaN,
+          NaN
+        ]
+      }
+    },
+    "bin:minor change [0.8,1)": {
+      "model_jaccard": {
+        "mean": 0.5053364549255998,
+        "sd": 0.008706031855184804,
+        "per_seed": [
+          0.4958689610277172,
+          0.5011388025431391,
+          0.5158271105093795,
+          0.5085109456221634
+        ]
+      },
+      "model_f1": {
+        "mean": 0.6634058205703166,
+        "sd": 0.0073460703740301355,
+        "per_seed": [
+          0.6553591405365873,
+          0.6594153195912115,
+          0.6715189550394238,
+          0.6673298671140437
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": 0.09491667668751003,
+        "sd": 0.007750818135109127,
+        "per_seed": [
+          0.08474426807760142,
+          0.10238095238095239,
+          0.09921737213403878,
+          0.09332411415744749
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": 0.08981597106597107,
+        "sd": 0.011086031783104817,
+        "per_seed": [
+          0.08227914061247395,
+          0.08748196248196248,
+          0.10610331026997694,
+          0.0833994708994709
+        ]
+      }
+    },
+    "bin:moderate [0.6,0.8)": {
+      "model_jaccard": {
+        "mean": 0.5451334659793623,
+        "sd": 0.00452055936489383,
+        "per_seed": [
+          0.541000683803133,
+          0.5423625992118777,
+          0.5511070552485644,
+          0.5460635256538738
+        ]
+      },
+      "model_f1": {
+        "mean": 0.6993761333762731,
+        "sd": 0.0039092456473530995,
+        "per_seed": [
+          0.69583827192902,
+          0.6970682996494948,
+          0.7046354278843406,
+          0.6999625340422372
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": 0.22408042594610594,
+        "sd": 0.00455744573879104,
+        "per_seed": [
+          0.22341896698237224,
+          0.22197571781520942,
+          0.23064123923295946,
+          0.22028577975388267
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": 0.3230779310893426,
+        "sd": 0.006591578008762132,
+        "per_seed": [
+          0.31333653961633257,
+          0.3249849659992674,
+          0.3262445627101411,
+          0.3277456560316292
+        ]
+      }
+    },
+    "bin:major [0.4,0.6)": {
+      "model_jaccard": {
+        "mean": 0.5201114556574861,
+        "sd": 0.002016525767997728,
+        "per_seed": [
+          0.5177723096308823,
+          0.5207989355782758,
+          0.5225010814206306,
+          0.5193734960001557
+        ]
+      },
+      "model_f1": {
+        "mean": 0.6778242801368344,
+        "sd": 0.0016528866232810352,
+        "per_seed": [
+          0.6760998345664435,
+          0.6785518726124045,
+          0.6797711784972584,
+          0.676874234871231
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": 0.2932311768034622,
+        "sd": 0.003169262739308587,
+        "per_seed": [
+          0.289426956542578,
+          0.2936871914809198,
+          0.29712422049552484,
+          0.2926863386948263
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": 0.41260626709974585,
+        "sd": 0.0009291149418963866,
+        "per_seed": [
+          0.41145733034477816,
+          0.4128540094558283,
+          0.41369021100975123,
+          0.41242351758862567
+        ]
+      }
+    },
+    "bin:overhaul [0,0.4)": {
+      "model_jaccard": {
+        "mean": 0.4866170032838204,
+        "sd": 0.0015046130346849285,
+        "per_seed": [
+          0.48515900334658185,
+          0.48799784272447927,
+          0.48782949215364957,
+          0.48548167491057104
+        ]
+      },
+      "model_f1": {
+        "mean": 0.6432553645293753,
+        "sd": 0.0010656076588494586,
+        "per_seed": [
+          0.6423574726726884,
+          0.6440781716378968,
+          0.6442728351824545,
+          0.6423129786244615
+        ]
+      },
+      "model_added_jaccard": {
+        "mean": 0.36101251639056514,
+        "sd": 0.004027507948958993,
+        "per_seed": [
+          0.3574226158601449,
+          0.36363681086348687,
+          0.36526506450411295,
+          0.35772557433451585
+        ]
+      },
+      "model_stopped_jaccard": {
+        "mean": 0.49523955867017183,
+        "sd": 0.002179651214045843,
+        "per_seed": [
+          0.4953856290893993,
+          0.49421339139133336,
+          0.49820853939958454,
+          0.49315067480036995
+        ]
+      }
+    }
+  }
+}

@@ -12,7 +12,7 @@ statsmodels is not installed under py -3.12 (verified) so the cluster-robust
 SUBJECT_ID is implemented here manually with numpy, tested against a
 hand-computed case.
 
-See docs/specs/2026-09-04-safedrug-per-cluster-eval-design.md
+See docs/superpowers/specs/2026-09-04-safedrug-per-cluster-eval-design.md
 ("D5-D9") for the full contract.
 """
 

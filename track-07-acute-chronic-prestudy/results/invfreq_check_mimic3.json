@@ -1,0 +1,207 @@
+{
+  "generated_at_utc": "2026-09-19T09:08:50.680584+00:00",
+  "seed": "seed0 only",
+  "rarity_edges": [
+    0.03289160072456859,
+    0.16483935551530174
+  ],
+  "n_codes_by_tertile": [
+    37,
+    37,
+    38
+  ],
+  "weight_cap": 10.0,
+  "arms": {
+    "baseline": {
+      "official_test": {
+        "ddi_rate": 0.06185410529286261,
+        "ja": 0.5080252617142657,
+        "prauc": 0.7630148713260549,
+        "avg_p": 0.6724791296715503,
+        "avg_r": 0.6874291337131659,
+        "avg_f1": 0.6652728702361732,
+        "avg_med": 20.19213780918728
+      },
+      "best_epoch": 32,
+      "visit_jaccard_mean": 0.5078323588304154,
+      "visit_n_pred_mean": 20.19213780918728,
+      "by_rarity": [
+        {
+          "tertile": "rare",
+          "n_codes": 37,
+          "n_true": 1012,
+          "recall": 0.05533596837944664,
+          "precision": 0.5957446808510638,
+          "n_pred": 94
+        },
+        {
+          "tertile": "mid",
+          "n_codes": 37,
+          "n_true": 7249,
+          "recall": 0.21423644640640088,
+          "precision": 0.6503350083752094,
+          "n_pred": 2388
+        },
+        {
+          "tertile": "common",
+          "n_codes": 38,
+          "n_true": 37883,
+          "recall": 0.78256737850751,
+          "precision": 0.6857261813892166,
+          "n_pred": 43233
+        }
+      ],
+      "added_miss_by_rarity": [
+        {
+          "tertile": "rare",
+          "n_added": 335,
+          "miss_rate": 0.9462686567164179
+        },
+        {
+          "tertile": "mid",
+          "n_added": 2167,
+          "miss_rate": 0.8052607291185971
+        },
+        {
+          "tertile": "common",
+          "n_added": 6189,
+          "miss_rate": 0.35191468734852155
+        }
+      ],
+      "added_miss_pooled": 0.4878610056380163,
+      "stale_keep_rate": 0.40984308593829794,
+      "n_transitions": 1206,
+      "added_miss_by_n_prev": [
+        {
+          "lo": 4,
+          "hi": 15,
+          "n": 319,
+          "miss_rate": 0.40790742526518803,
+          "jaccard": 0.5069251020337296
+        },
+        {
+          "lo": 16,
+          "hi": 20,
+          "n": 309,
+          "miss_rate": 0.48577680525164113,
+          "jaccard": 0.501988446057452
+        },
+        {
+          "lo": 21,
+          "hi": 25,
+          "n": 293,
+          "miss_rate": 0.5414216996258685,
+          "jaccard": 0.4952229753326814
+        },
+        {
+          "lo": 26,
+          "hi": 51,
+          "n": 285,
+          "miss_rate": 0.5955056179775281,
+          "jaccard": 0.5136191004846363
+        }
+      ]
+    },
+    "inv_freq": {
+      "official_test": {
+        "ddi_rate": 0.06273839548116807,
+        "ja": 0.5086882621975145,
+        "prauc": 0.7558102641148365,
+        "avg_p": 0.6516731916440752,
+        "avg_r": 0.7108805654730275,
+        "avg_f1": 0.6652234381542048,
+        "avg_med": 21.587897526501767
+      },
+      "best_epoch": 49,
+      "visit_jaccard_mean": 0.5091033989062231,
+      "visit_n_pred_mean": 21.587897526501767,
+      "by_rarity": [
+        {
+          "tertile": "rare",
+          "n_codes": 37,
+          "n_true": 1012,
+          "recall": 0.07213438735177866,
+          "precision": 0.3862433862433862,
+          "n_pred": 189
+        },
+        {
+          "tertile": "mid",
+          "n_codes": 37,
+          "n_true": 7249,
+          "recall": 0.2163056973375638,
+          "precision": 0.635589785164167,
+          "n_pred": 2467
+        },
+        {
+          "tertile": "common",
+          "n_codes": 38,
+          "n_true": 37883,
+          "recall": 0.8114985613599768,
+          "precision": 0.6651377139271728,
+          "n_pred": 46219
+        }
+      ],
+      "added_miss_by_rarity": [
+        {
+          "tertile": "rare",
+          "n_added": 335,
+          "miss_rate": 0.9373134328358209
+        },
+        {
+          "tertile": "mid",
+          "n_added": 2167,
+          "miss_rate": 0.8061836640516844
+        },
+        {
+          "tertile": "common",
+          "n_added": 6189,
+          "miss_rate": 0.3113588624979803
+        }
+      ],
+      "added_miss_pooled": 0.4588654930387757,
+      "stale_keep_rate": 0.43434705972287435,
+      "n_transitions": 1206,
+      "added_miss_by_n_prev": [
+        {
+          "lo": 4,
+          "hi": 15,
+          "n": 319,
+          "miss_rate": 0.3702989392478303,
+          "jaccard": 0.5033969059613209
+        },
+        {
+          "lo": 16,
+          "hi": 20,
+          "n": 309,
+          "miss_rate": 0.4560175054704595,
+          "jaccard": 0.5056245852965603
+        },
+        {
+          "lo": 21,
+          "hi": 25,
+          "n": 293,
+          "miss_rate": 0.5146980224478889,
+          "jaccard": 0.5013080202602481
+        },
+        {
+          "lo": 26,
+          "hi": 51,
+          "n": 285,
+          "miss_rate": 0.5835674157303371,
+          "jaccard": 0.5139017666481538
+        }
+      ]
+    }
+  },
+  "paired": {
+    "d_jaccard_inv_minus_base": 0.001271040075807678,
+    "ci_low": -0.0016965519430029855,
+    "ci_high": 0.004547682186036737,
+    "n_visits": 2264,
+    "d_missed_added_per_transition": {
+      "mean": -0.208955223880597,
+      "ci_low": -0.26889274719704376,
+      "ci_high": -0.15350548273702788
+    }
+  }
+}

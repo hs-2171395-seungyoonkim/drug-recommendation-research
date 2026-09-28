@@ -1,0 +1,115 @@
+{
+  "args": {
+    "epochs": 50,
+    "smoke": false,
+    "out_dir": "C:\\Users\\Administrator\\Desktop\\SafeDrug_\uad70\uc9d1\ubcc4\ud3c9\uac00_20260904\\\uac1c\uc785\uc2e4\ud5d8\\C_group_ddi\\seed0"
+  },
+  "seeds": {
+    "torch_manual_seed": 1203,
+    "numpy_seed": 2048,
+    "python_random_seed": 1203,
+    "cudnn_deterministic": true,
+    "seed_override": null
+  },
+  "torch_version": "2.13.0+cu130",
+  "torch_cuda_version": "13.0",
+  "device": "cuda:0",
+  "data_files_sha256": {
+    "records_final": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f",
+    "voc_final": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5",
+    "ddi_A_final": "8b27353d99db2b9717ea52d54bafc8be69a708c6952b4cfe390903ead84bedea",
+    "ddi_mask_H": "5551a84a7cf29d82a52c84cb1fad0b4c7c9d75c4fa482920bac467985792b764",
+    "atc3toSMILES": "382099546c4f37065fc5ae8c1fe9e17d44392cc48a4c016866a108a934caf9ab"
+  },
+  "best_epoch": 32,
+  "best_eval_jaccard": 0.5218382577208799,
+  "official_metrics": {
+    "test": {
+      "ddi_rate": 0.07156879615289967,
+      "ja": 0.5175971031372448,
+      "prauc": 0.768062542818543,
+      "avg_p": 0.6594384583861473,
+      "avg_r": 0.7169914446563974,
+      "avg_f1": 0.6728999022143873,
+      "avg_med": 21.614840989399294
+    },
+    "eval": {
+      "ddi_rate": 0.07291370715706279,
+      "ja": 0.5218382577208799,
+      "prauc": 0.7729907253490886,
+      "avg_p": 0.6639140703960298,
+      "avg_r": 0.7190543231619979,
+      "avg_f1": 0.6768549673033935,
+      "avg_med": 21.589732338745062
+    }
+  },
+  "hyperparameters": {
+    "emb_dim": 64,
+    "lr": 0.0005,
+    "target_ddi": 0.06,
+    "kp": 0.05
+  },
+  "drug_weight": {
+    "mode": "none",
+    "cap": 10.0,
+    "weight_vector": null
+  },
+  "ddi_target_policy": {
+    "mode": "group",
+    "csv_path": "C:\\Users\\Administrator\\Desktop\\SafeDrug_\uad70\uc9d1\ubcc4\ud3c9\uac00_20260904\\\uac1c\uc785\uc2e4\ud5d8\\C_group_ddi\\ddi_targets.csv",
+    "default_target_ddi": 0.06,
+    "visit_target_summary": [
+      {
+        "target_ddi": 0.06,
+        "n_visits": 447
+      },
+      {
+        "target_ddi": 0.070233517532914,
+        "n_visits": 574
+      },
+      {
+        "target_ddi": 0.0754436055982763,
+        "n_visits": 442
+      },
+      {
+        "target_ddi": 0.0760967058056099,
+        "n_visits": 401
+      },
+      {
+        "target_ddi": 0.0786391440025106,
+        "n_visits": 1227
+      },
+      {
+        "target_ddi": 0.0802518012534912,
+        "n_visits": 929
+      },
+      {
+        "target_ddi": 0.0819738551187482,
+        "n_visits": 813
+      },
+      {
+        "target_ddi": 0.0836405545259494,
+        "n_visits": 1320
+      },
+      {
+        "target_ddi": 0.09136249325804,
+        "n_visits": 1522
+      },
+      {
+        "target_ddi": 0.0951749254321638,
+        "n_visits": 1367
+      },
+      {
+        "target_ddi": 0.0956428288754715,
+        "n_visits": 1447
+      }
+    ]
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "eval_len": 1058,
+    "train_patients": 4233,
+    "test_patients": 1058,
+    "eval_patients": 1059
+  }
+}

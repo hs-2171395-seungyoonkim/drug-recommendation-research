@@ -1,0 +1,11 @@
+pair,n_cid_pairs,n_records,top_side_effects
+B01A-C10A,97,1249,Difficulty breathing (64); anaemia (48); arterial pressure NOS decreased (47); chest pain (46)
+C07A-C10A,123,1624,Difficulty breathing (62); hyperglycaemia (62); chest pain (57); dizziness (55)
+C07A-A12B,11,184,arterial pressure NOS decreased (9); nausea (8); Difficulty breathing (8); Back Ache (7)
+C07A-C09A,88,1099,High blood pressure (46); Fatigue (44); Difficulty breathing (44); arterial pressure NOS decreased (43)
+B01A-C09A,74,980,anaemia (48); arterial pressure NOS decreased (44); Difficulty breathing (38); chest pain (35)
+C10A-C01D,50,731,Difficulty breathing (30); edema extremities (25); arterial pressure NOS decreased (25); hyperglycaemia (25)
+N02B-C10A,17,273,loss of weight (13); Difficulty breathing (13); hyperglycaemia (12); dizziness (12)
+N02A-B01A,45,644,anaemia (31); abdominal pain (27); emesis (23); neumonia (22)
+N02A-N05B,47,705,Back Ache (28); arterial pressure NOS decreased (25); neumonia (24); abdominal pain (23)
+A02B-N05B,52,1179,Pain (41); abdominal pain (39); arterial pressure NOS decreased (39); Back Ache (38)

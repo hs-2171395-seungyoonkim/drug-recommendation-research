@@ -1,0 +1,463 @@
+{
+  "generated_at_utc": "2026-09-18T04:38:46.650453+00:00",
+  "rule": "(a) beta_std(n_new_acute excl. status) on per-transition added miss_rate > 0 with patient-bootstrap 95% CI excluding 0, after [log n_added, n_prev_meds, n_dx, log gap, emergency] + status/chronic/unknown counts; (b) beta(acute) - beta(chronic) > 0 with CI excluding 0. Rationale COMPLETE iff (a) and (b). Fixed before results.",
+  "n_boot": 200,
+  "seed": 0,
+  "n_seeds": 5,
+  "seeds": [
+    "baseline-seed-1203",
+    "baseline-seed-2207",
+    "baseline-seed-3319",
+    "baseline-seed-4423",
+    "baseline-seed-5527"
+  ],
+  "n_transitions": 18229,
+  "n_patients": 7754,
+  "overall": {
+    "n_added_total": 82445,
+    "pooled_miss_rate": 0.4777851901267512,
+    "mean_miss_rate": 0.494683188422709,
+    "mean_cont_recall": 0.7704909179869313,
+    "mean_jaccard": 0.4398146034486496,
+    "mean_n_added": 4.522738493609085,
+    "rho_miss_rate_vs_n_new_acute": 0.0071128636376887175,
+    "rho_miss_rate_vs_n_new_chronic": 0.07146878293088742,
+    "rho_miss_rate_vs_n_added": -0.052211493803634754
+  },
+  "bins_by_acute": [
+    {
+      "bin": "0",
+      "n_transitions": 3414,
+      "share_transitions": 0.1872839980251248,
+      "mean_n_added": 3.2311072056239016,
+      "mean_n_missed": 1.4945518453427065,
+      "pooled_miss_rate": 0.46255099265705735,
+      "mean_miss_rate": 0.4812320459120818,
+      "mean_added_precision": 0.3356573323872965,
+      "mean_cont_recall": 0.7589814470242414,
+      "mean_jaccard": 0.4210769276290815,
+      "share_of_all_missed": 0.12953212662790992,
+      "share_of_all_added": 0.13379828976893687
+    },
+    {
+      "bin": "1-2",
+      "n_transitions": 6849,
+      "share_transitions": 0.3757200065829173,
+      "mean_n_added": 3.6360052562417873,
+      "mean_n_missed": 1.746269528398306,
+      "pooled_miss_rate": 0.48027145323856557,
+      "mean_miss_rate": 0.49561866621350414,
+      "mean_added_precision": 0.35449754815838613,
+      "mean_cont_recall": 0.7656762169762173,
+      "mean_jaccard": 0.4348825795911501,
+      "share_of_all_missed": 0.30362773222309664,
+      "share_of_all_added": 0.3020559160652556
+    },
+    {
+      "bin": "3-5",
+      "n_transitions": 5357,
+      "share_transitions": 0.29387240111909596,
+      "mean_n_added": 4.926078028747433,
+      "mean_n_missed": 2.4364009706925516,
+      "pooled_miss_rate": 0.49459244382128914,
+      "mean_miss_rate": 0.5075683265516865,
+      "mean_added_precision": 0.3885857833436383,
+      "mean_cont_recall": 0.7718351350862942,
+      "mean_jaccard": 0.4436155677338913,
+      "share_of_all_missed": 0.331339646112056,
+      "share_of_all_added": 0.3200800533689126
+    },
+    {
+      "bin": "6+",
+      "n_transitions": 2609,
+      "share_transitions": 0.14312359427286192,
+      "mean_n_added": 7.712533537753929,
+      "mean_n_missed": 3.5556151782292074,
+      "pooled_miss_rate": 0.46101779147202077,
+      "mean_miss_rate": 0.483172439491496,
+      "mean_added_precision": 0.45512360430141185,
+      "mean_cont_recall": 0.7953092743743744,
+      "mean_jaccard": 0.4694765777575729,
+      "share_of_all_missed": 0.23550049503693743,
+      "share_of_all_added": 0.2440657407968949
+    }
+  ],
+  "bins_by_chronic": [
+    {
+      "bin": "0",
+      "n_transitions": 2281,
+      "share_transitions": 0.12513028690548028,
+      "mean_n_added": 2.9009206488382286,
+      "mean_n_missed": 1.2981148619026743,
+      "pooled_miss_rate": 0.44748375396705453,
+      "mean_miss_rate": 0.45125639446671634,
+      "mean_added_precision": 0.3730896764215775,
+      "mean_cont_recall": 0.8192031027850267,
+      "mean_jaccard": 0.4755783707864004,
+      "share_of_all_missed": 0.0751694549516387,
+      "share_of_all_added": 0.08025956698404997
+    },
+    {
+      "bin": "1-2",
+      "n_transitions": 5461,
+      "share_transitions": 0.2995775961380218,
+      "mean_n_added": 3.7841054751876944,
+      "mean_n_missed": 1.764621864127449,
+      "pooled_miss_rate": 0.4663247036051294,
+      "mean_miss_rate": 0.4848175885092279,
+      "mean_added_precision": 0.34594354459829596,
+      "mean_cont_recall": 0.7723629133866985,
+      "mean_jaccard": 0.43110808204096135,
+      "share_of_all_missed": 0.24463963849610312,
+      "share_of_all_added": 0.25065194978470495
+    },
+    {
+      "bin": "3-5",
+      "n_transitions": 6200,
+      "share_transitions": 0.3401173953590433,
+      "mean_n_added": 4.8029032258064515,
+      "mean_n_missed": 2.295387096774194,
+      "pooled_miss_rate": 0.4779165827120694,
+      "mean_miss_rate": 0.5012232710964296,
+      "mean_added_precision": 0.37022469375881567,
+      "mean_cont_recall": 0.7559229972593309,
+      "mean_jaccard": 0.43270464380261825,
+      "share_of_all_missed": 0.36128557284658935,
+      "share_of_all_added": 0.36118624537570504
+    },
+    {
+      "bin": "6+",
+      "n_transitions": 4287,
+      "share_transitions": 0.23517472159745462,
+      "mean_n_added": 5.921390249591789,
+      "mean_n_missed": 2.9302542570562164,
+      "pooled_miss_rate": 0.4948591688004727,
+      "mean_miss_rate": 0.517387709546081,
+      "mean_added_precision": 0.42454407557648755,
+      "mean_cont_recall": 0.7633760614286753,
+      "mean_jaccard": 0.44215911240954786,
+      "share_of_all_missed": 0.3189053337056688,
+      "share_of_all_added": 0.30790223785554005
+    }
+  ],
+  "stratified": [
+    {
+      "n_added_quartile": 1,
+      "n_added_min": 1,
+      "n_added_max": 2,
+      "pooled_miss_0": 0.49097664543524416,
+      "n_0": 1257,
+      "pooled_miss_1-2": 0.5034077555816686,
+      "n_1-2": 2240,
+      "pooled_miss_3-5": 0.5204918032786885,
+      "n_3-5": 1241,
+      "pooled_miss_6+": 0.5489626556016598,
+      "n_6+": 300
+    },
+    {
+      "n_added_quartile": 2,
+      "n_added_min": 3,
+      "n_added_max": 4,
+      "pooled_miss_0": 0.4976373120589138,
+      "n_0": 950,
+      "pooled_miss_1-2": 0.4962142197599261,
+      "n_1-2": 1872,
+      "pooled_miss_3-5": 0.5181121920927344,
+      "n_3-5": 1384,
+      "pooled_miss_6+": 0.5064647641234712,
+      "n_6+": 482
+    },
+    {
+      "n_added_quartile": 3,
+      "n_added_min": 5,
+      "n_added_max": 6,
+      "pooled_miss_0": 0.48270972823946434,
+      "n_0": 471,
+      "pooled_miss_1-2": 0.5047519944502256,
+      "n_1-2": 1071,
+      "pooled_miss_3-5": 0.5026518063028439,
+      "n_3-5": 955,
+      "pooled_miss_6+": 0.5004937333839726,
+      "n_6+": 476
+    },
+    {
+      "n_added_quartile": 4,
+      "n_added_min": 7,
+      "n_added_max": 40,
+      "pooled_miss_0": 0.3971334726784115,
+      "n_0": 357,
+      "pooled_miss_1-2": 0.4452409312398484,
+      "n_1-2": 978,
+      "pooled_miss_3-5": 0.4802805165949174,
+      "n_3-5": 1436,
+      "pooled_miss_6+": 0.44634401569653365,
+      "n_6+": 1311
+    }
+  ],
+  "regression_miss_rate": {
+    "r2_base": 0.07162773110582099,
+    "r2_base_plus_n_new_prev": 0.07229288318403126,
+    "r2_full": 0.07773255215977737,
+    "betas": [
+      {
+        "feature": "log_n_added",
+        "beta_std": -0.014300153722952694,
+        "ci_low": -0.0338106074231449,
+        "ci_high": 0.003188428739075195
+      },
+      {
+        "feature": "n_prev_meds",
+        "beta_std": 0.2684538178041743,
+        "ci_low": 0.2530398658381888,
+        "ci_high": 0.2837122805968942
+      },
+      {
+        "feature": "n_dx",
+        "beta_std": 0.07263039742165055,
+        "ci_low": 0.03706859280054798,
+        "ci_high": 0.106015707345123
+      },
+      {
+        "feature": "log_gap",
+        "beta_std": 0.045413869060762634,
+        "ci_low": 0.027518323770190502,
+        "ci_high": 0.06184421057552836
+      },
+      {
+        "feature": "emergency",
+        "beta_std": -0.004856820673844474,
+        "ci_low": -0.01875934869721889,
+        "ci_high": 0.012445952329833587
+      },
+      {
+        "feature": "n_new_acute_excl_status_prev",
+        "beta_std": -0.07303271141619681,
+        "ci_low": -0.09467023285814193,
+        "ci_high": -0.05265331642034426
+      },
+      {
+        "feature": "n_new_status_prev",
+        "beta_std": -0.08228384416135906,
+        "ci_low": -0.09848342397699021,
+        "ci_high": -0.0637745729247568
+      },
+      {
+        "feature": "n_new_chronic_prev",
+        "beta_std": -0.0019582692681032773,
+        "ci_low": -0.024788408382573488,
+        "ci_high": 0.023907635723679006
+      },
+      {
+        "feature": "n_new_unknown_prev",
+        "beta_std": 0.07252022116335688,
+        "ci_low": 0.057888589069424026,
+        "ci_high": 0.09096566213282817
+      },
+      {
+        "feature": "acute_minus_chronic",
+        "beta_std": -0.07107444214809354,
+        "ci_low": -0.09577100515354657,
+        "ci_high": -0.04784913612156047
+      }
+    ],
+    "n": 16781,
+    "n_patients": 7342
+  },
+  "regression_missed_count": {
+    "r2_base": 0.6133329300823707,
+    "r2_base_plus_n_new_prev": 0.6135420330798158,
+    "r2_full": 0.6154287647163443,
+    "betas": [
+      {
+        "feature": "log_n_added",
+        "beta_std": 0.7544002696112813,
+        "ci_low": 0.7471848001896428,
+        "ci_high": 0.7618979746901159
+      },
+      {
+        "feature": "n_prev_meds",
+        "beta_std": 0.10748990641731726,
+        "ci_low": 0.09741978751331995,
+        "ci_high": 0.11590539301181499
+      },
+      {
+        "feature": "n_dx",
+        "beta_std": 0.0354173099386933,
+        "ci_low": 0.017905917986048726,
+        "ci_high": 0.054207225742186955
+      },
+      {
+        "feature": "log_gap",
+        "beta_std": 0.02887269155936181,
+        "ci_low": 0.01947215782116305,
+        "ci_high": 0.04005963808668208
+      },
+      {
+        "feature": "emergency",
+        "beta_std": 0.023041910775029834,
+        "ci_low": 0.014567067251120105,
+        "ci_high": 0.03191323972421459
+      },
+      {
+        "feature": "n_new_acute_excl_status_prev",
+        "beta_std": 0.0419198097380262,
+        "ci_low": 0.024726731709580233,
+        "ci_high": 0.056400719374589604
+      },
+      {
+        "feature": "n_new_status_prev",
+        "beta_std": -0.04264358690278644,
+        "ci_low": -0.05569705075583265,
+        "ci_high": -0.028318334727683685
+      },
+      {
+        "feature": "n_new_chronic_prev",
+        "beta_std": 0.015983601040379353,
+        "ci_low": 0.0005047809809113819,
+        "ci_high": 0.02913318232848143
+      },
+      {
+        "feature": "n_new_unknown_prev",
+        "beta_std": 0.023039653855050336,
+        "ci_low": 0.00901809669648985,
+        "ci_high": 0.03957482288205755
+      },
+      {
+        "feature": "acute_minus_chronic",
+        "beta_std": 0.025936208697646845,
+        "ci_low": 0.006484076030273987,
+        "ci_high": 0.04712285305197843
+      }
+    ],
+    "n": 18229,
+    "n_patients": 7754
+  },
+  "per_class": [
+    {
+      "atc3": "A12C",
+      "n_true_added": 3413,
+      "miss_rate_all": 0.0246703779665983,
+      "n_true_added_acute_heavy": 1784,
+      "miss_rate_acute_heavy": 0.02242152466367713
+    },
+    {
+      "atc3": "A12A",
+      "n_true_added": 3357,
+      "miss_rate_all": 0.21948168007149238,
+      "n_true_added_acute_heavy": 1721,
+      "miss_rate_acute_heavy": 0.22173155142359094
+    },
+    {
+      "atc3": "A02A",
+      "n_true_added": 3038,
+      "miss_rate_all": 0.0007899934167215273,
+      "n_true_added_acute_heavy": 1545,
+      "miss_rate_acute_heavy": 0.0012944983818770227
+    },
+    {
+      "atc3": "B05C",
+      "n_true_added": 2917,
+      "miss_rate_all": 0.1581762084333219,
+      "n_true_added_acute_heavy": 1614,
+      "miss_rate_acute_heavy": 0.11313506815365551
+    },
+    {
+      "atc3": "A07A",
+      "n_true_added": 2823,
+      "miss_rate_all": 0.2872121856181367,
+      "n_true_added_acute_heavy": 1915,
+      "miss_rate_acute_heavy": 0.21409921671018275
+    },
+    {
+      "atc3": "N02A",
+      "n_true_added": 2655,
+      "miss_rate_all": 0.19736346516007533,
+      "n_true_added_acute_heavy": 1186,
+      "miss_rate_acute_heavy": 0.2166947723440135
+    },
+    {
+      "atc3": "J01D",
+      "n_true_added": 2632,
+      "miss_rate_all": 0.4115501519756839,
+      "n_true_added_acute_heavy": 1561,
+      "miss_rate_acute_heavy": 0.37360666239590007
+    },
+    {
+      "atc3": "A06A",
+      "n_true_added": 2580,
+      "miss_rate_all": 7.751937984496124e-05,
+      "n_true_added_acute_heavy": 1182,
+      "miss_rate_acute_heavy": 0.0
+    },
+    {
+      "atc3": "A01A",
+      "n_true_added": 2492,
+      "miss_rate_all": 0.186115569823435,
+      "n_true_added_acute_heavy": 1384,
+      "miss_rate_acute_heavy": 0.14320809248554914
+    },
+    {
+      "atc3": "N02B",
+      "n_true_added": 2410,
+      "miss_rate_all": 0.0037344398340248964,
+      "n_true_added_acute_heavy": 1234,
+      "miss_rate_acute_heavy": 0.0037277147487844407
+    },
+    {
+      "atc3": "A12B",
+      "n_true_added": 2284,
+      "miss_rate_all": 0.419877408056042,
+      "n_true_added_acute_heavy": 1353,
+      "miss_rate_acute_heavy": 0.35535846267553584
+    },
+    {
+      "atc3": "A02B",
+      "n_true_added": 2239,
+      "miss_rate_all": 0.12023224653863332,
+      "n_true_added_acute_heavy": 1197,
+      "miss_rate_acute_heavy": 0.09824561403508772
+    },
+    {
+      "atc3": "B01A",
+      "n_true_added": 2129,
+      "miss_rate_all": 0.03400657585720996,
+      "n_true_added_acute_heavy": 961,
+      "miss_rate_acute_heavy": 0.028511966701352757
+    },
+    {
+      "atc3": "A04A",
+      "n_true_added": 2128,
+      "miss_rate_all": 0.32161654135338347,
+      "n_true_added_acute_heavy": 1085,
+      "miss_rate_acute_heavy": 0.3295852534562212
+    },
+    {
+      "atc3": "J01M",
+      "n_true_added": 1875,
+      "miss_rate_all": 0.5319466666666667,
+      "n_true_added_acute_heavy": 1218,
+      "miss_rate_acute_heavy": 0.5008210180623974
+    }
+  ],
+  "verdict": {
+    "a_novelty_gap": false,
+    "b_chronicity_gap": false,
+    "beta_acute": -0.07303271141619681,
+    "beta_acute_ci": [
+      -0.09467023285814193,
+      -0.05265331642034426
+    ],
+    "beta_chronic": -0.0019582692681032773,
+    "beta_diff": -0.07107444214809354,
+    "beta_diff_ci": [
+      -0.09577100515354657,
+      -0.04784913612156047
+    ],
+    "rationale_complete": false
+  },
+  "interpretation": [
+    "- 신규 급성 진단이 0개인 전이의 added 누락률(pooled)은 0.463, 6개 이상이면 0.461. 신규 만성으로 나누면 0.447 → 0.495. 유지 약물 recall은 구간에 걸쳐 0.759~0.795로 평평하다.",
+    "- added 수를 고정해도(사분위 층화) 급성 구간에 따른 누락률 차이가 뚜렷하지 않다; 회귀에서 β(급성) -0.073 [-0.095, -0.053] → (a) 불성립.",
+    "- β(급성) − β(만성) = -0.071 [-0.096, -0.048] → (b) 불성립. 신규 진단 수가 누락률을 설명하지 못한다."
+  ]
+}

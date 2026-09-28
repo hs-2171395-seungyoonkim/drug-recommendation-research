@@ -1,0 +1,36 @@
+{
+  "threshold": 0.25,
+  "min_visits": 30,
+  "n_categories_considered": 22,
+  "n_categories_with_whitelist": 22,
+  "n_pairs_total": 419,
+  "n_pairs_by_category": {
+    "2ndary malig": 8,
+    "Ac renl fail": 19,
+    "Acute CVD": 10,
+    "Acute MI": 27,
+    "Adlt resp fl": 33,
+    "Alcohol-related disorders": 6,
+    "Aneurysm": 24,
+    "Asp pneumon": 21,
+    "Complic devi": 16,
+    "Complic proc": 19,
+    "Coron athero": 30,
+    "DiabMel w/cm": 17,
+    "Dysrhythmia": 23,
+    "GI hemorrhag": 9,
+    "Hrt valve dx": 30,
+    "Intracrn inj": 5,
+    "Oth liver dx": 12,
+    "Pneumonia": 31,
+    "Septicemia": 18,
+    "chf;nonhp": 27,
+    "\uae30\ud0c0(\uc18c\uaddc\ubaa8)": 16,
+    "\ubbf8\uc9c0\uc815/\ub9e4\ud551\ubd88\uac00": 18
+  },
+  "training_coverage": {
+    "n_total_pairs": 180209,
+    "n_covered_pairs": 72222,
+    "coverage": 0.4007679971588544
+  }
+}

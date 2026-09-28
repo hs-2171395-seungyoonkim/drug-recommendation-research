@@ -1,0 +1,84 @@
+{
+  "args": {
+    "epochs": 50,
+    "smoke": false,
+    "out_dir": "C:\\Users\\Administrator\\Desktop\\SafeDrug_DDI\uc81c\uc57d_\ubd88\uacf5\uc815_20260908\\W_whitelist\\seed3"
+  },
+  "seeds": {
+    "torch_manual_seed": 3,
+    "numpy_seed": 3,
+    "python_random_seed": 3,
+    "cudnn_deterministic": true,
+    "seed_override": 3
+  },
+  "torch_version": "2.13.0+cu130",
+  "torch_cuda_version": "13.0",
+  "device": "cuda:0",
+  "data_files_sha256": {
+    "records_final": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f",
+    "voc_final": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5",
+    "ddi_A_final": "8b27353d99db2b9717ea52d54bafc8be69a708c6952b4cfe390903ead84bedea",
+    "ddi_mask_H": "5551a84a7cf29d82a52c84cb1fad0b4c7c9d75c4fa482920bac467985792b764",
+    "atc3toSMILES": "382099546c4f37065fc5ae8c1fe9e17d44392cc48a4c016866a108a934caf9ab"
+  },
+  "best_epoch": 32,
+  "best_eval_jaccard": 0.5216283689011642,
+  "official_metrics": {
+    "test": {
+      "ddi_rate": 0.07123328956149226,
+      "ja": 0.5180062005176449,
+      "prauc": 0.7682708342832204,
+      "avg_p": 0.6533294642005534,
+      "avg_r": 0.7244066264694066,
+      "avg_f1": 0.6737145081536008,
+      "avg_med": 22.000441696113075
+    },
+    "eval": {
+      "ddi_rate": 0.07129913130162346,
+      "ja": 0.5216283689011642,
+      "prauc": 0.7746389374685152,
+      "avg_p": 0.6573903162964437,
+      "avg_r": 0.7262135795880884,
+      "avg_f1": 0.6771659415304573,
+      "avg_med": 22.023694602896008
+    }
+  },
+  "hyperparameters": {
+    "emb_dim": 64,
+    "lr": 0.0005,
+    "target_ddi": 0.06,
+    "kp": 0.05
+  },
+  "drug_weight": {
+    "mode": "none",
+    "cap": 10.0,
+    "weight_vector": null
+  },
+  "ddi_target_policy": {
+    "mode": "global",
+    "csv_path": null,
+    "default_target_ddi": 0.06,
+    "visit_target_summary": null,
+    "ignored_due_to_ddi_pair_penalty": false
+  },
+  "ddi_pair_penalty": null,
+  "ddi_whitelist": {
+    "pairs_csv": "C:/Users/Administrator/Desktop/SafeDrug_DDI\uc81c\uc57d_\ubd88\uacf5\uc815_20260908/whitelist/whitelist_pairs.csv",
+    "visits_csv": "C:/Users/Administrator/Desktop/SafeDrug_DDI\uc81c\uc57d_\ubd88\uacf5\uc815_20260908/whitelist/whitelist_visits.csv",
+    "threshold": 0.25,
+    "n_pairs": 419,
+    "visit_mask_summary": {
+      "n_training_visits": 10489,
+      "n_visits_with_mask": 10042,
+      "mean_pairs_per_visit": 18.218991324244445,
+      "mean_pairs_per_masked_visit": 19.02997410874328
+    }
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "eval_len": 1058,
+    "train_patients": 4233,
+    "test_patients": 1058,
+    "eval_patients": 1059
+  }
+}

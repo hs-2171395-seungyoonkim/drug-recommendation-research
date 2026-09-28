@@ -1,0 +1,39 @@
+{
+  "control_predictor": {
+    "variant": "topk_20",
+    "description": "top-20 most frequent training drugs",
+    "input_used": "none (constant / oracle-size frequency prior)",
+    "train_visits": 10489,
+    "mean_train_set_size": 19.24930879969492,
+    "K": 20,
+    "source_records": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\records_final.pkl",
+    "row_identity_source": "C:\\Users\\Administrator\\Desktop\\SafeDrug_\uad70\uc9d1\ubcc4\ud3c9\uac00_20260904\\\uc804\uccb4\uc0b0\ucd9c\ubb3c\\per_visit_predictions.npz"
+  },
+  "best_epoch": 0,
+  "best_eval_jaccard": 0.4151821023486045,
+  "official_metrics": {
+    "test": {
+      "ja": 0.41097323110536155,
+      "prauc": 0.6915805286991799,
+      "avg_f1": 0.5754055253062338,
+      "ddi_rate": 0.08421052631578947,
+      "avg_med": 20.0,
+      "avg_p": NaN,
+      "avg_r": NaN
+    },
+    "eval": {
+      "ja": 0.4151821023486045,
+      "prauc": 0.6936282269334839,
+      "avg_f1": 0.5794612158471044,
+      "ddi_rate": 0.08421052631578947,
+      "avg_med": 20.0,
+      "avg_p": NaN,
+      "avg_r": NaN
+    }
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "test_visits": 2264,
+    "eval_visits": 2279
+  }
+}

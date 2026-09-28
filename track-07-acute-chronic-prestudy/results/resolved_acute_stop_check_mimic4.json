@@ -1,0 +1,491 @@
+{
+  "generated_at_utc": "2026-09-20T03:49:50.106204+00:00",
+  "n_transitions": 18229,
+  "n_seeds_sd": 5,
+  "n_seeds_gn": 3,
+  "rule_q1": "(a) beta_std(n_resolved_acute) on SafeDrug per-transition stale keep rate > 0, patient-bootstrap 95% CI excludes 0, after [log n_stopped, n_prev_meds, n_dx, log gap, emergency] + n_resolved_chronic + n_resolved_status; (b) beta(resolved_acute) - beta(resolved_chronic) > 0, CI excludes 0. Stop gap exists iff (a); chronicity needed iff (a) and (b). Fixed before results.",
+  "rule_q2": "Gate = logistic(logit model prob, logit persistence prior) cross-fitted by patient parity on test; previous drugs kept iff p >= 0.5, other predictions unchanged. Simple gate worth building iff SafeDrug dJaccard > 0 with patient-bootstrap 95% CI excluding 0. Fixed before results.",
+  "verdict": {
+    "q1_stop_gap": false,
+    "q1_chronicity": false,
+    "q2_gate": true
+  },
+  "q1_corr": {
+    "n_resolved_acute": {
+      "rho_stopped": 0.29782185396694816,
+      "rho_added": -0.08009678150460517
+    },
+    "n_resolved_chronic": {
+      "rho_stopped": 0.2790286672807875,
+      "rho_added": 0.04423087129238943
+    },
+    "n_resolved_status": {
+      "rho_stopped": 0.148534236514977,
+      "rho_added": -0.02260891591628189
+    },
+    "n_new_acute": {
+      "rho_stopped": -0.01348566452149437,
+      "rho_added": 0.3289047563080211
+    },
+    "n_new_chronic": {
+      "rho_stopped": 0.12287277463408423,
+      "rho_added": 0.2742484702793265
+    },
+    "n_persist_chronic": {
+      "rho_stopped": -0.05738743592609406,
+      "rho_added": 0.07013487343014822
+    },
+    "n_persist_acute": {
+      "rho_stopped": -0.05944961395595556,
+      "rho_added": -0.025055522502702012
+    }
+  },
+  "q1_bins_acute": [
+    {
+      "bin": "0",
+      "n": 4003,
+      "mean_n_stopped": 3.8613539845116165,
+      "mean_n_added": 4.99400449662753,
+      "stale_keep_sd": 0.43870091220806107,
+      "stale_keep_gn": 0.589549502922085
+    },
+    {
+      "bin": "1-2",
+      "n": 7065,
+      "mean_n_stopped": 4.266242038216561,
+      "mean_n_added": 4.607784854918613,
+      "stale_keep_sd": 0.4291231213297502,
+      "stale_keep_gn": 0.5759928336816961
+    },
+    {
+      "bin": "3-5",
+      "n": 5071,
+      "mean_n_stopped": 5.466180240583712,
+      "mean_n_added": 4.340958390849931,
+      "stale_keep_sd": 0.4098271943432303,
+      "stale_keep_gn": 0.5605421070986206
+    },
+    {
+      "bin": "6+",
+      "n": 2090,
+      "mean_n_stopped": 8.637320574162679,
+      "mean_n_added": 3.7736842105263158,
+      "stale_keep_sd": 0.3663638378019056,
+      "stale_keep_gn": 0.514975256665928
+    }
+  ],
+  "q1_bins_chronic": [
+    {
+      "bin": "0",
+      "n": 2851,
+      "mean_n_stopped": 3.5012276394247634,
+      "mean_n_added": 3.8512802525429675,
+      "stale_keep_sd": 0.46231216189140456,
+      "stale_keep_gn": 0.5799438990182328
+    },
+    {
+      "bin": "1-2",
+      "n": 6261,
+      "mean_n_stopped": 4.33716658680722,
+      "mean_n_added": 4.75227599425012,
+      "stale_keep_sd": 0.4382102743509483,
+      "stale_keep_gn": 0.5832811636899282
+    },
+    {
+      "bin": "3-5",
+      "n": 6064,
+      "mean_n_stopped": 5.417711081794195,
+      "mean_n_added": 4.714709762532982,
+      "stale_keep_sd": 0.4072626548564819,
+      "stale_keep_gn": 0.5614707941436095
+    },
+    {
+      "bin": "6+",
+      "n": 3053,
+      "mean_n_stopped": 7.00262037340321,
+      "mean_n_added": 4.297739927939731,
+      "stale_keep_sd": 0.3645914214883765,
+      "stale_keep_gn": 0.5254533264730187
+    }
+  ],
+  "q1_reg_sd": {
+    "n": 17210,
+    "r2_base": 0.060177926366480894,
+    "r2_full": 0.06178952991317366,
+    "betas": [
+      {
+        "feature": "log_n_stopped",
+        "beta_std": 0.031177252319637222,
+        "ci_low": 0.00691430294579808,
+        "ci_high": 0.058241982750632734
+      },
+      {
+        "feature": "n_prev_meds",
+        "beta_std": -0.2346260320032566,
+        "ci_low": -0.25771781573965574,
+        "ci_high": -0.2137532707826877
+      },
+      {
+        "feature": "n_dx",
+        "beta_std": -0.007379036335588188,
+        "ci_low": -0.026562284342548564,
+        "ci_high": 0.009751219584887191
+      },
+      {
+        "feature": "log_gap",
+        "beta_std": -0.1057426457611343,
+        "ci_low": -0.12220327900100837,
+        "ci_high": -0.0913747417120133
+      },
+      {
+        "feature": "emergency",
+        "beta_std": 0.043608596617130006,
+        "ci_low": 0.028861305798739467,
+        "ci_high": 0.05800221817361694
+      },
+      {
+        "feature": "n_resolved_acute",
+        "beta_std": 0.004558304413466416,
+        "ci_low": -0.010675922976147683,
+        "ci_high": 0.018653964846749242
+      },
+      {
+        "feature": "n_resolved_chronic",
+        "beta_std": -0.048213461318508566,
+        "ci_low": -0.0645920911427181,
+        "ci_high": -0.02831133855038763
+      },
+      {
+        "feature": "n_resolved_status",
+        "beta_std": 0.012486656933375919,
+        "ci_low": -0.003969467861001507,
+        "ci_high": 0.025382297544428615
+      },
+      {
+        "feature": "acute_minus_chronic",
+        "beta_std": 0.05277176573197498,
+        "ci_low": 0.02894970814722128,
+        "ci_high": 0.07368585575978726
+      }
+    ]
+  },
+  "q1_reg_gn": {
+    "n": 17210,
+    "r2_base": 0.03312382178597095,
+    "r2_full": 0.03449349607571539,
+    "betas": [
+      {
+        "feature": "log_n_stopped",
+        "beta_std": 0.0038112202278312974,
+        "ci_low": -0.02021056966951206,
+        "ci_high": 0.03083520280073326
+      },
+      {
+        "feature": "n_prev_meds",
+        "beta_std": -0.14672677651451155,
+        "ci_low": -0.17105852772855165,
+        "ci_high": -0.12879091019011754
+      },
+      {
+        "feature": "n_dx",
+        "beta_std": 0.04443114675316023,
+        "ci_low": 0.029691804754221524,
+        "ci_high": 0.0623663678371316
+      },
+      {
+        "feature": "log_gap",
+        "beta_std": -0.09409998728204787,
+        "ci_low": -0.10940853882939476,
+        "ci_high": -0.07557279310343075
+      },
+      {
+        "feature": "emergency",
+        "beta_std": 0.026205467768415272,
+        "ci_low": 0.01175437140215043,
+        "ci_high": 0.04313018376107979
+      },
+      {
+        "feature": "n_resolved_acute",
+        "beta_std": -0.03447001029271463,
+        "ci_low": -0.050307626591937445,
+        "ci_high": -0.02094598034985767
+      },
+      {
+        "feature": "n_resolved_chronic",
+        "beta_std": -0.019113552713064592,
+        "ci_low": -0.033943238713010554,
+        "ci_high": -0.0014339360580828012
+      },
+      {
+        "feature": "n_resolved_status",
+        "beta_std": 0.002682177996174024,
+        "ci_low": -0.011635871251147182,
+        "ci_high": 0.017813434683498212
+      },
+      {
+        "feature": "acute_minus_chronic",
+        "beta_std": -0.01535645757965004,
+        "ci_low": -0.03951369915371918,
+        "ci_high": 0.004864342942135564
+      }
+    ]
+  },
+  "q2_sd": {
+    "n_rows": 1141145,
+    "auc_model": 0.7435870262998558,
+    "auc_prior": 0.6972467994339187,
+    "auc_combo_crossfit": 0.7477745662533373,
+    "logistic": {
+      "fit_on_fold_1": {
+        "w_model": 0.25421432724981047,
+        "w_prior": 0.49260091075018697,
+        "b": 0.14972537971759264
+      },
+      "fit_on_fold_0": {
+        "w_model": 0.2618890214009011,
+        "w_prior": 0.4892032623312752,
+        "b": 0.10518450439600735
+      }
+    },
+    "prior_edges": [
+      0.5275942132523664,
+      0.7177064668512787
+    ],
+    "by_prior_tertile": [
+      {
+        "tertile": "low-persistence",
+        "n": 373550,
+        "share_continued": 0.39570338642751973,
+        "keep_rate_stopped_model": 0.25230912352980267,
+        "keep_rate_stopped_gate": 0.24123419053314726,
+        "keep_rate_cont_model": 0.5464195108750803,
+        "keep_rate_cont_gate": 0.5201907790143084
+      },
+      {
+        "tertile": "mid",
+        "n": 369150,
+        "share_continued": 0.6254368143031288,
+        "keep_rate_stopped_model": 0.3880451290952484,
+        "keep_rate_stopped_gate": 0.6081796485137774,
+        "keep_rate_cont_model": 0.6155058905058906,
+        "keep_rate_cont_gate": 0.7815618503118503
+      },
+      {
+        "tertile": "high-persistence",
+        "n": 398445,
+        "share_continued": 0.7669941899132879,
+        "keep_rate_stopped_model": 0.838367083153813,
+        "keep_rate_stopped_gate": 0.948675140025851,
+        "keep_rate_cont_model": 0.944735851834885,
+        "keep_rate_cont_gate": 0.9840022250944848
+      }
+    ],
+    "gate": {
+      "jaccard_model": 0.4398146034486496,
+      "jaccard_gate": 0.4559822451467863,
+      "d_jaccard": 0.01616764169813668,
+      "ci_low": 0.015398292457532013,
+      "ci_high": 0.017017189888025294,
+      "n_transitions": 18229,
+      "stale_per_transition": [
+        2.0675187887432114,
+        2.4864007899500797
+      ],
+      "fn_cont_per_transition": [
+        1.8948598387185256,
+        1.3851006637774974
+      ],
+      "n_pred": [
+        13.910044434691976,
+        14.838685610839871
+      ]
+    }
+  },
+  "q2_gn": {
+    "n_rows": 684687,
+    "auc_model": 0.7716807997339462,
+    "auc_prior": 0.6972467994339187,
+    "auc_combo_crossfit": 0.7715232758692538,
+    "logistic": {
+      "fit_on_fold_1": {
+        "w_model": 0.25574342815780665,
+        "w_prior": 0.40190025835095794,
+        "b": -0.16199798506477675
+      },
+      "fit_on_fold_0": {
+        "w_model": 0.2599508095119889,
+        "w_prior": 0.40923205732562873,
+        "b": -0.2151347056486711
+      }
+    },
+    "prior_edges": [
+      0.5275942132523664,
+      0.7177064668512787
+    ],
+    "by_prior_tertile": [
+      {
+        "tertile": "low-persistence",
+        "n": 224130,
+        "share_continued": 0.39570338642751973,
+        "keep_rate_stopped_model": 0.37298159346135956,
+        "keep_rate_stopped_gate": 0.24277729786401459,
+        "keep_rate_cont_model": 0.707832989434992,
+        "keep_rate_cont_gate": 0.5786061405585811
+      },
+      {
+        "tertile": "mid",
+        "n": 221490,
+        "share_continued": 0.6254368143031288,
+        "keep_rate_stopped_model": 0.6362310455389214,
+        "keep_rate_stopped_gate": 0.6322653745088113,
+        "keep_rate_cont_model": 0.8388701201201201,
+        "keep_rate_cont_gate": 0.8353834603834603
+      },
+      {
+        "tertile": "high-persistence",
+        "n": 239067,
+        "share_continued": 0.7669941899132879,
+        "keep_rate_stopped_model": 0.9087857245440184,
+        "keep_rate_stopped_gate": 0.9382091052707167,
+        "keep_rate_cont_model": 0.9803449987183892,
+        "keep_rate_cont_gate": 0.9872220677017719
+      }
+    ],
+    "gate": {
+      "jaccard_model": 0.4486936260191516,
+      "jaccard_gate": 0.44592599464738636,
+      "d_jaccard": -0.0027676313717652497,
+      "ci_low": -0.003202838819135967,
+      "ci_high": -0.002336873002550248,
+      "n_transitions": 18229,
+      "stale_per_transition": [
+        2.8146177336478506,
+        2.516100718635142
+      ],
+      "fn_cont_per_transition": [
+        0.9478852378078886,
+        1.1432333095616873
+      ],
+      "n_pred": [
+        18.48954961873937,
+        17.995684531972863
+      ]
+    }
+  },
+  "prior_overall": 0.5996991669655851,
+  "prior_lowest": [
+    {
+      "atc3": "M03A",
+      "prior": 0.024427480916030534,
+      "n": 655
+    },
+    {
+      "atc3": "N01B",
+      "prior": 0.024896265560165973,
+      "n": 241
+    },
+    {
+      "atc3": "R01B",
+      "prior": 0.08125,
+      "n": 160
+    },
+    {
+      "atc3": "L01D",
+      "prior": 0.0880503144654088,
+      "n": 159
+    },
+    {
+      "atc3": "C05B",
+      "prior": 0.11442006269592477,
+      "n": 1276
+    },
+    {
+      "atc3": "A11G",
+      "prior": 0.14823008849557523,
+      "n": 1356
+    },
+    {
+      "atc3": "L01A",
+      "prior": 0.15352697095435686,
+      "n": 241
+    },
+    {
+      "atc3": "H01B",
+      "prior": 0.165374677002584,
+      "n": 387
+    },
+    {
+      "atc3": "N07A",
+      "prior": 0.16687344913151364,
+      "n": 1612
+    },
+    {
+      "atc3": "M02A",
+      "prior": 0.16883116883116883,
+      "n": 154
+    }
+  ],
+  "prior_highest": [
+    {
+      "atc3": "H03A",
+      "prior": 0.8546783959785217,
+      "n": 8753
+    },
+    {
+      "atc3": "B01A",
+      "prior": 0.8267268373549457,
+      "n": 54290
+    },
+    {
+      "atc3": "A06A",
+      "prior": 0.7998108223872074,
+      "n": 56032
+    },
+    {
+      "atc3": "D11A",
+      "prior": 0.7855102040816326,
+      "n": 4900
+    },
+    {
+      "atc3": "N04B",
+      "prior": 0.7620783956244302,
+      "n": 1097
+    },
+    {
+      "atc3": "N02B",
+      "prior": 0.7570804670952747,
+      "n": 53351
+    },
+    {
+      "atc3": "C07A",
+      "prior": 0.7470376262052397,
+      "n": 30803
+    },
+    {
+      "atc3": "V03A",
+      "prior": 0.7349246231155779,
+      "n": 4776
+    },
+    {
+      "atc3": "H05B",
+      "prior": 0.7246932515337423,
+      "n": 1304
+    },
+    {
+      "atc3": "C10A",
+      "prior": 0.7244786944696283,
+      "n": 22060
+    }
+  ],
+  "coverage": {
+    "share_transitions_any_resolved_acute": 0.780404849415766,
+    "mean_resolved_acute": 2.5194470349443194,
+    "mean_resolved_chronic": 3.1031872291403806,
+    "mean_n_stopped": 5.012288112348456
+  },
+  "interpretation": [
+    "- 진단 변화 ↔ 처방 변화: 해소된 급성 진단 수와 중단 약물 수의 ρ = 0.298, 해소된 만성 0.279; (참고) 신규 급성 ↔ added ρ = 0.329.",
+    "- Q1: SafeDrug stale 유지율에 대한 해소된 급성 계수 0.005 [-0.011, 0.019], 해소된 만성 -0.048, 차이 0.053 [0.029, 0.074] → 중단 오류 미확인, 급성/만성 구분 미확인.",
+    "- Q2: 중단 판단 AUC 모델 0.744, 지속률 사전확률 단독 0.697, 결합 0.748. 게이트 ΔJaccard 0.0162 [0.0154, 0.0170], stale FP 2.07 → 2.49, 유지 누락 1.89 → 1.39 → 단순 게이트 가치 있음."
+  ]
+}

@@ -9,7 +9,7 @@ task's raw/adjusted range/weighted-SD statistic pair -- reusing
 scripts/safedrug_cluster_gap.py's gap_statistics/largest_remainder (imported)
 throughout rather than redefining what "gap" or "null" mean.
 
-See docs/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
+See docs/superpowers/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
 ("D-D") for the full contract.
 """
 

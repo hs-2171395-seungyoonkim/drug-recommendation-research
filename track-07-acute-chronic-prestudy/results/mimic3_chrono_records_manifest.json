@@ -1,0 +1,65 @@
+{
+  "generated_at_utc": "2026-09-16T15:41:46.850425+00:00",
+  "inputs": {
+    "records_final.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\records_final.pkl",
+      "sha256": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f"
+    },
+    "voc_final.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\voc_final.pkl",
+      "sha256": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5"
+    },
+    "master_visits.csv": {
+      "path": "C:\\Users\\Administrator\\Desktop\\unfair\\out\\acute_driver_audit\\safedrug_mimic3_cohort\\master_visits.csv",
+      "sha256": "6f3f4c1ac29d947c343806e836c22b2b4f89613cb86fcdaaa7a23ed4cd10ebf8"
+    },
+    "records_final_hadm_ids.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\unfair\\out\\acute_driver_audit\\safedrug_mimic3_cohort\\records_final_hadm_ids.pkl",
+      "sha256": "82aab39d5eed623671e5e916746975779e26a9f61a62c1e6881982008902a699"
+    },
+    "DIAGNOSES_ICD.csv": {
+      "path": "C:\\Users\\Administrator\\Desktop\\unfair\\DIAGNOSES_ICD.csv",
+      "sha256": "13adcae7cd33ab4c6cb46111f9882864bff1e743b81f1468912991322332d698"
+    }
+  },
+  "outputs": {
+    "records_final_chrono.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic3\\records_final_chrono.pkl",
+      "sha256": "d367ee399e5fb256d2d2756a2cbd6e97bc224b05cdb9215e7d2d828e5f4b774c"
+    },
+    "records_final_chrono_hadm_ids.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic3\\records_final_chrono_hadm_ids.pkl",
+      "sha256": "26bdefc1fad326b2a2aac97f7cbeec9171fa9f4173b517381a23412045d115f2"
+    },
+    "records_final_chrono_visits.csv": {
+      "path": "C:\\Users\\Administrator\\Desktop\\acute-chronic-prestudy\\out\\mimic3\\records_final_chrono_visits.csv"
+    }
+  },
+  "n_patients": 6350,
+  "n_visits": 15032,
+  "n_transitions": 8682,
+  "ordering": "within patient by (ADMITTIME, HADM_ID); patient order unchanged",
+  "checks": {
+    "sidecar_rows_match_visits": true,
+    "sidecar_patients_match": true,
+    "master_csv_equals_hadm_pkl": true,
+    "diag_subset_of_DIAGNOSES_ICD": {
+      "n_visits_checked": 15032,
+      "n_mismatch": 0,
+      "n_hadm_without_rows": 0
+    },
+    "backwards_transition_share_before": 0.4998848191660908,
+    "backwards_transition_share_after": 0.0,
+    "visits_unchanged_per_patient": true,
+    "patients_whose_order_changed": 3390,
+    "share_patients_order_changed": 0.5338582677165354,
+    "split_unchanged": {
+      "train": 4233,
+      "test": 1058,
+      "eval": 1059,
+      "note": "split is by patient position; patient order is untouched"
+    },
+    "round_trip_equal": true
+  },
+  "usage": "drop-in replacement for records_final.pkl; voc/ddi/ehr_adj files unchanged; results are NOT comparable to literature numbers trained on the HADM_ID order"
+}

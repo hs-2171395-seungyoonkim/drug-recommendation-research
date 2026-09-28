@@ -170,7 +170,7 @@ L = []
 A = L.append
 A("# HPI(주 증상) 기반 방문 군집화 — 결과")
 A("")
-A("2026-08-13. 설계: `docs/specs/2026-08-13-hpi-clustering-design.md`")
+A("2026-08-13. 설계: `docs/superpowers/specs/2026-08-13-hpi-clustering-design.md`")
 A("")
 A("이 보고서는 **무엇이 만들어졌는가만** 기술한다. 판정축(ARI vs D1/C1_id, CCI 급성 비중, "
   "η², 순열검정)은 이번 범위 밖이라 만들지 않았다. 따라서 **이 군집이 실제로 급성 축을 "

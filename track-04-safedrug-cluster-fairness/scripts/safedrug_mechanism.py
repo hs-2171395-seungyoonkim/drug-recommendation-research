@@ -1,7 +1,7 @@
 """SafeDrug mechanism decomposition: precision/recall gap, training
 representation, drug rarity, and a widened (v2) adjustment.
 
-See docs/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
+See docs/superpowers/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
 ("D-C") for the full contract.
 """
 

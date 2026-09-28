@@ -3,12 +3,12 @@
 MIMIC-III / MIMIC-IV 위에서 동작하는 의약품 추천(medication recommendation) 모델을
 직접 재현하고, 재현된 기준선 위에서 확장과 검증을 시도한 기록입니다.
 
-네 개의 트랙으로 나누어 두었습니다. 각 트랙은 원래 별개의 저장소에서 진행된 작업이라,
+일곱 개의 트랙으로 나누어 두었습니다. 각 트랙은 원래 별개의 저장소에서 진행된 작업이라,
 커밋 히스토리도 트랙마다 별도의 뿌리에서 시작해 이 저장소로 합쳐집니다.
 
 ## 데이터 정책
 
-네 트랙 모두 PhysioNet 인증 데이터(MIMIC-III / MIMIC-IV)를 입력으로 씁니다.
+모든 트랙이 PhysioNet 인증 데이터(MIMIC-III / MIMIC-IV)를 입력으로 씁니다.
 **이 저장소에는 원본 테이블도, 행 단위 파생 산출물(전처리된 환자 레코드, 방문별 예측,
 학습된 가중치)도 포함하지 않습니다.** 소스 코드, 테스트, 사람이 쓴 보고서, 그리고
 군집·시드 수준으로 집계된 결과 표와 그림만 둡니다.
@@ -24,7 +24,10 @@ MIMIC-III / MIMIC-IV 위에서 동작하는 의약품 추천(medication recommen
 | [track-01-sota-review](track-01-sota-review/) | MR-DTR (WWW'25), CausalMed (CIKM'24), SubRec (NeurIPS'25) 정독 분석과, 세 논문의 데이터 자원·전처리 방식 비교 | 문서 5편 |
 | [track-02-hi-dr-reproduction](track-02-hi-dr-reproduction/) | HI-DR (AAAI'25) 재현 후, 사후 필터 → 이력 기반 후보 풀 확장으로 재설계 | 5-seed 실험 완료 |
 | [track-03-safedrug-organ-function](track-03-safedrug-organ-function/) | MIMIC-IV 레코드를 ICD-9+10 모두 살려 재구축하고, SafeDrug에 신·간 기능 피처를 주입 | 파이프라인 완성, GPU 스모크까지 |
-| [track-04-safedrug-cluster-fairness](track-04-safedrug-cluster-fairness/) | 진단 텍스트로 방문을 군집화한 뒤, SafeDrug 정확도가 군집에 따라 갈리는지 검정 | 4시드 · 보고서/그림/표 |
+| [track-04-safedrug-cluster-fairness](track-04-safedrug-cluster-fairness/) | 진단 텍스트로 방문을 군집화한 뒤, SafeDrug 정확도가 군집에 따라 갈리는지 검정하고, 격차를 줄이려는 개입 9종 시험 | 4시드 · 보고서/그림/표 |
+| [track-05-safedrug-acute-attention](track-05-safedrug-acute-attention/) | 방문 표현을 입원 시점 텍스트 기반 attention으로 바꿔 격차가 표현 부족 때문인지 절제 실험 | S0~S3 · v1/v2/지도 |
+| [track-06-safedrug-ddi-constraint](track-06-safedrug-ddi-constraint/) | SafeDrug DDI 행렬의 출처를 추적해 안전성 축 격차의 원인이 DDI 제약임을 인과 검증, 허용 목록 수정안 | 4시드 · 보고서 |
+| [track-07-acute-chronic-prestudy](track-07-acute-chronic-prestudy/) | 급성/만성 분리 제안서 사전검증, GAMENet·MICRON 재현과 kNN 검색 기준선 비교 (MIMIC-III/IV) | 가설 반증 · 방향 재설정 |
 
 ### 트랙 사이의 관계
 
@@ -33,6 +36,8 @@ MIMIC-III / MIMIC-IV 위에서 동작하는 의약품 추천(medication recommen
 MIMIC-IV로 옮겨 장기 기능이라는 환자 상태 축을 추가로 넣어 본 것이고,
 트랙 04는 재현된 SafeDrug의 정확도가 **어떤 환자군에서** 떨어지는지를 따로 검정한
 감사(audit)입니다.
+트랙 05·06은 그 격차의 원인을 각각 방문 표현과 DDI 제약에서 찾아본 후속 실험이고,
+트랙 07은 "급성 입원 이유를 따로 보면 처방 변화를 더 잘 맞힐 것"이라는 가설을 구현 전에 검증한 기록입니다.
 
 ## 각 트랙의 요지
 
@@ -59,9 +64,24 @@ Bio_ClinicalBERT로 임베딩한 진단 텍스트로 방문을 군집화하고 �
 precision 쪽(0.132)이 recall 쪽(0.069)의 두 배였고, 실제 처방 약물의 학습셋 빈도와
 상관 +0.71 — 즉 드문 약을 쓰는 환자군에서 더 못 맞힙니다.
 
+**트랙 05 — 급성 attention.** SafeDrug의 코드 합산 풀링을 입원 시점 텍스트 query의 attention으로 바꿨습니다.
+Jaccard는 0.508 → 0.518까지 올랐지만 군집 격차는 줄지 않았고, attention은 학습이 끝나면 균등으로 돌아갔습니다.
+주진단으로 attention을 지도하면 급성 이유를 실제로 가리키지만(hit@1 56%) 정확도가 떨어집니다.
+처방 목적함수는 "급성 이유에 집중"을 보상하지 않습니다.
+
+**트랙 06 — DDI 제약과 불공정.** SafeDrug의 DDI 행렬은 TWOSIDES의 비특이적 부작용 40종에 걸린 쌍이라
+스타틴–질산염, 베타차단제–ACE억제제 같은 가이드라인 병용까지 "상호작용"으로 표시합니다.
+페널티를 끄면(4시드) 초과 DDI 격차가 절반으로 줄어 유의성이 사라지고, 페널티 부담은 CAD·MI, 심부전+CKD 군집에 몰려 있었습니다.
+질환별 허용 목록(W)은 격차를 없애지만, 약물 단위로 추천하는 구조에서는 쌍 단위 안전 예외를 선택적으로 표현할 수 없음을 확인했습니다.
+
+**트랙 07 — 급성/만성 사전검증.** "모델이 직전 처방 복사를 못 넘는다"는 전제는 MIMIC-IV에서만 성립했습니다
+(MIMIC-III에서는 모델이 +0.045 앞섬). 급성 라벨은 모델 오류와 맞지 않았고 핵심 약점은 롱테일 약물 recall이었습니다.
+MIMIC-IV에서는 kNN 검색 + 직전 처방 기준선(0.494)이 SafeDrug·GAMENet·MICRON(0.440~0.449)을 크게 앞섰지만,
+어느 방법도 추가 약물·중단 판단·드문 약은 고치지 못했습니다.
+
 ## 출처와 라이선스
 
 - 트랙 02는 [Bigdasgit/HI-DR](https://github.com/Bigdasgit/HI-DR)(AAAI 2025)의 포크에서
   출발했습니다. 원 저자 커밋과 MIT 라이선스가 해당 트랙 안에 그대로 남아 있습니다.
-- 트랙 03·04는 SafeDrug(IJCAI 2021)의 공개 구현을 참조해 새로 작성했습니다.
+- 트랙 03~07은 SafeDrug(IJCAI 2021), GAMENet(AAAI 2019), MICRON(IJCAI 2021)의 공개 구현을 참조하거나 래핑해 작성했습니다.
 - 논문 PDF, 타 저자의 참조 구현 사본, 원본/파생 MIMIC 데이터는 포함하지 않습니다.

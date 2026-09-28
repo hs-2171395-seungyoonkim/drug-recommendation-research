@@ -20,6 +20,7 @@
 
 # Aggregate result tables published with the reports are the only exception.
 !track-04-safedrug-cluster-fairness/results/tables/*.csv
+!track-0[4-7]-*/results/**/*.csv
 
 # Local run outputs
 out/

@@ -1,0 +1,850 @@
+{
+  "generated_at_utc": "2026-09-17T15:13:11.521516+00:00",
+  "elapsed_seconds": 10.5,
+  "inputs": {
+    "records_final.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\records_final.pkl",
+      "sha256": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f"
+    },
+    "voc_final.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\voc_final.pkl",
+      "sha256": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5"
+    },
+    "ddi_A_final.pkl": {
+      "path": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\ddi_A_final.pkl",
+      "sha256": "8b27353d99db2b9717ea52d54bafc8be69a708c6952b4cfe390903ead84bedea"
+    },
+    "master_visits.csv": {
+      "path": "C:\\Users\\Administrator\\Desktop\\unfair\\.worktrees\\admission-driver-consensus\\out\\acute_driver_audit\\safedrug_mimic3_cohort\\master_visits.csv",
+      "sha256": "6f3f4c1ac29d947c343806e836c22b2b4f89613cb86fcdaaa7a23ed4cd10ebf8"
+    },
+    "cc_cluster_assignments.csv": {
+      "path": "C:\\Users\\Administrator\\Desktop\\unfair\\.worktrees\\admission-driver-consensus\\out\\cc_cluster_assignments.csv",
+      "sha256": "a46cc3f4c9a3f90b20c625c54ecafbf30a915f6802296e655e5f2695a4f7c99d"
+    },
+    "40_cc_map_meta.json": {
+      "path": "C:\\Users\\Administrator\\Desktop\\unfair\\.worktrees\\admission-driver-consensus\\out\\40_cc_map_meta.json",
+      "sha256": "df9066d614765329be9ea7df04233b4af3794ea311491c15da3c4278a237d22d"
+    }
+  },
+  "cluster_source": {
+    "column": "clusterCC_bert",
+    "k": 24,
+    "method": "Bio_ClinicalBERT -> TruncatedSVD(50) -> k-means (track B)",
+    "no_cc_layer": "NO_CC",
+    "names_from": "40_cc_map_meta.json named_clusters (fig29 concept dictionary, >=60%)"
+  },
+  "cluster_names": {
+    "00": "00 소화관 출혈",
+    "01": "01",
+    "02": "02",
+    "03": "03 복통",
+    "04": "04 저혈압·쇼크",
+    "05": "05 호흡곤란",
+    "06": "06",
+    "07": "07 발열·감염",
+    "08": "08",
+    "09": "09 의식변화",
+    "10": "10 호흡곤란",
+    "11": "11",
+    "12": "12",
+    "13": "13",
+    "14": "14",
+    "15": "15 저산소·호흡부전",
+    "16": "16",
+    "17": "17 무반응",
+    "18": "18 흉통",
+    "19": "19",
+    "20": "20",
+    "21": "21",
+    "22": "22",
+    "23": "23",
+    "NO_CC": "NO_CC"
+  },
+  "ddi_matrix": {
+    "shape": [
+      112,
+      112
+    ],
+    "nnz": 674
+  },
+  "join": {
+    "join_key": "HADM_ID",
+    "n_official": 15032,
+    "n_notes": 14541,
+    "n_matched": 14539,
+    "n_official_only": 493,
+    "n_notes_only": 2,
+    "join_rate_vs_official": 0.9672032996274614,
+    "join_rate_vs_notes": 0.9998624578777251,
+    "floor": 0.95
+  },
+  "verification": {
+    "pooled_ddi_rate_ours": 0.08261142925768203,
+    "pooled_ddi_rate_util": 0.08261142925768203,
+    "reference_measured": 0.0826,
+    "reference_paper": 0.0808,
+    "matches_reference_3dp": true,
+    "mean_visit_ddi_rate_all": 0.08660815921874479,
+    "pooled_ddi_rate_matched": 0.0824233900099895,
+    "mean_visit_ddi_rate_matched": 0.08614601432552443,
+    "n_visits_rate_undefined": 13,
+    "n_visits_rate_undefined_all": 24
+  },
+  "gate": {
+    "rule": "PASS iff p_range(ddi_rate raw) < 0.05 AND p_range(ddi_rate residualised on n_med + n_med^2) < 0.05; patient-level permutation, 10,000 draws, seed 0, min 30 visits/group, 24 CC clusters, NO_CC excluded. Fixed before results.",
+    "alpha": 0.05,
+    "p_range_raw": 9.999000099990002e-05,
+    "p_range_residual": 9.999000099990002e-05,
+    "passed": true,
+    "post_hoc_changes": []
+  },
+  "cluster_table": [
+    {
+      "cluster_label": "00",
+      "n_visits": 247,
+      "n_patients": 211,
+      "ddi_rate_mean": 0.07904580432508729,
+      "ddi_rate_median": 0.0735930735930736,
+      "ddi_rate_sd": 0.05283584644054645,
+      "ddi_rate_pooled": 0.07664800539320574,
+      "n_med_mean": 15.923076923076923,
+      "n_dx_mean": 13.323886639676113,
+      "dd_cnt_mean": 10.587044534412955,
+      "n_visits_rate_defined": 247
+    },
+    {
+      "cluster_label": "01",
+      "n_visits": 625,
+      "n_patients": 578,
+      "ddi_rate_mean": 0.09219133134298677,
+      "ddi_rate_median": 0.08262108262108261,
+      "ddi_rate_sd": 0.059031998303179886,
+      "ddi_rate_pooled": 0.08630007242743329,
+      "n_med_mean": 17.7296,
+      "n_dx_mean": 14.456,
+      "dd_cnt_mean": 14.8704,
+      "n_visits_rate_defined": 623
+    },
+    {
+      "cluster_label": "02",
+      "n_visits": 309,
+      "n_patients": 290,
+      "ddi_rate_mean": 0.08177834196016481,
+      "ddi_rate_median": 0.0761904761904762,
+      "ddi_rate_sd": 0.053221953863974096,
+      "ddi_rate_pooled": 0.08037843242827475,
+      "n_med_mean": 17.245954692556634,
+      "n_dx_mean": 14.3042071197411,
+      "dd_cnt_mean": 13.527508090614887,
+      "n_visits_rate_defined": 309
+    },
+    {
+      "cluster_label": "03",
+      "n_visits": 431,
+      "n_patients": 399,
+      "ddi_rate_mean": 0.07393531375953241,
+      "ddi_rate_median": 0.07126436781609195,
+      "ddi_rate_sd": 0.035937862864293776,
+      "ddi_rate_pooled": 0.07368756790160372,
+      "n_med_mean": 21.1461716937355,
+      "n_dx_mean": 14.88167053364269,
+      "dd_cnt_mean": 17.153132250580047,
+      "n_visits_rate_defined": 431
+    },
+    {
+      "cluster_label": "04",
+      "n_visits": 609,
+      "n_patients": 525,
+      "ddi_rate_mean": 0.07730132074301947,
+      "ddi_rate_median": 0.0735930735930736,
+      "ddi_rate_sd": 0.04227750757948793,
+      "ddi_rate_pooled": 0.07616374150692092,
+      "n_med_mean": 19.311986863711002,
+      "n_dx_mean": 17.328407224958948,
+      "dd_cnt_mean": 14.835796387520526,
+      "n_visits_rate_defined": 609
+    },
+    {
+      "cluster_label": "05",
+      "n_visits": 735,
+      "n_patients": 648,
+      "ddi_rate_mean": 0.10342458964384632,
+      "ddi_rate_median": 0.09504987765857331,
+      "ddi_rate_sd": 0.049600449951942994,
+      "ddi_rate_pooled": 0.09405798087541806,
+      "n_med_mean": 22.292517006802722,
+      "n_dx_mean": 14.9156462585034,
+      "dd_cnt_mean": 24.45034013605442,
+      "n_visits_rate_defined": 734
+    },
+    {
+      "cluster_label": "06",
+      "n_visits": 672,
+      "n_patients": 607,
+      "ddi_rate_mean": 0.08292100122672914,
+      "ddi_rate_median": 0.07509881422924901,
+      "ddi_rate_sd": 0.0493962354381072,
+      "ddi_rate_pooled": 0.07778474016601776,
+      "n_med_mean": 19.81547619047619,
+      "n_dx_mean": 11.982142857142858,
+      "dd_cnt_mean": 16.44047619047619,
+      "n_visits_rate_defined": 672
+    },
+    {
+      "cluster_label": "07",
+      "n_visits": 265,
+      "n_patients": 246,
+      "ddi_rate_mean": 0.07167050174434625,
+      "ddi_rate_median": 0.07017543859649122,
+      "ddi_rate_sd": 0.033953616121844346,
+      "ddi_rate_pooled": 0.0724019433582178,
+      "n_med_mean": 20.747169811320756,
+      "n_dx_mean": 17.056603773584907,
+      "dd_cnt_mean": 16.139622641509433,
+      "n_visits_rate_defined": 265
+    },
+    {
+      "cluster_label": "08",
+      "n_visits": 1129,
+      "n_patients": 1045,
+      "ddi_rate_mean": 0.08399230892370213,
+      "ddi_rate_median": 0.07635467980295567,
+      "ddi_rate_sd": 0.04849173476440995,
+      "ddi_rate_pooled": 0.07881486916880034,
+      "n_med_mean": 20.58193091231178,
+      "n_dx_mean": 13.74844995571302,
+      "dd_cnt_mean": 17.885739592559787,
+      "n_visits_rate_defined": 1129
+    },
+    {
+      "cluster_label": "09",
+      "n_visits": 363,
+      "n_patients": 325,
+      "ddi_rate_mean": 0.07579731890715012,
+      "ddi_rate_median": 0.07368421052631578,
+      "ddi_rate_sd": 0.044359904515850694,
+      "ddi_rate_pooled": 0.07785670414185382,
+      "n_med_mean": 19.78787878787879,
+      "n_dx_mean": 16.509641873278238,
+      "dd_cnt_mean": 16.0633608815427,
+      "n_visits_rate_defined": 363
+    },
+    {
+      "cluster_label": "10",
+      "n_visits": 552,
+      "n_patients": 502,
+      "ddi_rate_mean": 0.09898503827823742,
+      "ddi_rate_median": 0.090527950310559,
+      "ddi_rate_sd": 0.05125079257563508,
+      "ddi_rate_pooled": 0.09081133721520014,
+      "n_med_mean": 22.527173913043477,
+      "n_dx_mean": 15.327898550724637,
+      "dd_cnt_mean": 24.32608695652174,
+      "n_visits_rate_defined": 552
+    },
+    {
+      "cluster_label": "11",
+      "n_visits": 668,
+      "n_patients": 594,
+      "ddi_rate_mean": 0.08739722382084703,
+      "ddi_rate_median": 0.07953761214630779,
+      "ddi_rate_sd": 0.054169851270304076,
+      "ddi_rate_pooled": 0.08312257732653199,
+      "n_med_mean": 21.59431137724551,
+      "n_dx_mean": 17.010479041916167,
+      "dd_cnt_mean": 20.320359281437124,
+      "n_visits_rate_defined": 668
+    },
+    {
+      "cluster_label": "12",
+      "n_visits": 1285,
+      "n_patients": 1111,
+      "ddi_rate_mean": 0.0796013628752604,
+      "ddi_rate_median": 0.07509881422924901,
+      "ddi_rate_sd": 0.04317214349655961,
+      "ddi_rate_pooled": 0.07798639671560341,
+      "n_med_mean": 20.130739299610894,
+      "n_dx_mean": 14.862256809338522,
+      "dd_cnt_mean": 16.837354085603113,
+      "n_visits_rate_defined": 1285
+    },
+    {
+      "cluster_label": "13",
+      "n_visits": 267,
+      "n_patients": 258,
+      "ddi_rate_mean": 0.09126694504182982,
+      "ddi_rate_median": 0.08,
+      "ddi_rate_sd": 0.05612420248273197,
+      "ddi_rate_pooled": 0.08480104370515329,
+      "n_med_mean": 19.419475655430713,
+      "n_dx_mean": 13.685393258426966,
+      "dd_cnt_mean": 17.04119850187266,
+      "n_visits_rate_defined": 267
+    },
+    {
+      "cluster_label": "14",
+      "n_visits": 786,
+      "n_patients": 699,
+      "ddi_rate_mean": 0.08795643202852697,
+      "ddi_rate_median": 0.08088235294117647,
+      "ddi_rate_sd": 0.04842333822400591,
+      "ddi_rate_pooled": 0.08368327820927322,
+      "n_med_mean": 19.721374045801525,
+      "n_dx_mean": 14.689567430025445,
+      "dd_cnt_mean": 17.189567430025445,
+      "n_visits_rate_defined": 786
+    },
+    {
+      "cluster_label": "15",
+      "n_visits": 209,
+      "n_patients": 188,
+      "ddi_rate_mean": 0.09828408882501864,
+      "ddi_rate_median": 0.09541316526610644,
+      "ddi_rate_sd": 0.04974715401563677,
+      "ddi_rate_pooled": 0.09805527123848516,
+      "n_med_mean": 20.904306220095695,
+      "n_dx_mean": 15.727272727272727,
+      "dd_cnt_mean": 22.91866028708134,
+      "n_visits_rate_defined": 208
+    },
+    {
+      "cluster_label": "16",
+      "n_visits": 877,
+      "n_patients": 811,
+      "ddi_rate_mean": 0.0873166558143006,
+      "ddi_rate_median": 0.08045977011494253,
+      "ddi_rate_sd": 0.04415533711316799,
+      "ddi_rate_pooled": 0.08357415044620554,
+      "n_med_mean": 21.021664766248573,
+      "n_dx_mean": 13.602052451539338,
+      "dd_cnt_mean": 19.456100342075256,
+      "n_visits_rate_defined": 877
+    },
+    {
+      "cluster_label": "17",
+      "n_visits": 124,
+      "n_patients": 118,
+      "ddi_rate_mean": 0.07674078346355552,
+      "ddi_rate_median": 0.07437964280069542,
+      "ddi_rate_sd": 0.05112214345418783,
+      "ddi_rate_pooled": 0.07864265797060352,
+      "n_med_mean": 17.919354838709676,
+      "n_dx_mean": 14.959677419354838,
+      "dd_cnt_mean": 13.419354838709678,
+      "n_visits_rate_defined": 124
+    },
+    {
+      "cluster_label": "18",
+      "n_visits": 434,
+      "n_patients": 399,
+      "ddi_rate_mean": 0.11071040994148307,
+      "ddi_rate_median": 0.0945452962430891,
+      "ddi_rate_sd": 0.05750201117484993,
+      "ddi_rate_pooled": 0.09300871542250852,
+      "n_med_mean": 21.214285714285715,
+      "n_dx_mean": 13.423963133640553,
+      "dd_cnt_mean": 22.622119815668203,
+      "n_visits_rate_defined": 434
+    },
+    {
+      "cluster_label": "19",
+      "n_visits": 565,
+      "n_patients": 515,
+      "ddi_rate_mean": 0.0855471519562297,
+      "ddi_rate_median": 0.08187134502923976,
+      "ddi_rate_sd": 0.047652397664049786,
+      "ddi_rate_pooled": 0.08091725494950248,
+      "n_med_mean": 18.709734513274338,
+      "n_dx_mean": 13.582300884955751,
+      "dd_cnt_mean": 15.357522123893805,
+      "n_visits_rate_defined": 565
+    },
+    {
+      "cluster_label": "20",
+      "n_visits": 790,
+      "n_patients": 716,
+      "ddi_rate_mean": 0.07824629227281393,
+      "ddi_rate_median": 0.07545492142266336,
+      "ddi_rate_sd": 0.04203864123738492,
+      "ddi_rate_pooled": 0.07707983629657492,
+      "n_med_mean": 20.543037974683543,
+      "n_dx_mean": 12.7873417721519,
+      "dd_cnt_mean": 17.379746835443036,
+      "n_visits_rate_defined": 790
+    },
+    {
+      "cluster_label": "21",
+      "n_visits": 210,
+      "n_patients": 200,
+      "ddi_rate_mean": 0.08646294147993953,
+      "ddi_rate_median": 0.07692307692307693,
+      "ddi_rate_sd": 0.053741683184269806,
+      "ddi_rate_pooled": 0.08255649001925221,
+      "n_med_mean": 18.642857142857142,
+      "n_dx_mean": 13.476190476190476,
+      "dd_cnt_mean": 15.519047619047619,
+      "n_visits_rate_defined": 209
+    },
+    {
+      "cluster_label": "22",
+      "n_visits": 348,
+      "n_patients": 326,
+      "ddi_rate_mean": 0.08736476360183647,
+      "ddi_rate_median": 0.07817672523554876,
+      "ddi_rate_sd": 0.05020428428706943,
+      "ddi_rate_pooled": 0.07974167336233949,
+      "n_med_mean": 18.68103448275862,
+      "n_dx_mean": 13.655172413793103,
+      "dd_cnt_mean": 15.114942528735632,
+      "n_visits_rate_defined": 348
+    },
+    {
+      "cluster_label": "23",
+      "n_visits": 302,
+      "n_patients": 290,
+      "ddi_rate_mean": 0.07889438039993434,
+      "ddi_rate_median": 0.07610693400167085,
+      "ddi_rate_sd": 0.041969848291688754,
+      "ddi_rate_pooled": 0.0800775838182322,
+      "n_med_mean": 19.718543046357617,
+      "n_dx_mean": 14.049668874172186,
+      "dd_cnt_mean": 16.2682119205298,
+      "n_visits_rate_defined": 302
+    },
+    {
+      "cluster_label": "NO_CC",
+      "n_visits": 1737,
+      "n_patients": 1299,
+      "ddi_rate_mean": 0.08754830710545256,
+      "ddi_rate_median": 0.07905138339920949,
+      "ddi_rate_sd": 0.05917271467029629,
+      "ddi_rate_pooled": 0.08491944814707056,
+      "n_med_mean": 17.430051813471504,
+      "n_dx_mean": 8.662061024755324,
+      "dd_cnt_mean": 14.450777202072539,
+      "n_visits_rate_defined": 1729
+    }
+  ],
+  "permutation": {
+    "ddi_rate_raw": {
+      "observed_range": 0.039039908197137096,
+      "observed_wsd": 0.008864576178284232,
+      "n_groups_used": 24,
+      "null_mean_range": 0.01332275841439272,
+      "null_p95_range": 0.018995430690880843,
+      "z_range": 8.203613922124,
+      "p_raw_range": 9.999000099990002e-05,
+      "null_mean_wsd": 0.0026653332041850944,
+      "null_p95_wsd": 0.0033280387354891437,
+      "z_wsd": 15.86346974649164,
+      "p_raw_wsd": 9.999000099990002e-05,
+      "value": "ddi_rate",
+      "n_visits": 12797,
+      "n_patients": 5900,
+      "n_perm": 10000,
+      "seed": 0,
+      "min_visits": 30
+    },
+    "ddi_rate_residual": {
+      "observed_range": 0.03965904104299472,
+      "observed_wsd": 0.009319737925154467,
+      "n_groups_used": 24,
+      "null_mean_range": 0.013340918665591214,
+      "null_p95_range": 0.019044813749058347,
+      "z_range": 8.402156075292302,
+      "p_raw_range": 9.999000099990002e-05,
+      "null_mean_wsd": 0.0026692173207794475,
+      "null_p95_wsd": 0.0033381235464796754,
+      "z_wsd": 16.999117080305886,
+      "p_raw_wsd": 9.999000099990002e-05,
+      "value": "ddi_rate_residual",
+      "n_visits": 12797,
+      "n_patients": 5900,
+      "n_perm": 10000,
+      "seed": 0,
+      "min_visits": 30
+    },
+    "dd_cnt_raw": {
+      "observed_range": 13.863295601641466,
+      "observed_wsd": 3.0937300572987145,
+      "n_groups_used": 24,
+      "null_mean_range": 3.766753774527555,
+      "null_p95_range": 5.34939820736033,
+      "z_range": 11.663656288807683,
+      "p_raw_range": 9.999000099990002e-05,
+      "null_mean_wsd": 0.7559988122661025,
+      "null_p95_wsd": 0.9473885137263952,
+      "z_wsd": 20.86578476341385,
+      "p_raw_wsd": 9.999000099990002e-05,
+      "value": "dd_cnt",
+      "n_visits": 12802,
+      "n_patients": 5900,
+      "n_perm": 10000,
+      "seed": 0,
+      "min_visits": 30
+    },
+    "dd_cnt_residual": {
+      "observed_range": 6.1276575841078955,
+      "observed_wsd": 1.4964783387236724,
+      "n_groups_used": 24,
+      "null_mean_range": 2.2416867371144193,
+      "null_p95_range": 3.212951622056095,
+      "z_range": 7.406971143315167,
+      "p_raw_range": 9.999000099990002e-05,
+      "null_mean_wsd": 0.4508137467659117,
+      "null_p95_wsd": 0.5622469535505498,
+      "z_wsd": 15.74264892126773,
+      "p_raw_wsd": 9.999000099990002e-05,
+      "value": "dd_cnt_residual",
+      "n_visits": 12802,
+      "n_patients": 5900,
+      "n_perm": 10000,
+      "seed": 0,
+      "min_visits": 30
+    }
+  },
+  "confounding": {
+    "r_cluster_ddi_rate_vs_n_med": 0.38035297806435275,
+    "r_cluster_dd_cnt_vs_n_med": 0.8887604313422639,
+    "r_visit_ddi_rate_vs_n_med": -0.10293971900818681,
+    "residual_beta_ddi_rate": [
+      0.09555577889741047,
+      -0.00018568425003154552,
+      -1.295849592313616e-05
+    ],
+    "residual_beta_dd_cnt": [
+      -2.2313931619053373,
+      0.3859152626206536,
+      0.027113915991275918
+    ],
+    "r_cluster_residual_ddi_rate_vs_n_med": 0.46956671825048785
+  },
+  "quartile_stratified": [
+    {
+      "quartile": 1,
+      "n_med_min": 2,
+      "n_med_max": 15,
+      "n_visits": 3426,
+      "n_groups_used": 24,
+      "observed_range": 0.08844942861817397,
+      "p_raw_range": 9.999000099990002e-05,
+      "observed_wsd": 0.017869674588596188,
+      "p_raw_wsd": 9.999000099990002e-05
+    },
+    {
+      "quartile": 2,
+      "n_med_min": 16,
+      "n_med_max": 20,
+      "n_visits": 3618,
+      "n_groups_used": 24,
+      "observed_range": 0.04765194554028854,
+      "p_raw_range": 0.00039996000399960006,
+      "observed_wsd": 0.011740879262547962,
+      "p_raw_wsd": 9.999000099990002e-05
+    },
+    {
+      "quartile": 3,
+      "n_med_min": 21,
+      "n_med_max": 24,
+      "n_visits": 2594,
+      "n_groups_used": 23,
+      "observed_range": 0.03649252975834,
+      "p_raw_range": 0.0012998700129987,
+      "observed_wsd": 0.007060537672352219,
+      "p_raw_wsd": 9.999000099990002e-05
+    },
+    {
+      "quartile": 4,
+      "n_med_min": 25,
+      "n_med_max": 52,
+      "n_visits": 3159,
+      "n_groups_used": 22,
+      "observed_range": 0.024224912515562746,
+      "p_raw_range": 0.0006999300069993001,
+      "observed_wsd": 0.004652913296462128,
+      "p_raw_wsd": 9.999000099990002e-05
+    }
+  ],
+  "top_pairs": [
+    {
+      "cluster_label": "18",
+      "n_visits": 434,
+      "n_ddi_pair_occurrences": 9818,
+      "share_involving_B01A": 0.1826237522917091,
+      "top": [
+        {
+          "pair": "A01A-C10A",
+          "count": 358,
+          "share_of_cluster_ddi_pairs": 0.03646363821552251,
+          "involves_B01A": false
+        },
+        {
+          "pair": "C07A-C10A",
+          "count": 351,
+          "share_of_cluster_ddi_pairs": 0.03575066204929721,
+          "involves_B01A": false
+        },
+        {
+          "pair": "B01A-C10A",
+          "count": 339,
+          "share_of_cluster_ddi_pairs": 0.03452841719291098,
+          "involves_B01A": true
+        },
+        {
+          "pair": "N02B-C10A",
+          "count": 316,
+          "share_of_cluster_ddi_pairs": 0.03218578121817071,
+          "involves_B01A": false
+        },
+        {
+          "pair": "C07A-A12B",
+          "count": 275,
+          "share_of_cluster_ddi_pairs": 0.02800977795885109,
+          "involves_B01A": false
+        },
+        {
+          "pair": "N02A-B01A",
+          "count": 237,
+          "share_of_cluster_ddi_pairs": 0.02413933591362803,
+          "involves_B01A": true
+        },
+        {
+          "pair": "C03C-C10A",
+          "count": 230,
+          "share_of_cluster_ddi_pairs": 0.02342635974740273,
+          "involves_B01A": false
+        },
+        {
+          "pair": "C07A-C09A",
+          "count": 225,
+          "share_of_cluster_ddi_pairs": 0.022917091057241802,
+          "involves_B01A": false
+        },
+        {
+          "pair": "B01A-C09A",
+          "count": 214,
+          "share_of_cluster_ddi_pairs": 0.02179669993888776,
+          "involves_B01A": true
+        },
+        {
+          "pair": "C10A-C09A",
+          "count": 206,
+          "share_of_cluster_ddi_pairs": 0.02098187003463027,
+          "involves_B01A": false
+        }
+      ]
+    },
+    {
+      "cluster_label": "05",
+      "n_visits": 735,
+      "n_ddi_pair_occurrences": 17971,
+      "share_involving_B01A": 0.18385176117077515,
+      "top": [
+        {
+          "pair": "A01A-R03A",
+          "count": 403,
+          "share_of_cluster_ddi_pairs": 0.022425018084692005,
+          "involves_B01A": false
+        },
+        {
+          "pair": "B01A-R01A",
+          "count": 403,
+          "share_of_cluster_ddi_pairs": 0.022425018084692005,
+          "involves_B01A": true
+        },
+        {
+          "pair": "B01A-C10A",
+          "count": 400,
+          "share_of_cluster_ddi_pairs": 0.02225808246619554,
+          "involves_B01A": true
+        },
+        {
+          "pair": "A06A-R01A",
+          "count": 399,
+          "share_of_cluster_ddi_pairs": 0.022202437260030048,
+          "involves_B01A": false
+        },
+        {
+          "pair": "A01A-C10A",
+          "count": 395,
+          "share_of_cluster_ddi_pairs": 0.021979856435368095,
+          "involves_B01A": false
+        },
+        {
+          "pair": "C07A-A12B",
+          "count": 381,
+          "share_of_cluster_ddi_pairs": 0.02120082354905125,
+          "involves_B01A": false
+        },
+        {
+          "pair": "R03A-R01A",
+          "count": 375,
+          "share_of_cluster_ddi_pairs": 0.020866952312058318,
+          "involves_B01A": false
+        },
+        {
+          "pair": "C07A-C10A",
+          "count": 366,
+          "share_of_cluster_ddi_pairs": 0.020366145456568917,
+          "involves_B01A": false
+        },
+        {
+          "pair": "A06A-N06A",
+          "count": 357,
+          "share_of_cluster_ddi_pairs": 0.019865338601079516,
+          "involves_B01A": false
+        },
+        {
+          "pair": "N06A-B01A",
+          "count": 357,
+          "share_of_cluster_ddi_pairs": 0.019865338601079516,
+          "involves_B01A": true
+        }
+      ]
+    },
+    {
+      "cluster_label": "10",
+      "n_visits": 552,
+      "n_ddi_pair_occurrences": 13428,
+      "share_involving_B01A": 0.17605004468275245,
+      "top": [
+        {
+          "pair": "C07A-A12B",
+          "count": 308,
+          "share_of_cluster_ddi_pairs": 0.022937146261543043,
+          "involves_B01A": false
+        },
+        {
+          "pair": "A01A-C10A",
+          "count": 306,
+          "share_of_cluster_ddi_pairs": 0.022788203753351208,
+          "involves_B01A": false
+        },
+        {
+          "pair": "B01A-C10A",
+          "count": 297,
+          "share_of_cluster_ddi_pairs": 0.022117962466487937,
+          "involves_B01A": true
+        },
+        {
+          "pair": "C07A-C10A",
+          "count": 296,
+          "share_of_cluster_ddi_pairs": 0.022043491212392016,
+          "involves_B01A": false
+        },
+        {
+          "pair": "N02B-C10A",
+          "count": 293,
+          "share_of_cluster_ddi_pairs": 0.02182007745010426,
+          "involves_B01A": false
+        },
+        {
+          "pair": "A06A-R01A",
+          "count": 290,
+          "share_of_cluster_ddi_pairs": 0.021596663687816504,
+          "involves_B01A": false
+        },
+        {
+          "pair": "R03A-R01A",
+          "count": 290,
+          "share_of_cluster_ddi_pairs": 0.021596663687816504,
+          "involves_B01A": false
+        },
+        {
+          "pair": "C03C-C10A",
+          "count": 285,
+          "share_of_cluster_ddi_pairs": 0.02122430741733691,
+          "involves_B01A": false
+        },
+        {
+          "pair": "B01A-R01A",
+          "count": 285,
+          "share_of_cluster_ddi_pairs": 0.02122430741733691,
+          "involves_B01A": true
+        },
+        {
+          "pair": "A01A-R03A",
+          "count": 278,
+          "share_of_cluster_ddi_pairs": 0.020703008638665477,
+          "involves_B01A": false
+        }
+      ]
+    }
+  ],
+  "cohort_top_pairs": {
+    "cluster_label": "ALL",
+    "n_visits": 14539,
+    "n_ddi_pair_occurrences": 252811,
+    "share_involving_B01A": 0.18321196466925885,
+    "top": [
+      {
+        "pair": "N02A-B01A",
+        "count": 7138,
+        "share_of_cluster_ddi_pairs": 0.028234530934176123,
+        "involves_B01A": true
+      },
+      {
+        "pair": "C07A-A12B",
+        "count": 6631,
+        "share_of_cluster_ddi_pairs": 0.026229080221984013,
+        "involves_B01A": false
+      },
+      {
+        "pair": "B01A-C10A",
+        "count": 5841,
+        "share_of_cluster_ddi_pairs": 0.023104216193124506,
+        "involves_B01A": true
+      },
+      {
+        "pair": "A01A-C10A",
+        "count": 5731,
+        "share_of_cluster_ddi_pairs": 0.022669108543536477,
+        "involves_B01A": false
+      },
+      {
+        "pair": "N02B-C10A",
+        "count": 5658,
+        "share_of_cluster_ddi_pairs": 0.022380355285173507,
+        "involves_B01A": false
+      },
+      {
+        "pair": "C07A-C10A",
+        "count": 5557,
+        "share_of_cluster_ddi_pairs": 0.021980847352369954,
+        "involves_B01A": false
+      },
+      {
+        "pair": "A01A-R03A",
+        "count": 5257,
+        "share_of_cluster_ddi_pairs": 0.020794190126220774,
+        "involves_B01A": false
+      },
+      {
+        "pair": "A06A-N06A",
+        "count": 5195,
+        "share_of_cluster_ddi_pairs": 0.02054894763281661,
+        "involves_B01A": false
+      },
+      {
+        "pair": "A02B-N06A",
+        "count": 5160,
+        "share_of_cluster_ddi_pairs": 0.020410504289765874,
+        "involves_B01A": false
+      },
+      {
+        "pair": "N06A-B01A",
+        "count": 4969,
+        "share_of_cluster_ddi_pairs": 0.01965499918911756,
+        "involves_B01A": true
+      }
+    ]
+  },
+  "interpretation": [
+    "- **게이트 통과.** 24개 CC 군집의 정답 처방 DDI율 평균은 0.0717(07 발열·감염)에서 0.1107(18 흉통) 사이이고, range 0.0390의 환자 단위 순열 p는 0.0001이다.",
+    "- 군집 평균 DDI율과 평균 약물 수의 상관은 r = 0.38. 약물 수(n_med + n_med²)를 보정한 잔차의 range 순열 p는 0.0001로, 군집 간 차이가 약물 수만으로는 설명되지 않는다.",
+    "- 약물 수 사분위 층화(각 층 안에서 군집 range 검정): Q1 [2–15개] range 0.0884, p = 0.0001; Q2 [16–20개] range 0.0477, p = 0.0004; Q3 [21–24개] range 0.0365, p = 0.0013; Q4 [25–52개] range 0.0242, p = 0.0007.",
+    "- DDI 쌍 절대 개수로도 같은 검정: raw p = 0.0001, 약물 수 보정 잔차 p = 0.0001.",
+    "- 상위 3개 군집의 DDI 쌍 중 B01A 관여 비율은 0.18, 0.18, 0.18 (코호트 전체 0.18). 최상위 쌍은 각각 A01A-C10A, A01A-R03A, C07A-A12B."
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "args": {
+    "epochs": 50,
+    "smoke": false,
+    "out_dir": "C:\\Users\\Administrator\\Desktop\\SafeDrug_DDI\uc81c\uc57d_\ubd88\uacf5\uc815_20260908\\no_ddi_penalty\\seed1"
+  },
+  "seeds": {
+    "torch_manual_seed": 1,
+    "numpy_seed": 1,
+    "python_random_seed": 1,
+    "cudnn_deterministic": true,
+    "seed_override": 1
+  },
+  "torch_version": "2.13.0+cu130",
+  "torch_cuda_version": "13.0",
+  "device": "cuda:0",
+  "data_files_sha256": {
+    "records_final": "321684d9472f75e2cc608582ddf3c4ae3e8df08d1bb90da943c84f0d66252c6f",
+    "voc_final": "4145a0487423b8aedb36ba24f190ef8730a013e0169319e22b72f2426166ede5",
+    "ddi_A_final": "8b27353d99db2b9717ea52d54bafc8be69a708c6952b4cfe390903ead84bedea",
+    "ddi_mask_H": "5551a84a7cf29d82a52c84cb1fad0b4c7c9d75c4fa482920bac467985792b764",
+    "atc3toSMILES": "382099546c4f37065fc5ae8c1fe9e17d44392cc48a4c016866a108a934caf9ab"
+  },
+  "best_epoch": 24,
+  "best_eval_jaccard": 0.5250991804113012,
+  "official_metrics": {
+    "test": {
+      "ddi_rate": 0.07544614239334974,
+      "ja": 0.521202918366698,
+      "prauc": 0.7731838620321535,
+      "avg_p": 0.6491070387662478,
+      "avg_r": 0.7341230591531618,
+      "avg_f1": 0.6759678702648633,
+      "avg_med": 22.453621908127207
+    },
+    "eval": {
+      "ddi_rate": 0.07572302270135793,
+      "ja": 0.5250991804113012,
+      "prauc": 0.7771318322806332,
+      "avg_p": 0.6549736303403157,
+      "avg_r": 0.7350743547733504,
+      "avg_f1": 0.6798835832920507,
+      "avg_med": 22.325581395348838
+    }
+  },
+  "hyperparameters": {
+    "emb_dim": 64,
+    "lr": 0.0005,
+    "target_ddi": 0.06,
+    "kp": 0.05
+  },
+  "drug_weight": {
+    "mode": "none",
+    "cap": 10.0,
+    "weight_vector": null
+  },
+  "ddi_target_policy": {
+    "mode": "group",
+    "csv_path": "C:/Users/Administrator/Desktop/SafeDrug_DDI\uc81c\uc57d_\ubd88\uacf5\uc815_20260908/no_ddi_penalty/ddi_targets_off.csv",
+    "default_target_ddi": 0.06,
+    "visit_target_summary": [
+      {
+        "target_ddi": 1.0,
+        "n_visits": 10489
+      }
+    ]
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "eval_len": 1058,
+    "train_patients": 4233,
+    "test_patients": 1058,
+    "eval_patients": 1059
+  }
+}

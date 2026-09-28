@@ -1,0 +1,39 @@
+{
+  "control_predictor": {
+    "variant": "oracle_size",
+    "description": "per-visit K = true set size, top-K by training prevalence (upper bound)",
+    "input_used": "none (constant / oracle-size frequency prior)",
+    "train_visits": 10489,
+    "mean_train_set_size": 19.24930879969492,
+    "K": "per-visit n_med_gt",
+    "source_records": "C:\\Users\\Administrator\\Desktop\\SOTA\\SafeDrug\\data\\output\\records_final.pkl",
+    "row_identity_source": "C:\\Users\\Administrator\\Desktop\\SafeDrug_\uad70\uc9d1\ubcc4\ud3c9\uac00_20260904\\\uc804\uccb4\uc0b0\ucd9c\ubb3c\\per_visit_predictions.npz"
+  },
+  "best_epoch": 0,
+  "best_eval_jaccard": 0.4467064369989378,
+  "official_metrics": {
+    "test": {
+      "ja": 0.44442086447021917,
+      "prauc": 0.6915805286991799,
+      "avg_f1": 0.6076402083247612,
+      "ddi_rate": 0.09363312116972432,
+      "avg_med": 20.381625441696112,
+      "avg_p": NaN,
+      "avg_r": NaN
+    },
+    "eval": {
+      "ja": 0.4467064369989378,
+      "prauc": 0.6936282269334839,
+      "avg_f1": 0.6093115028482168,
+      "ddi_rate": 0.09394317167983686,
+      "avg_med": 20.26239578762615,
+      "avg_p": NaN,
+      "avg_r": NaN
+    }
+  },
+  "split_sizes": {
+    "split_point": 4233,
+    "test_visits": 2264,
+    "eval_visits": 2279
+  }
+}

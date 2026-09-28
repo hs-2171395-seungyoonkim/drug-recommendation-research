@@ -1,6 +1,6 @@
 """SafeDrug per-cluster evaluation helpers.
 
-See docs/specs/2026-09-04-safedrug-per-cluster-eval-design.md.
+See docs/superpowers/specs/2026-09-04-safedrug-per-cluster-eval-design.md.
 """
 
 from __future__ import annotations

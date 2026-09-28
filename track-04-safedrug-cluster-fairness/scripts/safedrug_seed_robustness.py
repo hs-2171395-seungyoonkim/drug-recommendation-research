@@ -6,7 +6,7 @@ cross-seed tables, and builds a seed-pooled per-visit metric (mean over seeds,
 same visits) that is re-run through safedrug_cluster_gap.py's own group-table /
 adjustment / permutation machinery (imported, not copied).
 
-See docs/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
+See docs/superpowers/specs/2026-09-04-safedrug-seeds-mechanism-ksweep-design.md
 ("D-B") for the full contract.
 """
 

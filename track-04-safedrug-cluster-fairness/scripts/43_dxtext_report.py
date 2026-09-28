@@ -190,7 +190,7 @@ agree = float((asg["seq1_code"].map(NAME) == pd.Series(
 
 rep = f"""# ICD-9 진단목록 텍스트 → ClinicalBERT 군집화 — 결과
 
-설계: `docs/specs/2026-08-19-icd-text-clustering-design.md` (사전등록).
+설계: `docs/superpowers/specs/2026-08-19-icd-text-clustering-design.md` (사전등록).
 재현: `python scripts/40_dxtext_build.py && ... 41 && 42 && 43`.
 
 ## 0. 요약
