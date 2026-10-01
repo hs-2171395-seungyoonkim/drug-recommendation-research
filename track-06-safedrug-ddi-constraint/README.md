@@ -7,9 +7,10 @@
 ## 1. DDI 행렬은 무엇을 표시하는가
 
 SafeDrug의 DDI 행렬(112개 ATC-3 클래스, 표시 쌍 337개 = 5.4%)을 재구성해 보았습니다. 이 행렬은 TWOSIDES에서
-**가장 자주 보고된 부작용 40종**(혈압 저하, 빈혈, 호흡곤란, 구역 …)에 한 번이라도 걸린 쌍을 표시한 것입니다.
+**가장 드문 부작용 40종**(myoma, bladder diverticulum, renovascular hypertension, tetanus …; 공개 코드가 빈도 내림차순 정렬 뒤 `iloc[-40:]`로 고름)에 한 번이라도 걸린 쌍을 표시한 것입니다.
 그 결과 항혈전제–스타틴, 베타차단제–ACE억제제, 스타틴–질산염 같은 **심혈관 가이드라인 병용요법**이
-호흡곤란·흉통 공동 보고 때문에 "상호작용"으로 잡혀 있었습니다.
+드문 용어(예: myoma, bladder diverticulum)를 가진 성분 쌍 한두 개 때문에 "상호작용"으로 잡혀 있었습니다.
+(2026-10 정정: 이전 판은 이 40종을 '가장 자주 보고된 (비특이적) 부작용'으로 잘못 적었다. 공개 전처리 코드는 빈도 내림차순 정렬 뒤 `iloc[-40:]`로 가장 드문 40종을 고른다. 근거 표는 `results/twosides/table_guideline_pairs_actual_flag_terms.csv`, 재현 스크립트는 `scripts/attribute_ddi_flag_terms.py`입니다.)
 
 ## 2. 인과 검증: DDI 페널티 해제 (4시드)
 
@@ -47,7 +48,8 @@ DDI loss의 비용은 흉통·호흡곤란·호흡부전 군집에 약 2배로 �
 ## 구성
 
 - [`results/보고서/REPORT_DDI_WHITELIST_KO.md`](results/보고서/REPORT_DDI_WHITELIST_KO.md): 1~3절 전체 보고서
-- `results/twosides/`: DDI 행렬의 TWOSIDES 근거 표
+- `results/twosides/`: DDI 행렬의 TWOSIDES 근거 표. 실제 표시 근거는 `table_guideline_pairs_actual_flag_terms.csv`(코드 규칙 재현, 배포 337쌍과 정확히 일치)이고, `table_top40_side_effects.csv`·`table_guideline_pairs_twosides_basis.csv`는 코드가 쓰지 않은 상위 40종 기준이라 행렬의 근거가 아닙니다
+- `scripts/attribute_ddi_flag_terms.py`: 위 근거 표 재현 스크립트(행렬 재구성 후 배포본과 대칭차 0 확인)
 - `results/pair_analysis/`: 쌍 단위 누락률 분석
 - `results/no_ddi_penalty/`, `results/W_whitelist/`, `results/W2_pairpenalty/`: 학습 변형별 군집 평가
 - `results/ddi_loss_cc_cluster/`: 4절 단계별 보고서와 사전 판정 기준 매니페스트

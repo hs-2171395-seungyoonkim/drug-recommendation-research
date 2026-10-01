@@ -7,10 +7,11 @@
 - 이 억제가 DDI 페널티 때문인지(페널티 해제 학습으로 판정) 아니면 기본 recall 문제인지는 `no_ddi_penalty/seed0` 결과로 결정한다.
 
 ## TWOSIDES 근거 (twosides/ 폴더)
-- SafeDrug의 DDI 행렬은 TWOSIDES(465만 행, 1,317개 부작용 유형)에서 "가장 자주 보고된 40개 부작용 유형"에 한 번이라도 걸린 CID 쌍을 ATC-3로 올린 것이다. 상위 40개는 혈압 저하, 빈혈, 호흡곤란, 구역, 폐렴, 피로, 통증, 설사 같은 비특이적 이상반응이다(`table_top40_side_effects.csv`).
-- 가이드라인 병용 쌍의 표시 근거: 항혈전제-스타틴은 호흡곤란·빈혈·혈압저하·흉통(97개 CID 쌍), 베타차단제-스타틴은 호흡곤란·고혈당·흉통·어지럼(123쌍), 베타차단제-ACE억제제는 고혈압·피로·호흡곤란(88쌍), 스타틴-질산염은 호흡곤란·부종·혈압저하(50쌍). 기전적 상호작용이 아니라 같은 환자군(심혈관 질환)의 증상이 공동 보고된 통계적 흔적이다(`table_guideline_pairs_twosides_basis.csv`).
+> 2026-10 정정: 이전 판은 이 40종을 '가장 자주 보고된 (비특이적) 부작용'으로 잘못 적었다. 공개 전처리 코드는 빈도 내림차순 정렬 뒤 `iloc[-40:]`로 가장 드문 40종을 고른다. 아래는 그 규칙을 다시 적용해 배포 행렬 337쌍을 정확히 재현한 결과로 고친 것이다.
+- SafeDrug의 DDI 행렬은 TWOSIDES(465만 행, 1,317개 부작용 유형)에서 "가장 드문 40개 부작용 유형"(빈도 내림차순 정렬 뒤 `iloc[-40:]`)에 한 번이라도 걸린 CID 쌍을 ATC-3로 올린 것이다. 이 40개는 myoma, bladder diverticulum, renovascular hypertension, tetanus처럼 각각 1~28개 CID 쌍에만 붙은 드문 용어다(`table_bottom40_ACTUAL_code_selection.csv`. 배포 행렬은 28회 동률인 Vasomotor Rhinitis 대신 Masculinization을 포함한다. `table_top40_side_effects.csv`는 코드가 쓰지 않은 상위 40개).
+- 가이드라인 병용 쌍의 표시 근거: 항혈전제-스타틴은 myoma(97개 CID 쌍 중 2개), 베타차단제-스타틴은 renovascular hypertension(123쌍 중 1개), 베타차단제-ACE억제제는 bladder diverticulum(88쌍 중 1개), 스타틴-질산염은 myoma(50쌍 중 1개). 기전적 상호작용이 아니라, 클래스 쌍에 속한 성분 쌍이 많을수록 드문 용어 하나에 걸릴 확률이 커지는 선택 규칙의 산물이다(`table_guideline_pairs_actual_flag_terms.csv`. `table_guideline_pairs_twosides_basis.csv`는 코드가 쓰지 않은 상위 40개 기준 표).
 - DDI 행렬은 6,216개 가능한 ATC-3 쌍 중 337쌍(5.4%)을 표시한다.
-- 해석: SafeDrug의 "안전 제약"은 심혈관 질환군의 표준 병용요법을 그 환자군의 증상 보고 때문에 위험으로 취급한다. 페널티가 실제로 누락을 만드는지는 no_ddi_penalty 학습으로 판정.
+- 해석: SafeDrug의 "안전 제약"은 심혈관 질환군의 표준 병용요법을 드문 용어를 가진 성분 쌍 한두 개 때문에 위험으로 취급한다. 페널티가 실제로 누락을 만드는지는 no_ddi_penalty 학습으로 판정.
 
 ## DDI 페널티 해제 학습 결과 (no_ddi_penalty/seed0, 2026-09-08)
 - 설정: SafeDrug 원본 그대로, 방문별 DDI 목표를 1.0으로 두어 페널티만 비활성(시드·epoch·손실 동일). 최고 epoch 22.
